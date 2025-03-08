@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTeams } from "../context/TeamsContext";
 import { stadiumsData } from "../data/stadiumsData";
+import { CheckCircle } from "lucide-react";
 
 const CreateTeam = () => {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ const CreateTeam = () => {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAlreadyInTeam, setIsAlreadyInTeam] = useState(false);
+  const [stadiumName, setStadiumName] = useState("");
   const location = useLocation();
 
   // Get current user from localStorage with null check
@@ -83,7 +85,16 @@ const CreateTeam = () => {
       if (statePlayDate) setPlayDate(statePlayDate);
       if (statePlayTime) setPlayTime(statePlayTime);
       if (statePlayerCount) setPlayerCount(statePlayerCount);
-      if (stateStadiumId) setStadiumId(stateStadiumId.toString());
+      if (stateStadiumId) {
+        setStadiumId(stateStadiumId.toString());
+        // Find stadium name
+        const stadium = stadiumsData.find(
+          (s) => s.id === Number(stateStadiumId)
+        );
+        if (stadium) {
+          setStadiumName(stadium.name);
+        }
+      }
       if (stateLogo) setLogo(stateLogo);
       if (stateJoinMatch !== undefined) setJoinMatch(stateJoinMatch);
       if (stateIsReserved) setIsReserved(true);
@@ -95,7 +106,7 @@ const CreateTeam = () => {
 
   // Filter stadiums based on selected city
   useEffect(() => {
-    if (city) {
+    if (city && !isReserved) {
       const filteredStadiums = stadiumsData.filter(
         (stadium) => stadium.city === city
       );
@@ -103,14 +114,14 @@ const CreateTeam = () => {
     } else {
       setAvailableStadiums([]);
     }
-    if (!location.state?.stadiumId) {
+    if (!location.state?.stadiumId && !isReserved) {
       setStadiumId("");
     }
-  }, [city, location.state]);
+  }, [city, location.state, isReserved]);
 
   // Get available times for selected stadium and date
   useEffect(() => {
-    if (stadiumId && playDate) {
+    if (stadiumId && playDate && !isReserved) {
       const stadium = stadiumsData.find((s) => s.id === Number(stadiumId));
       if (stadium) {
         setAvailableTimes(stadium.availableHours);
@@ -118,12 +129,14 @@ const CreateTeam = () => {
     } else {
       setAvailableTimes([]);
     }
-    if (!location.state?.playTime) {
+    if (!location.state?.playTime && !isReserved) {
       setPlayTime("");
     }
-  }, [stadiumId, playDate, location.state]);
+  }, [stadiumId, playDate, location.state, isReserved]);
 
   const handleLogoChange = (e) => {
+    if (isReserved) return; // Prevent changes if reserved
+
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
@@ -337,49 +350,67 @@ const CreateTeam = () => {
             type="text"
             id="teamName"
             value={teamName}
-            onChange={(e) => setTeamName(e.target.value)}
+            onChange={(e) => !isReserved && setTeamName(e.target.value)}
             className="w-full p-2 border rounded"
             required
-            disabled={isFormDisabled}
+            disabled={isFormDisabled || isReserved}
           />
         </div>
         <div className="mb-4">
           <label htmlFor="city" className="block text-sm font-medium mb-1">
             Şəhər
           </label>
-          <select
-            id="city"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-            disabled={isFormDisabled}
-          >
-            <option value="">Şəhər seçin</option>
-            <option value="Bakı">Bakı</option>
-            <option value="Sumqayıt">Sumqayıt</option>
-            <option value="Gəncə">Gəncə</option>
-          </select>
+          {isReserved ? (
+            <input
+              type="text"
+              value={city}
+              className="w-full p-2 border rounded bg-gray-100"
+              disabled
+            />
+          ) : (
+            <select
+              id="city"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className="w-full p-2 border rounded"
+              required
+              disabled={isFormDisabled || isReserved}
+            >
+              <option value="">Şəhər seçin</option>
+              <option value="Bakı">Bakı</option>
+              <option value="Sumqayıt">Sumqayıt</option>
+              <option value="Gəncə">Gəncə</option>
+            </select>
+          )}
         </div>
         <div className="mb-4">
           <label htmlFor="stadium" className="block text-sm font-medium mb-1">
             Stadion
           </label>
-          <select
-            id="stadium"
-            value={stadiumId}
-            onChange={(e) => setStadiumId(e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-            disabled={!city || isFormDisabled}
-          >
-            <option value="">Stadion seçin</option>
-            {availableStadiums.map((stadium) => (
-              <option key={stadium.id} value={stadium.id}>
-                {stadium.name}
-              </option>
-            ))}
-          </select>
+          {isReserved ? (
+            <input
+              type="text"
+              value={stadiumName}
+              className="w-full p-2 border rounded bg-gray-100"
+              disabled
+            />
+          ) : (
+            <select
+              id="stadium"
+              value={stadiumId}
+              onChange={(e) => setStadiumId(e.target.value)}
+              className="w-full p-2 border rounded"
+              required
+              disabled={!city || isFormDisabled || isReserved}
+            >
+              <option value="">Stadion seçin</option>
+              {availableStadiums.map((stadium) => (
+                <option key={stadium.id} value={stadium.id}>
+                  {stadium.name}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
         <div className="mb-4">
           <label htmlFor="playDate" className="block text-sm font-medium mb-1">
@@ -389,32 +420,41 @@ const CreateTeam = () => {
             type="date"
             id="playDate"
             value={playDate}
-            onChange={(e) => setPlayDate(e.target.value)}
+            onChange={(e) => !isReserved && setPlayDate(e.target.value)}
             className="w-full p-2 border rounded"
             required
             min={new Date().toISOString().split("T")[0]}
-            disabled={isFormDisabled}
+            disabled={isFormDisabled || isReserved}
           />
         </div>
         <div className="mb-4">
           <label htmlFor="playTime" className="block text-sm font-medium mb-1">
             Oyun Saatı
           </label>
-          <select
-            id="playTime"
-            value={playTime}
-            onChange={(e) => setPlayTime(e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-            disabled={!stadiumId || !playDate || isFormDisabled}
-          >
-            <option value="">Saat seçin</option>
-            {availableTimes.map((time) => (
-              <option key={time} value={time}>
-                {time}
-              </option>
-            ))}
-          </select>
+          {isReserved ? (
+            <input
+              type="text"
+              value={playTime}
+              className="w-full p-2 border rounded bg-gray-100"
+              disabled
+            />
+          ) : (
+            <select
+              id="playTime"
+              value={playTime}
+              onChange={(e) => setPlayTime(e.target.value)}
+              className="w-full p-2 border rounded"
+              required
+              disabled={!stadiumId || !playDate || isFormDisabled || isReserved}
+            >
+              <option value="">Saat seçin</option>
+              {availableTimes.map((time) => (
+                <option key={time} value={time}>
+                  {time}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
         <div className="mb-4">
           <label
@@ -427,12 +467,14 @@ const CreateTeam = () => {
             type="number"
             id="playerCount"
             value={playerCount}
-            onChange={(e) => setPlayerCount(Number.parseInt(e.target.value))}
+            onChange={(e) =>
+              !isReserved && setPlayerCount(Number.parseInt(e.target.value))
+            }
             min="5"
             max="11"
             className="w-full p-2 border rounded"
             required
-            disabled={isFormDisabled}
+            disabled={isFormDisabled || isReserved}
           />
         </div>
         <div className="mb-6">
@@ -444,8 +486,10 @@ const CreateTeam = () => {
             id="logo"
             accept="image/*"
             onChange={handleLogoChange}
-            className="w-full p-2 border rounded"
-            disabled={isFormDisabled}
+            className={`w-full p-2 border rounded ${
+              isReserved ? "bg-gray-100" : ""
+            }`}
+            disabled={isFormDisabled || isReserved}
           />
           {logo && (
             <img
@@ -462,12 +506,15 @@ const CreateTeam = () => {
           <input
             type="checkbox"
             checked={joinMatch}
-            onChange={(e) => setJoinMatch(e.target.checked)}
-            disabled={isFormDisabled}
+            onChange={(e) => !isReserved && setJoinMatch(e.target.checked)}
+            disabled={isFormDisabled || isReserved}
           />
         </div>
         {isReserved ? (
-          <p className="text-green-500 mb-4">Rezervasiya edilmişdir</p>
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 flex items-center">
+            <CheckCircle className="mr-2" size={18} />
+            Rezervasiya edilmişdir
+          </div>
         ) : (
           <button
             type="button"

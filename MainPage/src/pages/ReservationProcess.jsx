@@ -11,6 +11,7 @@ import {
   Clock,
   AlertCircle,
   ArrowLeft,
+  CheckCircle,
 } from "lucide-react";
 import { useReservation } from "../context/ReservationContext";
 
@@ -24,6 +25,8 @@ const ReservationProcess = () => {
   const [price, setPrice] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [reservationSuccess, setReservationSuccess] = useState(false);
+  const [reservation, setReservation] = useState(null);
   const { isStadiumAvailable, addReservation } = useReservation();
   const [fromCreateTeam, setFromCreateTeam] = useState(false);
   const [teamData, setTeamData] = useState(null);
@@ -94,10 +97,12 @@ const ReservationProcess = () => {
     setSelectedTime(null);
     setPrice(null);
     setError("");
+    setReservationSuccess(false);
   };
 
   const handleTimeChange = (time) => {
     setError("");
+    setReservationSuccess(false);
     if (
       isStadiumAvailable(
         stadium.id,
@@ -117,8 +122,9 @@ const ReservationProcess = () => {
   };
 
   const handleReservation = () => {
-    // Clear previous errors
+    // Clear previous errors and success message
     setError("");
+    setReservationSuccess(false);
 
     // Check if user is logged in
     if (!currentUser) {
@@ -134,7 +140,7 @@ const ReservationProcess = () => {
     }
 
     try {
-      const reservation = {
+      const newReservation = {
         id: Date.now(),
         stadiumId: stadium.id,
         date: selectedDate.toISOString().split("T")[0],
@@ -147,27 +153,17 @@ const ReservationProcess = () => {
         ).toISOString(), // 24 hours from now
       };
 
-      addReservation(reservation);
+      addReservation(newReservation);
+      setReservation(newReservation);
+      setReservationSuccess(true);
 
-      // If coming from team creation, pass all team data back
+      // Update team data with reservation info if coming from team creation
       if (fromCreateTeam && teamData) {
-        navigate("/payment-process", {
-          state: {
-            reservation,
-            teamData: {
-              ...teamData,
-              playDate: selectedDate.toISOString().split("T")[0],
-              playTime: selectedTime,
-              stadiumId: stadium.id,
-            },
-            paymentSource: "teamCreation",
-          },
-        });
-      } else {
-        navigate("/payment-process", {
-          state: {
-            reservation,
-          },
+        setTeamData({
+          ...teamData,
+          playDate: selectedDate.toISOString().split("T")[0],
+          playTime: selectedTime,
+          stadiumId: stadium.id,
         });
       }
     } catch (err) {
@@ -186,6 +182,8 @@ const ReservationProcess = () => {
             : teamData.playDate,
           playTime: selectedTime || teamData.playTime,
           stadiumId: stadium ? stadium.id : teamData.stadiumId,
+          isReserved: reservationSuccess, // Pass reservation status back to create team
+          reservationId: reservation?.id || null,
         },
       });
     } else {
@@ -226,6 +224,13 @@ const ReservationProcess = () => {
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 flex items-center">
           <AlertCircle className="mr-2" size={18} />
           {error}
+        </div>
+      )}
+
+      {reservationSuccess && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 flex items-center">
+          <CheckCircle className="mr-2" size={18} />
+          Rezervasiya uğurla tamamlandı!
         </div>
       )}
 
@@ -302,9 +307,14 @@ const ReservationProcess = () => {
               <div className="flex flex-col space-y-2">
                 <button
                   onClick={handleReservation}
-                  className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-300"
+                  className={`w-full ${
+                    reservationSuccess
+                      ? "bg-green-500 hover:bg-green-600"
+                      : "bg-blue-500 hover:bg-blue-600"
+                  } text-white py-2 px-4 rounded transition duration-300`}
+                  disabled={reservationSuccess}
                 >
-                  Rezervasiya Et
+                  {reservationSuccess ? "Rezervasiya Edildi" : "Rezervasiya Et"}
                 </button>
                 <button
                   onClick={() => navigate("/stadiums")}
