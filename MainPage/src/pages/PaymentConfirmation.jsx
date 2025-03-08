@@ -1,13 +1,29 @@
-import { useLocation, Link } from "react-router-dom";
-import { CheckCircle, Calendar, DollarSign } from "lucide-react";
+"use client";
+
+import { useLocation, Link, useNavigate } from "react-router-dom";
+import { CheckCircle, Calendar, DollarSign, ArrowLeft } from "lucide-react";
 
 const PaymentConfirmation = () => {
   const location = useLocation();
-  const { stadiumId, date, time, price, paymentMethod } = location.state || {};
+  const navigate = useNavigate();
+  const { stadiumId, date, time, price, paymentMethod, teamData } =
+    location.state || {};
 
   if (!stadiumId || !date || !time || !price) {
     return <div>Xəta baş verdi. Zəhmət olmasa yenidən cəhd edin.</div>;
   }
+
+  const handleReturnToCreateTeam = () => {
+    if (teamData) {
+      navigate("/create-team", {
+        state: {
+          ...teamData,
+          isReserved: true,
+          reservationId: location.state?.id || Date.now(),
+        },
+      });
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -38,12 +54,25 @@ const PaymentConfirmation = () => {
         <p className="text-center text-gray-600 mb-6">
           Rezervasiya təsdiqiniz e-poçt ünvanınıza göndəriləcək.
         </p>
-        <Link
-          to="/stadiums"
-          className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-300"
-        >
-          Ana Səhifəyə Qayıt
-        </Link>
+
+        <div className="space-y-3">
+          {teamData ? (
+            <button
+              onClick={handleReturnToCreateTeam}
+              className="w-full text-center bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition duration-300 flex items-center justify-center"
+            >
+              <ArrowLeft className="mr-2" size={18} />
+              Team yaratmağa geri dön
+            </button>
+          ) : null}
+
+          <Link
+            to="/stadiums"
+            className="block w-full text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-300"
+          >
+            Ana Səhifəyə Qayıt
+          </Link>
+        </div>
       </div>
     </div>
   );

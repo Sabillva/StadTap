@@ -5,7 +5,13 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { stadiumsData } from "../data/stadiumsData";
-import { MapPin, DollarSign, Clock, AlertCircle } from "lucide-react";
+import {
+  MapPin,
+  DollarSign,
+  Clock,
+  AlertCircle,
+  ArrowLeft,
+} from "lucide-react";
 import { useReservation } from "../context/ReservationContext";
 
 const ReservationProcess = () => {
@@ -19,6 +25,8 @@ const ReservationProcess = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const { isStadiumAvailable, addReservation } = useReservation();
+  const [fromCreateTeam, setFromCreateTeam] = useState(false);
+  const [teamData, setTeamData] = useState(null);
 
   // Get current user from localStorage with null check
   const currentUser = (() => {
@@ -48,6 +56,21 @@ const ReservationProcess = () => {
 
       // Initialize from location state if available
       if (location.state) {
+        // Save team data for later use
+        if (location.state.fromCreateTeam) {
+          setFromCreateTeam(true);
+          setTeamData({
+            teamName: location.state.teamName,
+            city: location.state.city,
+            playDate: location.state.playDate,
+            playTime: location.state.playTime,
+            playerCount: location.state.playerCount,
+            stadiumId: location.state.stadiumId,
+            logo: location.state.logo,
+            joinMatch: location.state.joinMatch,
+          });
+        }
+
         if (location.state.playDate) {
           setSelectedDate(new Date(location.state.playDate));
         }
@@ -64,7 +87,7 @@ const ReservationProcess = () => {
     }
 
     setLoading(false);
-  }, [id]); // Only depend on id, not navigate, location, or currentUser
+  }, [id, navigate, location]);
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
@@ -126,15 +149,46 @@ const ReservationProcess = () => {
 
       addReservation(reservation);
 
-      navigate("/payment-process", {
-        state: {
-          reservation,
-          teamData: location.state, // Team yaratma səhifəsindən gələn məlumatlar
-        },
-      });
+      // If coming from team creation, pass all team data back
+      if (fromCreateTeam && teamData) {
+        navigate("/payment-process", {
+          state: {
+            reservation,
+            teamData: {
+              ...teamData,
+              playDate: selectedDate.toISOString().split("T")[0],
+              playTime: selectedTime,
+              stadiumId: stadium.id,
+            },
+          },
+        });
+      } else {
+        navigate("/payment-process", {
+          state: {
+            reservation,
+          },
+        });
+      }
     } catch (err) {
       console.error("Error creating reservation:", err);
       setError("Rezervasiya yaradılarkən xəta baş verdi. Yenidən cəhd edin.");
+    }
+  };
+
+  const handleReturnToCreateTeam = () => {
+    if (fromCreateTeam && teamData) {
+      navigate("/create-team", {
+        state: {
+          ...teamData,
+          playDate: selectedDate
+            ? selectedDate.toISOString().split("T")[0]
+            : teamData.playDate,
+          playTime: selectedTime || teamData.playTime,
+          stadiumId: stadium ? stadium.id : teamData.stadiumId,
+        },
+      });
+    } else {
+      navigate("/create-team");
     }
   };
 
@@ -190,6 +244,16 @@ const ReservationProcess = () => {
             <DollarSign className="mr-2" size={18} />
             <span>{stadium.price} AZN/saat</span>
           </div>
+
+          {fromCreateTeam && (
+            <button
+              onClick={handleReturnToCreateTeam}
+              className="mt-4 flex items-center bg-gray-200 text-gray-800 py-2 px-4 rounded hover:bg-gray-300 transition duration-300"
+            >
+              <ArrowLeft className="mr-2" size={16} />
+              Team yaratmağa geri dön
+            </button>
+          )}
         </div>
         <div>
           <h3 className="text-xl font-semibold mb-4">Tarix və Saat Seçin</h3>
@@ -250,7 +314,6 @@ const ReservationProcess = () => {
               </div>
             </div>
           )}
-          {/* Removed the "Team yarat səhifəsinə geri dön" button as requested */}
         </div>
       </div>
     </div>

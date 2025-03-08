@@ -66,23 +66,32 @@ const CreateTeam = () => {
   useEffect(() => {
     if (location.state) {
       const {
-        teamName,
-        city,
-        playDate,
-        playTime,
-        playerCount,
-        stadiumId,
-        isReserved,
+        teamName: stateTeamName,
+        city: stateCity,
+        playDate: statePlayDate,
+        playTime: statePlayTime,
+        playerCount: statePlayerCount,
+        stadiumId: stateStadiumId,
+        logo: stateLogo,
+        joinMatch: stateJoinMatch,
+        isReserved: stateIsReserved,
+        reservationId: stateReservationId,
       } = location.state;
-      if (teamName) setTeamName(teamName);
-      if (city) setCity(city);
-      if (playDate) setPlayDate(playDate);
-      if (playTime) setPlayTime(playTime);
-      if (playerCount) setPlayerCount(playerCount);
-      if (stadiumId) setStadiumId(stadiumId);
-      if (isReserved) setIsReserved(true);
+
+      if (stateTeamName) setTeamName(stateTeamName);
+      if (stateCity) setCity(stateCity);
+      if (statePlayDate) setPlayDate(statePlayDate);
+      if (statePlayTime) setPlayTime(statePlayTime);
+      if (statePlayerCount) setPlayerCount(statePlayerCount);
+      if (stateStadiumId) setStadiumId(stateStadiumId.toString());
+      if (stateLogo) setLogo(stateLogo);
+      if (stateJoinMatch !== undefined) setJoinMatch(stateJoinMatch);
+      if (stateIsReserved) setIsReserved(true);
+
+      // Log the loaded state for debugging
+      console.log("Loaded state from navigation:", location.state);
     }
-  }, [location]);
+  }, [location.state]);
 
   // Filter stadiums based on selected city
   useEffect(() => {
@@ -94,8 +103,10 @@ const CreateTeam = () => {
     } else {
       setAvailableStadiums([]);
     }
-    setStadiumId("");
-  }, [city]);
+    if (!location.state?.stadiumId) {
+      setStadiumId("");
+    }
+  }, [city, location.state]);
 
   // Get available times for selected stadium and date
   useEffect(() => {
@@ -107,8 +118,10 @@ const CreateTeam = () => {
     } else {
       setAvailableTimes([]);
     }
-    setPlayTime("");
-  }, [stadiumId, playDate]);
+    if (!location.state?.playTime) {
+      setPlayTime("");
+    }
+  }, [stadiumId, playDate, location.state]);
 
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
@@ -169,6 +182,7 @@ const CreateTeam = () => {
     // Validate form before proceeding
     if (!validateForm()) return;
 
+    // Save all form data to pass to the reservation page
     navigate(`/reservation/${stadiumId}`, {
       state: {
         teamName,
@@ -177,6 +191,7 @@ const CreateTeam = () => {
         playTime,
         playerCount,
         stadiumId,
+        logo,
         joinMatch,
         fromCreateTeam: true,
       },
