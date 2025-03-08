@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useMatches } from "../context/MatchesContext";
 import { useTeams } from "../context/TeamsContext";
+import { useReservation } from "../context/ReservationContext";
 import {
   Loader,
   Calendar,
@@ -13,6 +14,7 @@ import {
   Trash,
   UserPlus,
   LogOut,
+  CreditCard,
 } from "lucide-react";
 
 const MatchDetail = () => {
@@ -20,6 +22,7 @@ const MatchDetail = () => {
   const navigate = useNavigate();
   const { matches, cancelMatch, joinMatch, leaveMatch } = useMatches();
   const { teams } = useTeams();
+  const { reservations } = useReservation();
   const [match, setMatch] = useState(null);
   const [userTeam, setUserTeam] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -27,6 +30,7 @@ const MatchDetail = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
+  const [reservation, setReservation] = useState(null);
 
   const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
@@ -40,6 +44,22 @@ const MatchDetail = () => {
       const foundMatch = matches.find((m) => m.id === Number.parseInt(id));
       if (foundMatch) {
         setMatch(foundMatch);
+
+        // Find the reservation for this match's stadium, date and time
+        if (
+          reservations &&
+          foundMatch.stadiumId &&
+          foundMatch.date &&
+          foundMatch.time
+        ) {
+          const matchReservation = reservations.find(
+            (r) =>
+              r.stadiumId === foundMatch.stadiumId &&
+              r.date === foundMatch.date &&
+              r.time === foundMatch.time
+          );
+          setReservation(matchReservation);
+        }
       } else {
         setError("Matç tapılmadı");
       }
@@ -52,7 +72,7 @@ const MatchDetail = () => {
     setUserTeam(team);
 
     setLoading(false);
-  }, [id, matches, teams, currentUser, navigate]);
+  }, [id, matches, teams, currentUser, navigate, reservations]);
 
   const handleDeleteMatch = async () => {
     if (!match) return;
@@ -139,6 +159,19 @@ const MatchDetail = () => {
     }
   };
 
+  const handlePayment = () => {
+    if (!match || !reservation) return;
+
+    navigate("/payment-process", {
+      state: {
+        reservation,
+        matchId: match.id,
+        isMatchPayment: true,
+        paymentSource: "match",
+      },
+    });
+  };
+
   // Check if user can join this match
   const canJoinMatch = () => {
     if (!match || !userTeam || match.team2 || match.status !== "pending")
@@ -194,6 +227,32 @@ const MatchDetail = () => {
       userTeam.creator &&
       userTeam.creator.id === currentUser.id
     );
+  };
+
+  // Check if user can pay for this match
+  const canPayForMatch = () => {
+    if (!match || !currentUser || !reservation) return false;
+
+    // Match must be confirmed (has team2)
+    if (match.status !== "confirmed" || !match.team2) return false;
+
+    // User must be the creator of team1 (match creator)
+    const team = teams.find((t) => t.id === match.team1.id);
+    if (!team || !team.creator || team.creator.id !== currentUser.id)
+      return false;
+
+    // Team must have joinMatch flag set to true
+    if (!team.joinMatch) return false;
+
+    // Reservation must not be paid yet
+    if (reservation.paid) return false;
+
+    // Check if reservation is still valid (not expired)
+    const now = new Date();
+    const expiryDate = new Date(reservation.expiresAt);
+    if (now > expiryDate) return false;
+
+    return true;
   };
 
   if (loading) {
@@ -307,6 +366,24 @@ const MatchDetail = () => {
               </div>
             </div>
           </div>
+
+          {reservation && (
+            <div className="mt-4 pt-4 border-t border-gray-700">
+              <h3 className="text-lg font-semibold text-white mb-2">
+                Rezervasiya Məlumatları
+              </h3>
+              <p className="text-gray-300">
+                <span className="text-gray-400">Ödəniş Statusu:</span>{" "}
+                {reservation.paid ? "Ödənilib" : "Ödənilməyib"}
+              </p>
+              {!reservation.paid && (
+                <p className="text-gray-300">
+                  <span className="text-gray-400">Son Ödəniş Tarixi:</span>{" "}
+                  {new Date(reservation.expiresAt).toLocaleDateString()}
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-4 justify-center">
@@ -340,6 +417,16 @@ const MatchDetail = () => {
             >
               <LogOut className="mr-2" size={18} />
               {isLeaving ? "Çıxılır..." : "Matchdan Çıx"}
+            </button>
+          )}
+
+          {canPayForMatch() && (
+            <button
+              onClick={handlePayment}
+              className="bg-green-500 hover:bg-green-600 text-white py-2 px-6 rounded-full flex items-center"
+            >
+              <CreditCard className="mr-2" size={18} />
+              Ödəniş Et
             </button>
           )}
 

@@ -6,8 +6,18 @@ import { CheckCircle, Calendar, DollarSign, ArrowLeft } from "lucide-react";
 const PaymentConfirmation = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { stadiumId, date, time, price, paymentMethod, teamData } =
-    location.state || {};
+  const {
+    stadiumId,
+    date,
+    time,
+    price,
+    paymentMethod,
+    teamData,
+    teamId,
+    matchId,
+    isTeamPayment,
+    isMatchPayment,
+  } = location.state || {};
 
   if (!stadiumId || !date || !time || !price) {
     return <div>Xəta baş verdi. Zəhmət olmasa yenidən cəhd edin.</div>;
@@ -22,6 +32,16 @@ const PaymentConfirmation = () => {
           reservationId: location.state?.id || Date.now(),
         },
       });
+    }
+  };
+
+  const handleReturnToSource = () => {
+    if (isTeamPayment && teamId) {
+      navigate(`/team/${teamId}`);
+    } else if (isMatchPayment && matchId) {
+      navigate(`/matches/${matchId}`);
+    } else {
+      navigate("/stadiums");
     }
   };
 
@@ -63,6 +83,14 @@ const PaymentConfirmation = () => {
             >
               <ArrowLeft className="mr-2" size={18} />
               Team yaratmağa geri dön
+            </button>
+          ) : isTeamPayment || isMatchPayment ? (
+            <button
+              onClick={handleReturnToSource}
+              className="w-full text-center bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition duration-300 flex items-center justify-center"
+            >
+              <ArrowLeft className="mr-2" size={18} />
+              {isTeamPayment ? "Komandaya Qayıt" : "Matça Qayıt"}
             </button>
           ) : null}
 

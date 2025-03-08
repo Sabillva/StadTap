@@ -4,12 +4,23 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { DollarSign, Calendar, ArrowLeft } from "lucide-react";
 import { useReservation } from "../context/ReservationContext";
+import { useTeams } from "../context/TeamsContext";
+import { useMatches } from "../context/MatchesContext";
 
 const PaymentProcess = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { reservation, teamData } = location.state || {};
+  const {
+    reservation,
+    teamData,
+    teamId,
+    matchId,
+    isTeamPayment,
+    isMatchPayment,
+  } = location.state || {};
   const { updateReservation } = useReservation();
+  const { teams } = useTeams();
+  const { matches } = useMatches();
 
   const [paymentMethod, setPaymentMethod] = useState("credit_card");
   const [cardNumber, setCardNumber] = useState("");
@@ -17,64 +28,107 @@ const PaymentProcess = () => {
   const [expiryDate, setExpiryDate] = useState("");
   const [cvv, setCvv] = useState("");
   const [error, setError] = useState("");
+  const [team, setTeam] = useState(null);
+  const [match, setMatch] = useState(null);
+  const [paymentSource, setPaymentSource] = useState("");
 
   useEffect(() => {
     if (!reservation) {
       navigate("/stadiums");
+      return;
     }
-  }, [reservation, navigate]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+    // Determine payment source and load related data
+    if (isTeamPayment && teamId) {
+      setPaymentSource("team");
+      const foundTeam = teams.find((t) => t.id === teamId);
+      setTeam(foundTeam);
+    } else if (isMatchPayment && matchId) {
+      setPaymentSource("match");
+      const foundMatch = matches.find((m) => m.id === matchId);
+      setMatch(foundMatch);
+    } else if (teamData) {
+      setPaymentSource("teamCreation");
+    }
+  }, [
+    reservation,
+    navigate,
+    teamId,
+    matchId,
+    isTeamPayment,
+    isMatchPayment,
+    teams,
+    matches,
+    teamData,
+  ]);
 
-    // Basic validation
+  const validateForm = () => {
     if (cardNumber.length < 16) {
       setError("Kart nömrəsi ən azı 16 rəqəm olmalıdır");
-      return;
+      return false;
     }
 
     if (!cardName.trim()) {
       setError("Kart sahibinin adını daxil edin");
-      return;
+      return false;
     }
 
     if (expiryDate.length < 5) {
       setError("Etibarlılıq müddəti düzgün deyil");
-      return;
+      return false;
     }
 
     if (cvv.length < 3) {
       setError("CVV kodu ən azı 3 rəqəm olmalıdır");
-      return;
+      return false;
     }
 
-    // Here you would typically process the payment
-    // For now, we'll just simulate a successful payment
-    const updatedReservation = { ...reservation, paid: true };
-    updateReservation(updatedReservation);
-
-    // If coming from team creation, navigate to payment confirmation with teamData
-    navigate("/payment-confirmation", {
-      state: {
-        ...updatedReservation,
-        paymentMethod,
-        teamData: teamData, // Pass teamData to payment confirmation
-      },
-    });
+    return true;
   };
 
-  const handleBackToCreateTeam = () => {
-    // Make sure we're passing all the team data back to CreateTeam
-    if (teamData) {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!validateForm()) return;
+
+    try {
+      // Update reservation as paid
+      const updatedReservation = { ...reservation, paid: true };
+      updateReservation(updatedReservation);
+
+      // Navigate to confirmation page with appropriate data
+      navigate("/payment-confirmation", {
+        state: {
+          ...updatedReservation,
+          paymentMethod,
+          teamData: teamData || null,
+          teamId: team?.id || null,
+          matchId: match?.id || null,
+          isTeamPayment,
+          isMatchPayment,
+        },
+      });
+    } catch (err) {
+      console.error("Error processing payment:", err);
+      setError("Ödəniş zamanı xəta baş verdi. Yenidən cəhd edin.");
+    }
+  };
+
+  const handleBack = () => {
+    if (paymentSource === "team" && team) {
+      navigate(`/team/${team.id}`);
+    } else if (paymentSource === "match" && match) {
+      navigate(`/matches/${match.id}`);
+    } else if (paymentSource === "teamCreation" && teamData) {
       navigate("/create-team", {
         state: {
           ...teamData,
           isReserved: true,
-          reservationId: reservation.id,
         },
       });
     } else {
-      navigate("/create-team");
+      navigate("/stadiums");
     }
   };
 
@@ -122,15 +176,31 @@ const PaymentProcess = () => {
               <span className="text-xl font-bold">{reservation.price} AZN</span>
             </div>
 
-            {teamData && (
-              <button
-                onClick={handleBackToCreateTeam}
-                className="mt-4 flex items-center bg-gray-200 text-gray-800 py-2 px-4 rounded hover:bg-gray-300 transition duration-300"
-              >
-                <ArrowLeft className="mr-2" size={16} />
-                Team yaratmağa geri dön
-              </button>
+            {/* Display context-specific information */}
+            {team && (
+              <div className="mb-4 pt-2 border-t border-gray-200">
+                <p className="font-medium">Komanda: {team.name}</p>
+              </div>
             )}
+
+            {match && (
+              <div className="mb-4 pt-2 border-t border-gray-200">
+                <p className="font-medium">
+                  Matç: {match.team1.name} vs{" "}
+                  {match.team2 ? match.team2.name : "Gözlənilir"}
+                </p>
+              </div>
+            )}
+
+            <button
+              onClick={handleBack}
+              className="mt-4 flex items-center bg-gray-200 text-gray-800 py-2 px-4 rounded hover:bg-gray-300 transition duration-300"
+            >
+              <ArrowLeft className="mr-2" size={16} />
+              {paymentSource === "teamCreation"
+                ? "Team yaratmağa geri dön"
+                : "Geri Qayıt"}
+            </button>
           </div>
         </div>
         <div>

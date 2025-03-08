@@ -160,6 +160,7 @@ const ReservationProcess = () => {
               playTime: selectedTime,
               stadiumId: stadium.id,
             },
+            paymentSource: "teamCreation",
           },
         });
       } else {

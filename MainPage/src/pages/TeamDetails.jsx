@@ -1,7 +1,9 @@
 "use client";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTeams } from "../context/TeamsContext";
+import { useReservation } from "../context/ReservationContext";
 import { useEffect, useState } from "react";
+import { CreditCard } from "lucide-react";
 
 const TeamDetails = () => {
   const { id } = useParams();
@@ -15,15 +17,28 @@ const TeamDetails = () => {
     setTeamReady,
     removeTeam,
   } = useTeams();
+  const { reservations } = useReservation();
   const [currentUser, setCurrentUser] = useState(null);
   const [team, setTeam] = useState(null);
+  const [reservation, setReservation] = useState(null);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("currentUser"));
     setCurrentUser(user);
     const foundTeam = teams.find((t) => t.id === Number(id));
     setTeam(foundTeam);
-  }, [id, teams]);
+
+    // Find reservation for this team's stadium, date and time
+    if (foundTeam && reservations) {
+      const teamReservation = reservations.find(
+        (r) =>
+          r.stadiumId === foundTeam.stadiumId &&
+          r.date === foundTeam.playDate &&
+          r.time === foundTeam.playTime
+      );
+      setReservation(teamReservation);
+    }
+  }, [id, teams, reservations]);
 
   if (!team) {
     return <div>Komanda tapılmadı</div>;
@@ -84,11 +99,43 @@ const TeamDetails = () => {
     }
   };
 
+  const canMakePayment = () => {
+    if (!isCreator || !reservation) return false;
+
+    // Team must not be set to join matches
+    if (team.joinMatch) return false;
+
+    // Team must be ready
+    if (!team.isReady) return false;
+
+    // Team must be full
+    if (team.members.length !== team.playerCount) return false;
+
+    // Reservation must not be paid yet
+    if (reservation.paid) return false;
+
+    // Check if reservation is still valid (not expired)
+    const now = new Date();
+    const expiryDate = new Date(reservation.expiresAt);
+    if (now > expiryDate) return false;
+
+    return true;
+  };
+
   const handlePayment = () => {
-    if (isCreator && team.isReady) {
-      navigate("/payment-process", { state: { teamId: team.id } });
+    if (reservation) {
+      navigate("/payment-process", {
+        state: {
+          reservation,
+          teamId: team.id,
+          isTeamPayment: true,
+          paymentSource: "team",
+        },
+      });
     }
   };
+
+  // Check if team creator can make payment
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -103,6 +150,23 @@ const TeamDetails = () => {
         </p>
         <p>Matça qoşulacaq: {team.joinMatch ? "Bəli" : "Xeyr"}</p>
         <p>Hazırdır: {team.isReady ? "Bəli" : "Xeyr"}</p>
+
+        {reservation && (
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <h3 className="text-lg font-semibold mb-2">
+              Rezervasiya Məlumatları
+            </h3>
+            <p>
+              Ödəniş Statusu: {reservation.paid ? "Ödənilib" : "Ödənilməyib"}
+            </p>
+            {!reservation.paid && (
+              <p>
+                Son Ödəniş Tarixi:{" "}
+                {new Date(reservation.expiresAt).toLocaleDateString()}
+              </p>
+            )}
+          </div>
+        )}
 
         <h2 className="text-xl font-semibold mt-4 mb-2">Komanda üzvləri:</h2>
         <ul>
@@ -140,7 +204,6 @@ const TeamDetails = () => {
             </li>
           ))}
         </ul>
-
         {isCreator && (
           <div className="mt-4">
             <label className="block text-sm font-medium mb-1">
@@ -157,43 +220,46 @@ const TeamDetails = () => {
           </div>
         )}
 
-        {isCreator &&
-          !team.isReady &&
-          team.members.length === team.playerCount && (
+        <div className="mt-4 flex flex-wrap gap-3">
+          {isCreator &&
+            !team.isReady &&
+            team.members.length === team.playerCount && (
+              <button
+                onClick={handleSetReady}
+                className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition duration-300"
+              >
+                Komandanı Hazır Et
+              </button>
+            )}
+
+          {isMember && !isCreator && (
             <button
-              onClick={handleSetReady}
-              className="mt-4 bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition duration-300"
+              onClick={handleLeaveTeam}
+              className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition duration-300"
             >
-              Komandanı Hazır Et
+              Komandadan ayrıl
             </button>
           )}
 
-        {isMember && !isCreator && (
-          <button
-            onClick={handleLeaveTeam}
-            className="mt-4 bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition duration-300"
-          >
-            Komandadan ayrıl
-          </button>
-        )}
+          {isCreator && (
+            <button
+              onClick={handleDeleteTeam}
+              className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition duration-300"
+            >
+              Komandanı Sil
+            </button>
+          )}
 
-        {isCreator && (
-          <button
-            onClick={handleDeleteTeam}
-            className="mt-4 bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition duration-300"
-          >
-            Komandanı Sil
-          </button>
-        )}
-
-        {isCreator && team.isReady && (
-          <button
-            onClick={handlePayment}
-            className="mt-4 bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition duration-300"
-          >
-            Ödəniş Et
-          </button>
-        )}
+          {canMakePayment() && (
+            <button
+              onClick={handlePayment}
+              className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition duration-300 flex items-center"
+            >
+              <CreditCard className="mr-2" size={18} />
+              Ödəniş Et
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
