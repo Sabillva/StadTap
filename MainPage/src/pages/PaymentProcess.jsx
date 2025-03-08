@@ -86,6 +86,15 @@ const PaymentProcess = () => {
     return true;
   };
 
+  // Format expiration date and time for display
+  const formatExpirationDateTime = (dateTimeString) => {
+    const date = new Date(dateTimeString);
+    return `${date.toLocaleDateString()} ${date.getHours()}:${date
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setError("");
@@ -175,6 +184,13 @@ const PaymentProcess = () => {
               <DollarSign className="mr-2" size={18} />
               <span className="text-xl font-bold">{reservation.price} AZN</span>
             </div>
+
+            {reservation && !reservation.paid && (
+              <div className="mb-2">
+                <span className="text-gray-600">Son Ödəniş Tarixi:</span>{" "}
+                {formatExpirationDateTime(reservation.expiresAt)}
+              </div>
+            )}
 
             {/* Display context-specific information */}
             {team && (

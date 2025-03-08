@@ -121,6 +121,21 @@ const ReservationProcess = () => {
     }
   };
 
+  // Helper function to create expiration date (same as the reserved date and time)
+  const createExpirationDate = (date, timeString) => {
+    // Parse the date
+    const reservationDate = new Date(date);
+
+    // Parse the time (format: "10:00-11:00")
+    const startTime = timeString.split("-")[0].trim();
+    const [hours, minutes] = startTime.split(":").map(Number);
+
+    // Set hours and minutes
+    reservationDate.setHours(hours, minutes, 0, 0);
+
+    return reservationDate;
+  };
+
   const handleReservation = () => {
     // Clear previous errors and success message
     setError("");
@@ -140,6 +155,16 @@ const ReservationProcess = () => {
     }
 
     try {
+      // Create expiration date (same as the reserved date and time)
+      const expirationDate = createExpirationDate(selectedDate, selectedTime);
+
+      // Check if the reservation date is in the past
+      const now = new Date();
+      if (expirationDate <= now) {
+        setError("Keçmiş tarix və saat üçün rezervasiya edilə bilməz");
+        return;
+      }
+
       const newReservation = {
         id: Date.now(),
         stadiumId: stadium.id,
@@ -148,9 +173,7 @@ const ReservationProcess = () => {
         price: price,
         userId: currentUser.id,
         paid: false,
-        expiresAt: new Date(
-          selectedDate.getTime() + 24 * 60 * 60 * 1000
-        ).toISOString(), // 24 hours from now
+        expiresAt: expirationDate.toISOString(),
       };
 
       addReservation(newReservation);
@@ -304,6 +327,14 @@ const ReservationProcess = () => {
                 <DollarSign className="mr-2" size={18} />
                 <span className="text-xl font-bold">{price} AZN</span>
               </div>
+              {selectedDate && selectedTime && (
+                <div className="mb-4 text-sm text-gray-600">
+                  <p>
+                    Son ödəniş tarixi: {selectedDate.toLocaleDateString()}{" "}
+                    {selectedTime.split("-")[0].trim()}
+                  </p>
+                </div>
+              )}
               <div className="flex flex-col space-y-2">
                 <button
                   onClick={handleReservation}
