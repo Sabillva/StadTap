@@ -1,237 +1,252 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useMatches } from "../context/MatchesContext";
-import { useTeams } from "../context/TeamsContext";
-import {
-  Loader,
-  Swords,
-  Calendar,
-  Clock,
-  MapPin,
-  Users,
-  UserPlus,
-} from "lucide-react";
+import { useState, useEffect, useContext } from "react";
+import { Link } from "react-router-dom";
+import { AuthContext } from "../App";
 
 const Matches = () => {
-  const navigate = useNavigate();
-  const { matches } = useMatches() || { matches: [] }; // Add fallback value
-  const { teams } = useTeams();
+  const { user } = useContext(AuthContext);
+  const [matches, setMatches] = useState([]);
+  const [userMatches, setUserMatches] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [userTeam, setUserTeam] = useState(null);
-  const [filteredMatches, setFilteredMatches] = useState([]);
-  const [filter, setFilter] = useState("all");
-
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  const [activeTab, setActiveTab] = useState("all");
+  const [userTeams, setUserTeams] = useState([]);
 
   useEffect(() => {
-    if (!currentUser) {
-      navigate("/login");
-      return;
-    }
+    // In a real app, this would be an API call
+    // For demo purposes, we'll use localStorage
+    const storedMatches = localStorage.getItem("matches");
+    const allMatches = storedMatches ? JSON.parse(storedMatches) : [];
 
-    // Find user's team
-    const team = teams.find(
-      (t) =>
-        t.members && t.members.some((member) => member.id === currentUser.id)
+    // Sort matches by date (upcoming first)
+    allMatches.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // Get user's teams
+    const storedTeams = localStorage.getItem("teams");
+    const teams = storedTeams ? JSON.parse(storedTeams) : [];
+    const myTeams = teams.filter((team) =>
+      team.members.some((member) => member.id === user.id)
     );
-    setUserTeam(team);
+    setUserTeams(myTeams);
 
-    // Set loading to false
-    setLoading(false);
-  }, [currentUser, navigate, teams]);
-
-  useEffect(() => {
-    if (!matches) {
-      setFilteredMatches([]);
-      return;
-    }
-
-    if (filter === "all") {
-      setFilteredMatches(matches);
-    } else if (filter === "pending") {
-      setFilteredMatches(matches.filter((match) => match.status === "pending"));
-    } else if (filter === "confirmed") {
-      setFilteredMatches(
-        matches.filter((match) => match.status === "confirmed")
-      );
-    } else if (filter === "myTeam" && userTeam) {
-      setFilteredMatches(
-        matches.filter(
-          (match) =>
-            match.team1?.id === userTeam.id || match.team2?.id === userTeam.id
+    // Filter matches where user's team is participating
+    const myMatches = allMatches.filter(
+      (match) =>
+        match.homeTeamId &&
+        myTeams.some(
+          (team) => team.id === match.homeTeamId || team.id === match.awayTeamId
         )
-      );
-    }
-  }, [filter, matches, userTeam]);
+    );
 
-  const handleMatchClick = (matchId) => {
-    navigate(`/matches/${matchId}`); // Check if this path matches your route in App.jsx
+    setMatches(allMatches);
+    setUserMatches(myMatches);
+    setLoading(false);
+  }, [user.id]);
+
+  const getTeamName = (teamId) => {
+    const team = userTeams.find((t) => t.id === teamId);
+    return team ? team.name : "Unknown Team";
   };
 
-  if (loading) {
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
     return (
-      <div className="container mx-auto px-4 py-8 text-center text-white">
-        <Loader className="w-8 h-8 animate-spin mx-auto" />
-        <p className="mt-2">Yüklənir...</p>
-      </div>
+      date.toLocaleDateString() +
+      " at " +
+      date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     );
-  }
+  };
+
+  const isMatchPast = (dateString) => {
+    const matchDate = new Date(dateString);
+    const now = new Date();
+    return matchDate < now;
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-white">Matçlar</h1>
-        <button
-          onClick={() => navigate("/create-matches")}
-          className="bg-gradient-to-br from-green-400 to-green-600 text-gray-900 py-2 px-4 rounded-full font-medium shadow-lg transition-all duration-300 hover:bg-gradient-to-l hover:scale-105 hover:shadow-2xl flex items-center"
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-white">Matches</h1>
+        <Link
+          to="/matches/create"
+          className="px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
         >
-          <Swords className="mr-2" size={18} />
-          Matç Yarat
-        </button>
+          Create Match
+        </Link>
       </div>
 
-      <div className="mb-6 flex flex-wrap gap-2">
-        <button
-          onClick={() => setFilter("all")}
-          className={`px-4 py-2 rounded-full ${
-            filter === "all"
-              ? "bg-green-500 text-white"
-              : "bg-gray-700 text-gray-300"
-          }`}
-        >
-          Bütün Matçlar
-        </button>
-        <button
-          onClick={() => setFilter("pending")}
-          className={`px-4 py-2 rounded-full ${
-            filter === "pending"
-              ? "bg-green-500 text-white"
-              : "bg-gray-700 text-gray-300"
-          }`}
-        >
-          Gözləyən Matçlar
-        </button>
-        <button
-          onClick={() => setFilter("confirmed")}
-          className={`px-4 py-2 rounded-full ${
-            filter === "confirmed"
-              ? "bg-green-500 text-white"
-              : "bg-gray-700 text-gray-300"
-          }`}
-        >
-          Təsdiqlənmiş Matçlar
-        </button>
-        {userTeam && (
+      <div className="mb-6">
+        <div className="flex border-b border-gray-700">
           <button
-            onClick={() => setFilter("myTeam")}
-            className={`px-4 py-2 rounded-full ${
-              filter === "myTeam"
-                ? "bg-green-500 text-white"
-                : "bg-gray-700 text-gray-300"
+            className={`px-4 py-2 font-medium ${
+              activeTab === "all"
+                ? "text-green-400 border-b-2 border-green-400"
+                : "text-gray-400 hover:text-gray-300"
             }`}
+            onClick={() => setActiveTab("all")}
           >
-            Mənim Matçlarım
+            All Matches
           </button>
-        )}
+          <button
+            className={`px-4 py-2 font-medium ${
+              activeTab === "my"
+                ? "text-green-400 border-b-2 border-green-400"
+                : "text-gray-400 hover:text-gray-300"
+            }`}
+            onClick={() => setActiveTab("my")}
+          >
+            My Team's Matches
+          </button>
+        </div>
       </div>
 
-      {filteredMatches && filteredMatches.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredMatches.map((match) => (
+      {loading ? (
+        <div className="text-center py-8 bg-[#2a2a2a] border-2 border-white/20 rounded-xl shadow-lg">
+          <svg
+            className="animate-spin h-10 w-10 text-green-400 mx-auto"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+          <p className="mt-4 text-gray-300">Loading matches...</p>
+        </div>
+      ) : activeTab === "all" && matches.length === 0 ? (
+        <div className="text-center py-8 bg-[#2a2a2a] border-2 border-white/20 rounded-xl shadow-lg">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-16 w-16 text-gray-400 mx-auto mb-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <h2 className="text-2xl font-semibold mb-2 text-white">
+            No matches found
+          </h2>
+          <p className="text-gray-300 mb-6">Be the first to create a match!</p>
+          <Link
+            to="/matches/create"
+            className="inline-block bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 transition-colors"
+          >
+            Create a Match
+          </Link>
+        </div>
+      ) : activeTab === "my" && userMatches.length === 0 ? (
+        <div className="text-center py-8 bg-[#2a2a2a] border-2 border-white/20 rounded-xl shadow-lg">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-16 w-16 text-gray-400 mx-auto mb-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <h2 className="text-2xl font-semibold mb-2 text-white">
+            Your teams don't have any matches
+          </h2>
+          <p className="text-gray-300 mb-6">
+            Create a match or join a team to see matches here!
+          </p>
+          <Link
+            to="/matches/create"
+            className="inline-block bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 transition-colors"
+          >
+            Create a Match
+          </Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {(activeTab === "all" ? matches : userMatches).map((match) => (
             <div
               key={match.id}
-              onClick={() => handleMatchClick(match.id)}
-              className="bg-[#222] border-2 border-white/20 rounded-xl shadow-lg p-5 cursor-pointer hover:bg-[#2a2a2a] transition-all duration-300 hover:scale-105"
+              className="bg-[#2a2a2a] border-2 border-white/20 rounded-xl shadow-lg overflow-hidden"
             >
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-white">
-                  {match.team1?.name}
-                </h3>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    match.status === "pending"
-                      ? "bg-yellow-500/20 text-yellow-500"
-                      : "bg-green-500/20 text-green-500"
-                  }`}
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <h2 className="text-xl font-semibold text-white">
+                    {match.title || "Football Match"}
+                  </h2>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      isMatchPast(match.date)
+                        ? "bg-gray-500/20 text-gray-400"
+                        : "bg-green-500/20 text-green-400"
+                    }`}
+                  >
+                    {isMatchPast(match.date) ? "Completed" : "Upcoming"}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-center flex-1">
+                    <div className="text-lg font-semibold text-white">
+                      {match.homeTeamName || getTeamName(match.homeTeamId)}
+                    </div>
+                    <div className="text-sm text-gray-400">Home</div>
+                  </div>
+                  <div className="text-center px-4">
+                    <div className="text-2xl font-bold text-white">VS</div>
+                  </div>
+                  <div className="text-center flex-1">
+                    <div className="text-lg font-semibold text-white">
+                      {match.awayTeamName || getTeamName(match.awayTeamId)}
+                    </div>
+                    <div className="text-sm text-gray-400">Away</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <div className="text-sm text-gray-400 mb-1">
+                      Date & Time:
+                    </div>
+                    <div className="font-medium text-gray-300">
+                      {formatDate(match.date)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-400 mb-1">Stadium:</div>
+                    <div className="font-medium text-gray-300">
+                      {match.stadiumName || "TBD"}
+                    </div>
+                  </div>
+                </div>
+
+                <Link
+                  to={`/matches/${match.id}`}
+                  className="inline-block bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 transition-colors"
                 >
-                  {match.status === "pending" ? "Gözləyir" : "Təsdiqlənib"}
-                </span>
-              </div>
-
-              {match.team2 && (
-                <div className="mb-4">
-                  <h4 className="text-lg font-bold text-white">
-                    VS {match.team2.name}
-                  </h4>
-                </div>
-              )}
-              <div className="space-y-2 text-gray-300">
-                <div className="flex items-center">
-                  <Calendar className="w-4 h-4 mr-2 text-green-400" />
-                  <span>{match.date}</span>
-                </div>
-                <div className="flex items-center">
-                  <Clock className="w-4 h-4 mr-2 text-green-400" />
-                  <span>{match.time}</span>
-                </div>
-                <div className="flex items-center">
-                  <MapPin className="w-4 h-4 mr-2 text-green-400" />
-                  <span>{match.stadiumName}</span>
-                </div>
-                <div className="flex items-center">
-                  <Users className="w-4 h-4 mr-2 text-green-400" />
-                  <span>{match.team1?.playerCount} nəfərlik</span>
-                </div>
-              </div>
-
-              <div className="mt-4 flex justify-between">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation(); // This prevents the parent onClick from firing
-                    handleMatchClick(match.id);
-                  }}
-                  className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-full text-sm"
-                >
-                  Detallara Bax
-                </button>
-
-                {match.status === "pending" &&
-                  !match.team2 &&
-                  userTeam &&
-                  userTeam.creator &&
-                  userTeam.creator.id === currentUser.id &&
-                  match.team1?.id !== userTeam.id &&
-                  match.team1?.playerCount === userTeam.playerCount &&
-                  match.stadiumId === userTeam.stadiumId &&
-                  match.date === userTeam.playDate &&
-                  match.time === userTeam.playTime &&
-                  userTeam.joinMatch && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/matches/${match.id}`);
-                      }}
-                      className="bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded-full text-sm flex items-center"
-                    >
-                      <UserPlus className="mr-1" size={14} />
-                      Qoşul
-                    </button>
-                  )}
+                  View Details
+                </Link>
               </div>
             </div>
           ))}
-        </div>
-      ) : (
-        <div className="text-center py-10">
-          <p className="text-gray-400 text-lg">Matç tapılmadı</p>
-          <button
-            onClick={() => navigate("/create-matches")}
-            className="mt-4 bg-gradient-to-br from-green-400 to-green-600 text-gray-900 py-2 px-6 rounded-full font-medium shadow-lg transition-all duration-300 hover:bg-gradient-to-l hover:scale-105 hover:shadow-2xl"
-          >
-            Matç Yarat
-          </button>
         </div>
       )}
     </div>

@@ -1,15 +1,16 @@
 "use client";
 
 import { useState, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../App";
 
-const CreateMatch = () => {
-  const { user } = useContext(AuthContext);
+const EditMatch = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
 
   const [formData, setFormData] = useState({
-    title: "Friendly Match",
+    title: "",
     date: "",
     time: "",
     stadiumName: "",
@@ -22,6 +23,7 @@ const CreateMatch = () => {
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [userTeams, setUserTeams] = useState([]);
 
   useEffect(() => {
@@ -35,18 +37,41 @@ const CreateMatch = () => {
     );
     setUserTeams(myTeams);
 
-    // Set default date to tomorrow
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const dateString = tomorrow.toISOString().split("T")[0];
-    const timeString = "18:00";
+    // Get match data
+    const storedMatches = localStorage.getItem("matches");
+    const matches = storedMatches ? JSON.parse(storedMatches) : [];
+    const match = matches.find((m) => m.id === id);
+
+    if (!match) {
+      navigate("/matches");
+      return;
+    }
+
+    // Check if user is the creator
+    if (match.creatorId !== user.id) {
+      navigate(`/matches/${id}`);
+      return;
+    }
+
+    // Format date and time
+    const matchDate = new Date(match.date);
+    const dateString = matchDate.toISOString().split("T")[0];
+    const timeString = matchDate.toTimeString().slice(0, 5);
 
     setFormData({
-      ...formData,
+      title: match.title || "Friendly Match",
       date: dateString,
       time: timeString,
+      stadiumName: match.stadiumName || "",
+      city: match.city || "",
+      homeTeamId: match.homeTeamId || "",
+      awayTeamName: match.awayTeamName || "",
+      contactPhone: match.contactPhone || "",
+      notes: match.notes || "",
     });
-  }, [user.id]);
+
+    setLoading(false);
+  }, [id, navigate, user.id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -105,43 +130,69 @@ const CreateMatch = () => {
     // Combine date and time
     const dateTime = new Date(`${formData.date}T${formData.time}`);
 
-    // Create new match
-    const newMatch = {
-      id: Date.now().toString(),
-      title: formData.title,
-      date: dateTime.toISOString(),
-      stadiumName: formData.stadiumName,
-      city: formData.city,
-      homeTeamId: formData.homeTeamId,
-      homeTeamName: userTeams.find((team) => team.id === formData.homeTeamId)
-        ?.name,
-      awayTeamName: formData.awayTeamName,
-      contactPhone: formData.contactPhone,
-      notes: formData.notes,
-      creatorId: user.id,
-      creatorName: `${user.firstName} ${user.lastName}`,
-      createdAt: new Date().toISOString(),
-    };
-
-    // Save to localStorage
+    // Update match
     setTimeout(() => {
       const storedMatches = localStorage.getItem("matches");
-      const matches = storedMatches ? JSON.parse(storedMatches) : [];
+      const matches = JSON.parse(storedMatches);
+      const updatedMatches = matches.map((match) => {
+        if (match.id === id) {
+          return {
+            ...match,
+            title: formData.title,
+            date: dateTime.toISOString(),
+            stadiumName: formData.stadiumName,
+            city: formData.city,
+            homeTeamId: formData.homeTeamId,
+            homeTeamName: userTeams.find(
+              (team) => team.id === formData.homeTeamId
+            )?.name,
+            awayTeamName: formData.awayTeamName,
+            contactPhone: formData.contactPhone,
+            notes: formData.notes,
+          };
+        }
+        return match;
+      });
 
-      matches.push(newMatch);
-      localStorage.setItem("matches", JSON.stringify(matches));
+      localStorage.setItem("matches", JSON.stringify(updatedMatches));
 
       setIsSubmitting(false);
-      navigate(`/matches/${newMatch.id}`);
+      navigate(`/matches/${id}`);
     }, 1000);
   };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+        <svg
+          className="animate-spin h-10 w-10 text-green-400 mx-auto"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          ></circle>
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+        <p className="mt-4 text-gray-300">Loading match details...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto bg-[#2a2a2a] border-2 border-white/20 rounded-xl shadow-lg p-6">
-        <h1 className="text-2xl font-bold text-white mb-6">
-          Create a New Match
-        </h1>
+        <h1 className="text-2xl font-bold text-white mb-6">Edit Match</h1>
 
         <form onSubmit={handleSubmit}>
           <div className="space-y-6">
@@ -237,11 +288,6 @@ const CreateMatch = () => {
               </select>
               {errors.homeTeamId && (
                 <p className="mt-1 text-sm text-red-400">{errors.homeTeamId}</p>
-              )}
-              {userTeams.length === 0 && (
-                <p className="mt-1 text-sm text-yellow-400">
-                  You need to create or join a team first
-                </p>
               )}
             </div>
 
@@ -362,7 +408,7 @@ const CreateMatch = () => {
             <div className="flex justify-between pt-4">
               <button
                 type="button"
-                onClick={() => navigate("/matches")}
+                onClick={() => navigate(`/matches/${id}`)}
                 className="px-6 py-2 bg-gray-600 text-white rounded-full hover:bg-gray-700"
               >
                 Cancel
@@ -370,11 +416,9 @@ const CreateMatch = () => {
 
               <button
                 type="submit"
-                disabled={isSubmitting || userTeams.length === 0}
+                disabled={isSubmitting}
                 className={`px-6 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 flex items-center ${
-                  isSubmitting || userTeams.length === 0
-                    ? "opacity-70 cursor-not-allowed"
-                    : ""
+                  isSubmitting ? "opacity-70 cursor-not-allowed" : ""
                 }`}
               >
                 {isSubmitting ? (
@@ -399,10 +443,10 @@ const CreateMatch = () => {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
                     </svg>
-                    Creating...
+                    Updating...
                   </>
                 ) : (
-                  "Create Match"
+                  "Update Match"
                 )}
               </button>
             </div>
@@ -413,4 +457,4 @@ const CreateMatch = () => {
   );
 };
 
-export default CreateMatch;
+export default EditMatch;

@@ -1,41 +1,31 @@
 {
-  "name": "mainpage",
-  "private": true,
+  "name": "football-stadium-reservation",
   "version": "0.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.0.9",
-    "date-fns": "^4.1.0",
-    "emoji-picker-react": "^4.12.0",
-    "express": "^4.21.2",
-    "http": "^0.0.1-security",
-    "i18next": "^24.2.2",
-    "lucide-react": "^0.476.0",
-    "react": "^19.0.0",
-    "react-datepicker": "^8.1.0",
-    "react-dom": "^19.0.0",
-    "react-i18next": "^15.4.1",
-    "react-router-dom": "^7.2.0",
-    "socket.io": "^4.8.1",
-    "socket.io-client": "^4.8.1",
-    "tailwindcss": "^4.0.9"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.3"
   },
   "devDependencies": {
-    "@eslint/js": "^9.21.0",
-    "@types/react": "^19.0.10",
-    "@types/react-dom": "^19.0.4",
+    "@tailwindcss/postcss": "^4.0.13",
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
     "@vitejs/plugin-react": "^4.3.4",
-    "eslint": "^9.21.0",
-    "eslint-plugin-react": "^7.37.4",
-    "eslint-plugin-react-hooks": "^5.0.0",
-    "eslint-plugin-react-refresh": "^0.4.19",
-    "globals": "^15.15.0",
-    "vite": "^6.2.0"
+    "autoprefixer": "^10.4.21",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^4.0.12",
+    "vite": "^5.1.6"
   }
 }

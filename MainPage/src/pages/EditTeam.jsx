@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useContext } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../App";
 
-const CreateTeam = () => {
-  const { user } = useContext(AuthContext);
+const EditTeam = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
 
   const [formData, setFormData] = useState({
-    name: `${user.firstName}'s Team`,
+    name: "",
     description: "",
     maxMembers: 5,
     phoneNumber: "",
@@ -17,6 +18,35 @@ const CreateTeam = () => {
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // In a real app, this would be an API call
+    // For demo purposes, we'll use localStorage
+    const storedTeams = localStorage.getItem("teams");
+    const teams = storedTeams ? JSON.parse(storedTeams) : [];
+    const team = teams.find((t) => t.id === id);
+
+    if (!team) {
+      navigate("/teams");
+      return;
+    }
+
+    // Check if user is the creator
+    if (team.creatorId !== user.id) {
+      navigate(`/teams/${id}`);
+      return;
+    }
+
+    setFormData({
+      name: team.name,
+      description: team.description,
+      maxMembers: team.maxMembers,
+      phoneNumber: team.phoneNumber,
+    });
+
+    setLoading(false);
+  }, [id, navigate, user.id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -64,46 +94,62 @@ const CreateTeam = () => {
 
     setIsSubmitting(true);
 
-    // Create new team
-    const newTeam = {
-      id: Date.now().toString(),
-      name: formData.name,
-      creatorId: user.id,
-      creatorName: `${user.firstName} ${user.lastName}`,
-      description: formData.description,
-      memberCount: 1, // Creator is the first member
-      maxMembers: Number.parseInt(formData.maxMembers),
-      phoneNumber: formData.phoneNumber,
-      createdAt: new Date().toISOString(),
-      members: [
-        {
-          id: user.id,
-          username: user.username,
-          status: "accepted", // Creator is always accepted
-        },
-      ],
-      joinRequests: [],
-    };
-
-    // Save to localStorage
+    // Update team
     setTimeout(() => {
       const storedTeams = localStorage.getItem("teams");
-      const teams = storedTeams ? JSON.parse(storedTeams) : [];
+      const teams = JSON.parse(storedTeams);
+      const updatedTeams = teams.map((team) => {
+        if (team.id === id) {
+          return {
+            ...team,
+            name: formData.name,
+            description: formData.description,
+            maxMembers: Number.parseInt(formData.maxMembers),
+            phoneNumber: formData.phoneNumber,
+          };
+        }
+        return team;
+      });
 
-      teams.push(newTeam);
-      localStorage.setItem("teams", JSON.stringify(teams));
+      localStorage.setItem("teams", JSON.stringify(updatedTeams));
 
       setIsSubmitting(false);
-      navigate(`/teams/${newTeam.id}`);
+      navigate(`/teams/${id}`);
     }, 1000);
   };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+        <svg
+          className="animate-spin h-10 w-10 text-green-400 mx-auto"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          ></circle>
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+        <p className="mt-4 text-gray-300">Loading team details...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto bg-[#2a2a2a] border-2 border-white/20 rounded-xl shadow-lg p-6">
-        <h1 className="text-2xl font-bold text-white mb-6">
-          Create a New Team
-        </h1>
+        <h1 className="text-2xl font-bold text-white mb-6">Edit Team</h1>
 
         <form onSubmit={handleSubmit}>
           <div className="space-y-6">
@@ -229,7 +275,7 @@ const CreateTeam = () => {
             <div className="flex justify-between pt-4">
               <button
                 type="button"
-                onClick={() => navigate("/teams")}
+                onClick={() => navigate(`/teams/${id}`)}
                 className="px-6 py-2 bg-gray-600 text-white rounded-full hover:bg-gray-700"
               >
                 Cancel
@@ -264,10 +310,10 @@ const CreateTeam = () => {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
                     </svg>
-                    Creating...
+                    Updating...
                   </>
                 ) : (
-                  "Create Team"
+                  "Update Team"
                 )}
               </button>
             </div>
@@ -278,4 +324,4 @@ const CreateTeam = () => {
   );
 };
 
-export default CreateTeam;
+export default EditTeam;
