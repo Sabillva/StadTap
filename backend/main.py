@@ -2,12 +2,15 @@ import os
 
 import stripe
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from flask.cli import load_dotenv
 
+from backend.auth.dependencies import get_current_user
+from backend.models.models import AppUser
 from controllers.auth_controller import router as auth_router
 from controllers.reservation_controller import router as reservation_router
+from controllers.payment_controller import router as payment_router
 from backend.database import Base_Model, engine
 
 Base_Model.metadata.create_all(bind=engine)
@@ -28,9 +31,11 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(reservation_router)
+app.include_router(payment_router)
+
 
 @app.get("/")
-async def root():
+async def root(current_user: AppUser = Depends(get_current_user)):
     return {"message": "Hello, world!"}
 
 

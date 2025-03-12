@@ -96,5 +96,7 @@ class OwnerApplicationResponse(BaseModel):
 
 # --- Payment Schema ---
 class PaymentIntentRequest(BaseModel):
-    stadium_id: int  # Add stadium_id to the request
+    stadium_id: int
     currency: str = "usd"
+    time_slot: str  # Add time_slot (required for reservation)
+    date: str       # Add date (required for reservation)

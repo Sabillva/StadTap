@@ -94,7 +94,6 @@ class Reservation(Base_Model):
     stadium_id = Column(Integer, ForeignKey("stadiums.id"), nullable=False)
     date = Column(Date, nullable=False)
     time_slot = Column(String(20), nullable=False)
-    status = Column(Enum("pending", "accepted", "rejected", "canceled"), default="pending")
     payment_status = Column(Enum("pending", "successful", "rejected"), default="pending")
     payment_intent_id = Column(String(50), nullable=True)  # Add this field
 

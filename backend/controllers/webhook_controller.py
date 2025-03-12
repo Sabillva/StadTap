@@ -14,7 +14,6 @@ load_dotenv()
 
 router = APIRouter(prefix="/stripe", tags=["Stripe"])
 
-
 @router.post("/stripe-webhook")
 async def stripe_webhook(request: Request, stripe_signature: str = Header(None), db: Session = Depends(get_db)):
     payload = await request.body()
@@ -25,9 +24,9 @@ async def stripe_webhook(request: Request, stripe_signature: str = Header(None),
         event = stripe.Webhook.construct_event(
             payload, sig_header, os.getenv("stripe.webhook_key")
         )
-    except ValueError as e:
+    except ValueError:
         raise HTTPException(status_code=400, detail="Invalid payload")
-    except stripe.error.SignatureVerificationError as e:
+    except stripe.error.SignatureVerificationError:
         raise HTTPException(status_code=400, detail="Invalid signature")
 
     # Handle the event

@@ -1,21 +1,18 @@
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from backend.database import get_db
 from backend.models.models import Reservation, Stadium, AppUser
 
 
 class ReservationService:
     @staticmethod
     def get_available_time_slots(city: str, stadium_id: Optional[int] = None, date_option: str = "today",
-                                 time_slots: Optional[List[str]] = None, db: Session = Depends(get_db)):
-        """
-        Returns available time slots for a given city, stadium, and date.
-        If `time_slots` are provided, only checks those slots.
-        """
+                                 time_slots: Optional[List[str]] = None, db: Session = None):
+        if db is None:
+            raise ValueError("Database session is required")
+
         query = db.query(Stadium).filter(Stadium.location == city)
 
         if stadium_id:
@@ -60,7 +57,10 @@ class ReservationService:
 
     @staticmethod
     def create_reservation(user_id: int, stadium_id: int, time_slot: str, date: str, payment_intent_id: str,
-                           db: Session = Depends(get_db)):
+                           db: Session = None):
+        if db is None:
+            raise ValueError("Database session is required")
+
         # Check if the stadium exists
         stadium = db.query(Stadium).filter(Stadium.id == stadium_id).first()
         if not stadium:
@@ -86,9 +86,8 @@ class ReservationService:
             user_id=user_id,
             stadium_id=stadium_id,
             time_slot=time_slot,
-            date=date,
+            date=datetime.strptime(date, "%Y-%m-%d").date(),
             payment_intent_id=payment_intent_id,
-            status="pending",  # Reservation status is pending initially
             payment_status="pending"  # Payment status is also pending
         )
 
