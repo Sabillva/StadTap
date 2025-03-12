@@ -80,6 +80,7 @@ const Login = () => {
         email: user.email,
         username: user.username,
         userType: user.userType,
+        stadiumName: user.stadiumName, // Include stadiumName for stadium owners
       };
 
       // Store user in localStorage
@@ -165,7 +166,6 @@ const Login = () => {
                 <p className="mt-2 text-sm text-red-400">{errors.username}</p>
               )}
             </div>
-
             <div className="mb-4">
               <label
                 htmlFor="password"

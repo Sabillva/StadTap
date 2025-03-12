@@ -1,16 +1,38 @@
 "use client";
 
 import { useState, useEffect, useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../App";
 
 const Profile = () => {
-  const { user } = useContext(AuthContext);
+  const { user, setUser } = useContext(AuthContext);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [teams, setTeams] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [matches, setMatches] = useState([]);
+  const navigate = useNavigate();
+
+  // Add a state for the delete confirmation modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // Add a function to handle account deletion
+  const handleDeleteAccount = () => {
+    // Remove user from localStorage
+    const storedUsers = localStorage.getItem("users");
+    const users = storedUsers ? JSON.parse(storedUsers) : [];
+    const updatedUsers = users.filter((u) => u.id !== user.id);
+    localStorage.setItem("users", JSON.stringify(updatedUsers));
+
+    // Clear current user session
+    localStorage.removeItem("user");
+
+    // Log out the user
+    setUser(null);
+
+    // Redirect to login page
+    navigate("/login");
+  };
 
   useEffect(() => {
     // In a real app, this would be an API call
@@ -56,7 +78,7 @@ const Profile = () => {
     setMatches(userMatches);
 
     setLoading(false);
-  }, [user.id]);
+  }, [user.id, navigate, setUser]);
 
   if (loading) {
     return (
@@ -109,12 +131,20 @@ const Profile = () => {
                   </div>
                 </div>
               </div>
-              <Link
-                to="/profile/edit"
-                className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
-              >
-                Edit Profile
-              </Link>
+              <div className="flex flex-col space-y-2">
+                <Link
+                  to="/profile/edit"
+                  className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
+                >
+                  Edit Profile
+                </Link>
+                <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className="px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                >
+                  Delete Account
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -360,9 +390,16 @@ const Profile = () => {
                   Stadium Owner
                 </h2>
                 <div className="bg-[#2a2a2a] border-2 border-white/20 rounded-xl shadow-lg p-6">
+                  <p className="text-gray-300 mb-2">
+                    You are registered as the owner of{" "}
+                    <span className="font-semibold text-green-400">
+                      {user.stadiumName}
+                    </span>
+                    .
+                  </p>
                   <p className="text-gray-300 mb-4">
-                    You are registered as a stadium owner. Manage your stadium
-                    reservations and requests from the dashboard.
+                    Manage your stadium reservations and requests from the
+                    dashboard.
                   </p>
                   <Link
                     to="/dashboard"
@@ -376,6 +413,33 @@ const Profile = () => {
           </div>
         </div>
       </div>
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#2a2a2a] border-2 border-white/20 rounded-xl shadow-lg p-6 max-w-md w-full">
+            <h2 className="text-xl font-bold text-white mb-4">
+              Delete Account
+            </h2>
+            <p className="text-gray-300 mb-6">
+              Are you sure you want to delete your account? This action cannot
+              be undone and all your data will be permanently removed.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 bg-gray-600 text-white rounded-full hover:bg-gray-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                className="px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+              >
+                Delete Account
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -75,7 +75,16 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/signup/step2" element={<SignUpStep2 />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/payment/:reservationId" element={<Payment />} />
+
+        {/* Payment Route - Moved inside Protected Routes but outside MainLayout */}
+        <Route
+          path="/payment/:id"
+          element={
+            <ProtectedRoute>
+              <Payment />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Protected Routes */}
         <Route

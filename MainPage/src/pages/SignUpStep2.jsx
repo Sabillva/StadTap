@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import stadiumsData from "../utils/stadiumsData";
 
 const SignUpStep2 = () => {
   const navigate = useNavigate();
@@ -12,9 +13,11 @@ const SignUpStep2 = () => {
     userType: "",
     username: "",
     password: "",
+    stadiumName: "", // Added stadium name field
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [stadiums, setStadiums] = useState([]);
 
   useEffect(() => {
     // Get registration data from step 1
@@ -33,6 +36,9 @@ const SignUpStep2 = () => {
       email: data.email,
       userType: data.userType,
     });
+
+    // Load stadiums for dropdown
+    setStadiums(stadiumsData.map((stadium) => stadium.name));
   }, [navigate]);
 
   const validatePassword = (password) => {
@@ -66,6 +72,11 @@ const SignUpStep2 = () => {
         "Password must be at least 8 characters with at least one uppercase letter, one lowercase letter, and one number";
     }
 
+    // Validate stadium name if user is an owner
+    if (formData.userType === "owner" && !formData.stadiumName.trim()) {
+      newErrors.stadiumName = "Stadium name is required for stadium owners";
+    }
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -90,6 +101,20 @@ const SignUpStep2 = () => {
         return;
       }
 
+      // Check if stadium is already owned
+      if (formData.userType === "owner") {
+        const stadiumExists = users.some(
+          (user) =>
+            user.userType === "owner" &&
+            user.stadiumName === formData.stadiumName
+        );
+        if (stadiumExists) {
+          setErrors({ stadiumName: "This stadium already has an owner" });
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       // Add new user
       users.push({
         id: Date.now().toString(),
@@ -99,6 +124,8 @@ const SignUpStep2 = () => {
         username: formData.username,
         password: formData.password, // In a real app, this would be hashed
         userType: formData.userType,
+        stadiumName:
+          formData.userType === "owner" ? formData.stadiumName : null, // Save stadium name for owners
       });
 
       localStorage.setItem("users", JSON.stringify(users));
@@ -162,6 +189,40 @@ const SignUpStep2 = () => {
                 />
               </div>
             </div>
+
+            {/* Stadium Name field for stadium owners */}
+            {formData.userType === "owner" && (
+              <div className="mb-4">
+                <label
+                  htmlFor="stadiumName"
+                  className="block text-sm font-medium text-white mb-1"
+                >
+                  Stadium Name <span className="text-red-400">*</span>
+                </label>
+                <select
+                  id="stadiumName"
+                  name="stadiumName"
+                  value={formData.stadiumName}
+                  onChange={handleChange}
+                  required
+                  className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
+                    errors.stadiumName ? "border-red-500" : "border-gray-600"
+                  } bg-[#333] placeholder-gray-400 text-white rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm`}
+                >
+                  <option value="">Select your stadium</option>
+                  {stadiums.map((stadium, index) => (
+                    <option key={index} value={stadium}>
+                      {stadium}
+                    </option>
+                  ))}
+                </select>
+                {errors.stadiumName && (
+                  <p className="mt-2 text-sm text-red-400">
+                    {errors.stadiumName}
+                  </p>
+                )}
+              </div>
+            )}
 
             <div className="mb-4">
               <label

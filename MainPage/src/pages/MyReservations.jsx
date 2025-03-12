@@ -8,17 +8,60 @@ const MyReservations = () => {
   const { user } = useContext(AuthContext);
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [countdowns, setCountdowns] = useState({});
+
+  // Function to handle accepting a reservation and setting the expiry time
+  const updateReservationWithAcceptedTime = (reservation) => {
+    // If the reservation is accepted but doesn't have an acceptedAt timestamp
+    if (reservation.status === "accepted" && !reservation.acceptedAt) {
+      // Set the acceptedAt timestamp to now
+      reservation.acceptedAt = new Date().getTime();
+
+      // Update the reservation in localStorage
+      const allReservations = JSON.parse(
+        localStorage.getItem("reservations") || "[]"
+      );
+      const updatedReservations = allReservations.map((r) =>
+        r.id === reservation.id
+          ? { ...r, acceptedAt: reservation.acceptedAt }
+          : r
+      );
+      localStorage.setItem("reservations", JSON.stringify(updatedReservations));
+    }
+    return reservation;
+  };
+
+  // Calculate remaining time in seconds (1 hour from acceptance)
+  const calculateRemainingTime = (reservation) => {
+    if (!reservation.acceptedAt) return 0;
+
+    const expiryTime = reservation.acceptedAt + 60 * 60 * 1000; // 1 hour in milliseconds
+    const remainingMs = expiryTime - new Date().getTime();
+    return Math.max(0, Math.floor(remainingMs / 1000)); // Convert to seconds, minimum 0
+  };
+
+  // Format seconds to HH:MM:SS
+  const formatTime = (seconds) => {
+    if (seconds <= 0) return "00:00:00";
+
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    return [hours, minutes, secs].map((v) => (v < 10 ? "0" + v : v)).join(":");
+  };
 
   useEffect(() => {
     // In a real app, this would be an API call
     // For demo purposes, we'll use localStorage
-
     const allReservations = JSON.parse(
       localStorage.getItem("reservations") || "[]"
     );
-    const userReservations = allReservations.filter(
-      (r) => r.userId === user.id
-    );
+
+    let userReservations = allReservations.filter((r) => r.userId === user.id);
+
+    // Process each reservation to ensure acceptedAt is set for accepted reservations
+    userReservations = userReservations.map(updateReservationWithAcceptedTime);
 
     // Sort by creation date (newest first)
     userReservations.sort(
@@ -27,6 +70,34 @@ const MyReservations = () => {
 
     setReservations(userReservations);
     setLoading(false);
+
+    // Initialize countdowns for accepted reservations
+    const initialCountdowns = {};
+    userReservations.forEach((reservation) => {
+      if (reservation.status === "accepted") {
+        initialCountdowns[reservation.id] = calculateRemainingTime(reservation);
+      }
+    });
+    setCountdowns(initialCountdowns);
+
+    // Set up countdown timer
+    const timer = setInterval(() => {
+      setCountdowns((prevCountdowns) => {
+        const updatedCountdowns = { ...prevCountdowns };
+        let hasUpdates = false;
+
+        Object.keys(updatedCountdowns).forEach((id) => {
+          if (updatedCountdowns[id] > 0) {
+            updatedCountdowns[id] -= 1;
+            hasUpdates = true;
+          }
+        });
+
+        return hasUpdates ? updatedCountdowns : prevCountdowns;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
   }, [user.id]);
 
   const handleDeleteReservation = (reservationId) => {
@@ -273,17 +344,59 @@ const MyReservations = () => {
 
                   <div className="mt-6 flex justify-between items-center">
                     {reservation.status === "accepted" && (
-                      <>
-                        <div className="text-sm text-yellow-400">
-                          Please check your email to verify payment
+                      <div className="flex flex-col items-end w-full">
+                        <div className="flex justify-between w-full">
+                          <div className="text-sm text-yellow-400">
+                            Please check your email to verify payment
+                          </div>
+                          <Link
+                            to={`/payment/${reservation.id}`}
+                            className={`px-4 py-2 ${
+                              countdowns[reservation.id] > 0
+                                ? "bg-green-500 text-white hover:bg-green-600"
+                                : "bg-gray-700 text-gray-400 cursor-not-allowed"
+                            } rounded-full transition-colors`}
+                            onClick={(e) => {
+                              console.log(
+                                "Payment button clicked for reservation:",
+                                reservation.id
+                              );
+                              console.log(
+                                "Current countdown:",
+                                countdowns[reservation.id]
+                              );
+                              if (countdowns[reservation.id] <= 0) {
+                                console.log(
+                                  "Preventing navigation - timer expired"
+                                );
+                                e.preventDefault();
+                              }
+                            }}
+                          >
+                            Go to Payment (Demo)
+                          </Link>
                         </div>
-                        <button
-                          disabled
-                          className="px-4 py-2 bg-gray-700 text-gray-400 rounded-full cursor-not-allowed"
-                        >
-                          Go to Payment
-                        </button>
-                      </>
+                        {countdowns[reservation.id] !== undefined && (
+                          <div className="text-xs text-orange-400 mt-2 flex items-center">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4 mr-1"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
+                            Payment button active for:{" "}
+                            {formatTime(countdowns[reservation.id])}
+                          </div>
+                        )}
+                      </div>
                     )}
 
                     {(reservation.status === "waiting" ||
@@ -296,7 +409,6 @@ const MyReservations = () => {
                         Delete
                       </button>
                     )}
-
                     {reservation.status === "paid" && (
                       <div className="text-sm text-green-400">
                         Your reservation is confirmed

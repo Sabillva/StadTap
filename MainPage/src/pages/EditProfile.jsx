@@ -16,6 +16,7 @@ const EditProfile = () => {
     password: "",
     newPassword: "",
     confirmPassword: "",
+    stadiumName: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -38,6 +39,7 @@ const EditProfile = () => {
         password: "",
         newPassword: "",
         confirmPassword: "",
+        stadiumName: userProfile.stadiumName || "",
       });
     }
   }, [user.id]);
@@ -83,6 +85,10 @@ const EditProfile = () => {
 
     if (!formData.username.trim()) {
       newErrors.username = "Username is required";
+    }
+
+    if (user.userType === "owner" && !formData.stadiumName?.trim()) {
+      newErrors.stadiumName = "Stadium name is required for stadium owners";
     }
 
     if (changePassword) {
@@ -150,6 +156,8 @@ const EditProfile = () => {
             email: formData.email,
             username: formData.username,
             password: changePassword ? formData.newPassword : u.password,
+            stadiumName:
+              user.userType === "owner" ? formData.stadiumName : u.stadiumName,
           };
         }
         return u;
@@ -276,6 +284,33 @@ const EditProfile = () => {
                 <p className="mt-1 text-sm text-red-400">{errors.username}</p>
               )}
             </div>
+
+            {user.userType === "owner" && (
+              <div>
+                <label
+                  htmlFor="stadiumName"
+                  className="block text-sm font-medium text-white mb-1"
+                >
+                  Stadium Name
+                </label>
+                <input
+                  type="text"
+                  id="stadiumName"
+                  name="stadiumName"
+                  value={formData.stadiumName || ""}
+                  onChange={handleChange}
+                  className={`w-full px-3 py-2 border ${
+                    errors.stadiumName ? "border-red-500" : "border-gray-600"
+                  } bg-[#333] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500`}
+                  required
+                />
+                {errors.stadiumName && (
+                  <p className="mt-1 text-sm text-red-400">
+                    {errors.stadiumName}
+                  </p>
+                )}
+              </div>
+            )}
 
             <div className="border-t border-gray-700 pt-4">
               <div className="flex items-center mb-4">

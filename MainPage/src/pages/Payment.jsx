@@ -1,86 +1,112 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { AuthContext } from "../App";
 
 const Payment = () => {
-  const { reservationId } = useParams();
+  // Change from id to match the route parameter
+  const { id } = useParams();
   const navigate = useNavigate();
-
+  const { user } = useContext(AuthContext);
   const [reservation, setReservation] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [expired, setExpired] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(3600); // 1 hour in seconds
-  const [formData, setFormData] = useState({
+  const [paymentMethod, setPaymentMethod] = useState("card");
+  const [cardDetails, setCardDetails] = useState({
     cardNumber: "",
     cardHolder: "",
     expiryDate: "",
     cvv: "",
   });
   const [errors, setErrors] = useState({});
-  const [processing, setProcessing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+
+  // Calculate remaining time in seconds (1 hour from acceptance)
+  const calculateRemainingTime = (reservation) => {
+    if (!reservation || !reservation.acceptedAt) return 0;
+
+    const expiryTime = reservation.acceptedAt + 60 * 60 * 1000; // 1 hour in milliseconds
+    const remainingMs = expiryTime - new Date().getTime();
+    return Math.max(0, Math.floor(remainingMs / 1000)); // Convert to seconds, minimum 0
+  };
+
+  // Format seconds to HH:MM:SS
+  const formatTime = (seconds) => {
+    if (seconds <= 0) return "00:00:00";
+
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    return [hours, minutes, secs].map((v) => (v < 10 ? "0" + v : v)).join(":");
+  };
 
   useEffect(() => {
-    // In a real app, this would be an API call to verify the payment link
-    // For demo purposes, we'll use localStorage
+    console.log("Payment component mounted with id:", id);
 
+    // In a real app, this would be an API call
+    // For demo purposes, we'll use localStorage
     const allReservations = JSON.parse(
       localStorage.getItem("reservations") || "[]"
     );
-    const foundReservation = allReservations.find(
-      (r) => r.id === reservationId
-    );
+    console.log("All reservations:", allReservations);
 
-    if (!foundReservation || foundReservation.status !== "accepted") {
-      setExpired(true);
-      setLoading(false);
+    const foundReservation = allReservations.find((r) => r.id === id);
+    console.log("Found reservation:", foundReservation);
+
+    if (!foundReservation || foundReservation.userId !== user.id) {
+      // Reservation not found or doesn't belong to this user
+      console.log(
+        "Reservation not found or doesn't belong to user, redirecting..."
+      );
+      navigate("/my-reservations");
+      return;
+    }
+
+    // Check if the reservation is in the correct status
+    if (foundReservation.status !== "accepted") {
+      console.log("Reservation status is not 'accepted', redirecting...");
+      navigate("/my-reservations");
       return;
     }
 
     setReservation(foundReservation);
     setLoading(false);
 
-    // Start countdown timer
+    // Initialize countdown
+    const initialCountdown = calculateRemainingTime(foundReservation);
+    console.log("Initial countdown:", initialCountdown);
+    setCountdown(initialCountdown);
+
+    // Set up countdown timer
     const timer = setInterval(() => {
-      setTimeLeft((prevTime) => {
-        if (prevTime <= 1) {
+      setCountdown((prevCountdown) => {
+        if (prevCountdown <= 0) {
           clearInterval(timer);
-          setExpired(true);
-
-          // Update reservation status to payment_rejected
-          const updatedReservations = allReservations.map((r) => {
-            if (r.id === reservationId) {
-              return { ...r, status: "payment_rejected" };
-            }
-            return r;
-          });
-
-          localStorage.setItem(
-            "reservations",
-            JSON.stringify(updatedReservations)
-          );
-
           return 0;
         }
-        return prevTime - 1;
+        return prevCountdown - 1;
       });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [reservationId]);
+  }, [id, user.id, navigate]);
 
-  const formatTimeLeft = () => {
-    const minutes = Math.floor(timeLeft / 60);
-    const seconds = timeLeft % 60;
-    return `${minutes.toString().padStart(2, "0")}:${seconds
-      .toString()
-      .padStart(2, "0")}`;
-  };
+  // Redirect if countdown reaches zero
+  useEffect(() => {
+    if (countdown === 0 && reservation) {
+      alert(
+        "Payment time has expired. You will be redirected to your reservations."
+      );
+      navigate("/my-reservations");
+    }
+  }, [countdown, reservation, navigate]);
 
-  const handleChange = (e) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    // Format card number with spaces
+    // Handle card number formatting
     if (name === "cardNumber") {
       const formattedValue = value
         .replace(/\s/g, "")
@@ -88,63 +114,88 @@ const Payment = () => {
         .trim()
         .slice(0, 19);
 
-      setFormData({ ...formData, [name]: formattedValue });
-    } else if (name === "expiryDate") {
-      // Format expiry date as MM/YY
+      setCardDetails({
+        ...cardDetails,
+        [name]: formattedValue,
+      });
+    }
+    // Handle expiry date formatting
+    else if (name === "expiryDate") {
       const formattedValue = value
-        .replace(/\D/g, "")
+        .replace(/\s/g, "")
         .replace(/(\d{2})(\d{0,2})/, "$1/$2")
         .slice(0, 5);
 
-      setFormData({ ...formData, [name]: formattedValue });
-    } else if (name === "cvv") {
-      // Only allow numbers and max 3 digits
+      setCardDetails({
+        ...cardDetails,
+        [name]: formattedValue,
+      });
+    }
+    // Handle CVV (numbers only, max 3 digits)
+    else if (name === "cvv") {
       const formattedValue = value.replace(/\D/g, "").slice(0, 3);
-      setFormData({ ...formData, [name]: formattedValue });
-    } else {
-      setFormData({ ...formData, [name]: value });
+
+      setCardDetails({
+        ...cardDetails,
+        [name]: formattedValue,
+      });
+    }
+    // Handle other fields
+    else {
+      setCardDetails({
+        ...cardDetails,
+        [name]: value,
+      });
     }
 
     // Clear error when user types
     if (errors[name]) {
-      setErrors({ ...errors, [name]: null });
+      setErrors({
+        ...errors,
+        [name]: null,
+      });
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
 
-    if (
-      !formData.cardNumber.trim() ||
-      formData.cardNumber.replace(/\s/g, "").length !== 16
-    ) {
-      newErrors.cardNumber = "Please enter a valid 16-digit card number";
-    }
+    if (paymentMethod === "card") {
+      if (
+        !cardDetails.cardNumber.trim() ||
+        cardDetails.cardNumber.replace(/\s/g, "").length !== 16
+      ) {
+        newErrors.cardNumber = "Please enter a valid 16-digit card number";
+      }
 
-    if (!formData.cardHolder.trim()) {
-      newErrors.cardHolder = "Please enter the card holder name";
-    }
-
-    if (!formData.expiryDate.trim() || !formData.expiryDate.includes("/")) {
-      newErrors.expiryDate = "Please enter a valid expiry date (MM/YY)";
-    } else {
-      const [month, year] = formData.expiryDate.split("/");
-      const currentYear = new Date().getFullYear() % 100;
-      const currentMonth = new Date().getMonth() + 1;
+      if (!cardDetails.cardHolder.trim()) {
+        newErrors.cardHolder = "Please enter the card holder name";
+      }
 
       if (
-        Number.parseInt(month, 10) < 1 ||
-        Number.parseInt(month, 10) > 12 ||
-        Number.parseInt(year, 10) < currentYear ||
-        (Number.parseInt(year, 10) === currentYear &&
-          Number.parseInt(month, 10) < currentMonth)
+        !cardDetails.expiryDate.trim() ||
+        !cardDetails.expiryDate.includes("/")
       ) {
-        newErrors.expiryDate = "Card has expired";
-      }
-    }
+        newErrors.expiryDate = "Please enter a valid expiry date (MM/YY)";
+      } else {
+        const [month, year] = cardDetails.expiryDate.split("/");
+        const currentYear = new Date().getFullYear() % 100;
+        const currentMonth = new Date().getMonth() + 1;
 
-    if (!formData.cvv.trim() || formData.cvv.length !== 3) {
-      newErrors.cvv = "Please enter a valid 3-digit CVV";
+        if (
+          Number.parseInt(month, 10) < 1 ||
+          Number.parseInt(month, 10) > 12 ||
+          Number.parseInt(year, 10) < currentYear ||
+          (Number.parseInt(year, 10) === currentYear &&
+            Number.parseInt(month, 10) < currentMonth)
+        ) {
+          newErrors.expiryDate = "Card has expired";
+        }
+      }
+
+      if (!cardDetails.cvv.trim() || cardDetails.cvv.length !== 3) {
+        newErrors.cvv = "Please enter a valid 3-digit CVV";
+      }
     }
 
     setErrors(newErrors);
@@ -154,36 +205,62 @@ const Payment = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    if (countdown <= 0) {
+      alert(
+        "Payment time has expired. You will be redirected to your reservations."
+      );
+      navigate("/my-reservations");
+      return;
+    }
+
     if (!validateForm()) {
       return;
     }
 
-    setProcessing(true);
+    setIsSubmitting(true);
 
     // Simulate payment processing
     setTimeout(() => {
-      // Update reservation status to paid
+      // In a real app, this would be an API call to process payment
+      // For demo purposes, we'll update the reservation status in localStorage
+
       const allReservations = JSON.parse(
         localStorage.getItem("reservations") || "[]"
       );
       const updatedReservations = allReservations.map((r) => {
-        if (r.id === reservationId) {
-          return { ...r, status: "paid" };
+        if (r.id === id) {
+          return {
+            ...r,
+            status: "paid",
+            paidAt: new Date().toISOString(),
+          };
         }
         return r;
       });
 
       localStorage.setItem("reservations", JSON.stringify(updatedReservations));
 
-      // Redirect to my reservations page
+      setIsSubmitting(false);
+
+      // Show success message and redirect
+      alert("Payment successful! Your reservation is confirmed.");
       navigate("/my-reservations");
     }, 2000);
   };
 
+  const formatTimeSlots = (timeSlots) => {
+    return timeSlots
+      .map((slotId) => {
+        const [start, end] = slotId.split("-");
+        return `${start}:00-${end}:00`;
+      })
+      .join(", ");
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#222]">
-        <div className="text-center">
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-8 bg-[#2a2a2a] border-2 border-white/20 rounded-xl shadow-lg">
           <svg
             className="animate-spin h-10 w-10 text-green-400 mx-auto"
             xmlns="http://www.w3.org/2000/svg"
@@ -210,240 +287,302 @@ const Payment = () => {
     );
   }
 
-  if (expired) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#222] px-4">
-        <div className="max-w-md w-full bg-[#2a2a2a] border-2 border-white/20 rounded-xl shadow-lg p-8 text-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-16 w-16 text-red-500 mx-auto mb-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <h2 className="text-2xl font-bold mb-4 text-white">
-            Payment Link Expired
-          </h2>
-          <p className="text-gray-300 mb-6">
-            This payment link has expired or is no longer valid. Payment links
-            are only valid for 1 hour after reservation acceptance.
-          </p>
-          <button
-            onClick={() => navigate("/my-reservations")}
-            className="w-full px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
-          >
-            Go to My Reservations
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#222] px-4 py-12">
-      <div className="max-w-lg w-full bg-[#2a2a2a] border-2 border-white/20 rounded-xl shadow-lg overflow-hidden">
-        <div className="bg-green-500 text-white px-6 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-xl font-bold">Payment</h1>
-            <div className="text-sm">
-              Time remaining:{" "}
-              <span className="font-mono">{formatTimeLeft()}</span>
-            </div>
-          </div>
-        </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold mb-8 text-center text-white">
+          Payment
+        </h1>
 
-        <div className="p-6">
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold mb-2 text-white">
-              Reservation Details
-            </h2>
-            <div className="bg-[#333] rounded-md p-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm text-gray-400">Stadium:</div>
-                  <div className="font-medium text-gray-300">
-                    {reservation.stadiumName}
-                  </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Order Summary */}
+          <div className="md:col-span-1">
+            <div className="bg-[#2a2a2a] border-2 border-white/20 rounded-xl shadow-lg p-6 mb-6">
+              <h2 className="text-xl font-semibold mb-4 text-white">
+                Order Summary
+              </h2>
+
+              <div className="mb-4">
+                <div className="text-sm text-gray-400 mb-1">Stadium:</div>
+                <div className="font-medium text-gray-300">
+                  {reservation.stadiumName}
                 </div>
-                <div>
-                  <div className="text-sm text-gray-400">Date:</div>
-                  <div className="font-medium text-gray-300">
-                    {reservation.date}
-                  </div>
+              </div>
+
+              <div className="mb-4">
+                <div className="text-sm text-gray-400 mb-1">Date:</div>
+                <div className="font-medium text-gray-300">
+                  {reservation.date}
                 </div>
-                <div>
-                  <div className="text-sm text-gray-400">Time Slots:</div>
-                  <div className="font-medium text-gray-300">
-                    {reservation.timeSlots
-                      .map((slotId) => {
-                        const [start, end] = slotId.split("-");
-                        return `${start}:00-${end}:00`;
-                      })
-                      .join(", ")}
-                  </div>
+              </div>
+
+              <div className="mb-4">
+                <div className="text-sm text-gray-400 mb-1">Time Slots:</div>
+                <div className="font-medium text-gray-300">
+                  {formatTimeSlots(reservation.timeSlots)}
                 </div>
-                <div>
-                  <div className="text-sm text-gray-400">Total Amount:</div>
-                  <div className="font-medium text-lg text-green-400">
+              </div>
+
+              <div className="mb-4">
+                <div className="text-sm text-gray-400 mb-1">
+                  Reservation ID:
+                </div>
+                <div className="font-medium text-xs text-gray-300">
+                  {reservation.id}
+                </div>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-gray-700">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-gray-300">Subtotal:</span>
+                  <span className="font-medium text-gray-300">
                     {reservation.totalPrice} AZN
-                  </div>
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-gray-300">Tax:</span>
+                  <span className="font-medium text-gray-300">0.00 AZN</span>
+                </div>
+                <div className="flex justify-between items-center text-lg mt-4">
+                  <span className="font-semibold text-white">Total:</span>
+                  <span className="font-semibold text-green-400">
+                    {reservation.totalPrice} AZN
+                  </span>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <form onSubmit={handleSubmit}>
-            <h2 className="text-lg font-semibold mb-4 text-white">
-              Payment Information
-            </h2>
-
-            <div className="mb-4">
-              <label
-                htmlFor="cardNumber"
-                className="block text-sm font-medium text-white mb-1"
-              >
-                Card Number
-              </label>
-              <input
-                type="text"
-                id="cardNumber"
-                name="cardNumber"
-                placeholder="1234 5678 9012 3456"
-                value={formData.cardNumber}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border ${
-                  errors.cardNumber ? "border-red-500" : "border-gray-600"
-                } bg-[#333] text-white rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
-              />
-              {errors.cardNumber && (
-                <p className="mt-1 text-sm text-red-400">{errors.cardNumber}</p>
-              )}
-            </div>
-
-            <div className="mb-4">
-              <label
-                htmlFor="cardHolder"
-                className="block text-sm font-medium text-white mb-1"
-              >
-                Card Holder Name
-              </label>
-              <input
-                type="text"
-                id="cardHolder"
-                name="cardHolder"
-                placeholder="John Doe"
-                value={formData.cardHolder}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border ${
-                  errors.cardHolder ? "border-red-500" : "border-gray-600"
-                } bg-[#333] text-white rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
-              />
-              {errors.cardHolder && (
-                <p className="mt-1 text-sm text-red-400">{errors.cardHolder}</p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div>
-                <label
-                  htmlFor="expiryDate"
-                  className="block text-sm font-medium text-white mb-1"
-                >
-                  Expiry Date
-                </label>
-                <input
-                  type="text"
-                  id="expiryDate"
-                  name="expiryDate"
-                  placeholder="MM/YY"
-                  value={formData.expiryDate}
-                  onChange={handleChange}
-                  className={`w-full px-3 py-2 border ${
-                    errors.expiryDate ? "border-red-500" : "border-gray-600"
-                  } bg-[#333] text-white rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
-                />
-                {errors.expiryDate && (
-                  <p className="mt-1 text-sm text-red-400">
-                    {errors.expiryDate}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="cvv"
-                  className="block text-sm font-medium text-white mb-1"
-                >
-                  CVV
-                </label>
-                <input
-                  type="text"
-                  id="cvv"
-                  name="cvv"
-                  placeholder="123"
-                  value={formData.cvv}
-                  onChange={handleChange}
-                  className={`w-full px-3 py-2 border ${
-                    errors.cvv ? "border-red-500" : "border-gray-600"
-                  } bg-[#333] text-white rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
-                />
-                {errors.cvv && (
-                  <p className="mt-1 text-sm text-red-400">{errors.cvv}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="flex justify-between">
-              <button
-                type="button"
-                onClick={() => navigate("/my-reservations")}
-                className="px-4 py-2 bg-gray-700 text-white rounded-full hover:bg-gray-600 transition-colors"
-              >
-                Cancel
-              </button>
-
-              <button
-                type="submit"
-                disabled={processing}
-                className="px-6 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed"
-              >
-                {processing ? (
-                  <span className="flex items-center">
+              {/* Countdown Timer */}
+              <div className="mt-6 pt-4 border-t border-gray-700">
+                <div className="text-center">
+                  <div className="text-sm text-orange-400 mb-2 flex items-center justify-center">
                     <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
                       xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 mr-1"
                       fill="none"
                       viewBox="0 0 24 24"
+                      stroke="currentColor"
                     >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
                       <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
                     </svg>
-                    Processing...
-                  </span>
-                ) : (
-                  `Pay ${reservation.totalPrice} AZN`
-                )}
-              </button>
+                    Time remaining to complete payment:
+                  </div>
+                  <div className="text-xl font-mono font-bold text-orange-400">
+                    {formatTime(countdown)}
+                  </div>
+                </div>
+              </div>
             </div>
-          </form>
+          </div>
+
+          {/* Payment Form */}
+          <div className="md:col-span-2">
+            <div className="bg-[#2a2a2a] border-2 border-white/20 rounded-xl shadow-lg p-6">
+              <h2 className="text-xl font-semibold mb-6 text-white">
+                Payment Method
+              </h2>
+
+              <div className="mb-6">
+                <div className="flex space-x-4">
+                  <div
+                    className={`flex-1 p-4 border-2 ${
+                      paymentMethod === "card"
+                        ? "border-green-500"
+                        : "border-gray-600"
+                    } rounded-lg cursor-pointer`}
+                    onClick={() => setPaymentMethod("card")}
+                  >
+                    <div className="flex items-center">
+                      <div
+                        className={`w-5 h-5 rounded-full border-2 ${
+                          paymentMethod === "card"
+                            ? "border-green-500"
+                            : "border-gray-600"
+                        } flex items-center justify-center mr-3`}
+                      >
+                        {paymentMethod === "card" && (
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        )}
+                      </div>
+                      <div className="text-white">Credit/Debit Card</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <form onSubmit={handleSubmit}>
+                {paymentMethod === "card" && (
+                  <div className="space-y-4">
+                    <div>
+                      <label
+                        htmlFor="cardNumber"
+                        className="block text-sm font-medium text-white mb-1"
+                      >
+                        Card Number
+                      </label>
+                      <input
+                        type="text"
+                        id="cardNumber"
+                        name="cardNumber"
+                        placeholder="1234 5678 9012 3456"
+                        value={cardDetails.cardNumber}
+                        onChange={handleInputChange}
+                        className={`w-full px-3 py-2 border ${
+                          errors.cardNumber
+                            ? "border-red-500"
+                            : "border-gray-600"
+                        } bg-[#333] placeholder-gray-400 text-white rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500`}
+                        disabled={countdown <= 0}
+                      />
+                      {errors.cardNumber && (
+                        <p className="mt-1 text-sm text-red-400">
+                          {errors.cardNumber}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="cardHolder"
+                        className="block text-sm font-medium text-white mb-1"
+                      >
+                        Card Holder Name
+                      </label>
+                      <input
+                        type="text"
+                        id="cardHolder"
+                        name="cardHolder"
+                        placeholder="John Doe"
+                        value={cardDetails.cardHolder}
+                        onChange={handleInputChange}
+                        className={`w-full px-3 py-2 border ${
+                          errors.cardHolder
+                            ? "border-red-500"
+                            : "border-gray-600"
+                        } bg-[#333] placeholder-gray-400 text-white rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500`}
+                        disabled={countdown <= 0}
+                      />
+                      {errors.cardHolder && (
+                        <p className="mt-1 text-sm text-red-400">
+                          {errors.cardHolder}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label
+                          htmlFor="expiryDate"
+                          className="block text-sm font-medium text-white mb-1"
+                        >
+                          Expiry Date
+                        </label>
+                        <input
+                          type="text"
+                          id="expiryDate"
+                          name="expiryDate"
+                          placeholder="MM/YY"
+                          value={cardDetails.expiryDate}
+                          onChange={handleInputChange}
+                          className={`w-full px-3 py-2 border ${
+                            errors.expiryDate
+                              ? "border-red-500"
+                              : "border-gray-600"
+                          } bg-[#333] placeholder-gray-400 text-white rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500`}
+                          disabled={countdown <= 0}
+                        />
+                        {errors.expiryDate && (
+                          <p className="mt-1 text-sm text-red-400">
+                            {errors.expiryDate}
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="cvv"
+                          className="block text-sm font-medium text-white mb-1"
+                        >
+                          CVV
+                        </label>
+                        <input
+                          type="text"
+                          id="cvv"
+                          name="cvv"
+                          placeholder="123"
+                          value={cardDetails.cvv}
+                          onChange={handleInputChange}
+                          className={`w-full px-3 py-2 border ${
+                            errors.cvv ? "border-red-500" : "border-gray-600"
+                          } bg-[#333] placeholder-gray-400 text-white rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500`}
+                          disabled={countdown <= 0}
+                        />
+                        {errors.cvv && (
+                          <p className="mt-1 text-sm text-red-400">
+                            {errors.cvv}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-8 flex justify-between">
+                  <button
+                    type="button"
+                    onClick={() => navigate("/my-reservations")}
+                    className="px-4 py-2 bg-gray-600 text-white rounded-full hover:bg-gray-700 transition-colors"
+                  >
+                    Back
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || countdown <= 0}
+                    className={`px-6 py-2 rounded-full ${
+                      isSubmitting || countdown <= 0
+                        ? "bg-gray-700 text-gray-400 cursor-not-allowed"
+                        : "bg-green-500 text-white hover:bg-green-600"
+                    } transition-colors`}
+                  >
+                    {isSubmitting ? (
+                      <span className="flex items-center">
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Processing...
+                      </span>
+                    ) : countdown <= 0 ? (
+                      "Time Expired"
+                    ) : (
+                      `Pay ${reservation.totalPrice} AZN`
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
       </div>
     </div>

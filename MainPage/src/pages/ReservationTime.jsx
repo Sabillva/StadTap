@@ -58,7 +58,9 @@ const ReservationTime = () => {
       (r) =>
         r.stadiumId === id &&
         r.date === selectedDate &&
-        (r.status === "accepted" || r.status === "pending")
+        (r.status === "accepted" ||
+          r.status === "waiting" ||
+          r.status === "paid")
     );
 
     setReservations(stadiumReservations);
@@ -116,6 +118,13 @@ const ReservationTime = () => {
       return;
     }
 
+    // Find the stadium owner
+    const storedUsers = localStorage.getItem("users");
+    const users = storedUsers ? JSON.parse(storedUsers) : [];
+    const stadiumOwner = users.find(
+      (u) => u.userType === "owner" && u.stadiumName === stadium.name
+    );
+
     // Create a new reservation
     const newReservation = {
       id: Date.now().toString(),
@@ -131,6 +140,7 @@ const ReservationTime = () => {
       totalPrice,
       status: "waiting", // waiting, accepted, rejected, paid
       createdAt: new Date().toISOString(),
+      stadiumOwnerId: stadiumOwner ? stadiumOwner.id : null,
     };
 
     // In a real app, this would be an API call
@@ -158,11 +168,9 @@ const ReservationTime = () => {
 
     return currentHour >= slotHour;
   };
-
   if (!stadium) {
     return null;
   }
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="bg-[#2a2a2a] border-2 border-white/20 rounded-xl shadow-lg overflow-hidden">
@@ -324,7 +332,6 @@ const ReservationTime = () => {
               </div>
             </div>
           )}
-
           <div className="flex space-x-4">
             <button
               onClick={() => navigate(-1)}

@@ -23,17 +23,30 @@ const Dashboard = () => {
       ? JSON.parse(storedReservations)
       : [];
 
+    console.log("All reservations:", allReservations);
+    console.log("Current user:", user);
+    console.log("Stadium name:", user.stadiumName);
+
+    // Filter reservations for this owner's stadium only
+    const ownerReservations = allReservations.filter(
+      (r) => r.stadiumName === user.stadiumName
+    );
+
+    console.log("Owner reservations:", ownerReservations);
+
     // Calculate stats
-    const pendingCount = allReservations.filter(
+    const pendingCount = ownerReservations.filter(
       (r) => r.status === "waiting"
     ).length;
-    const acceptedCount = allReservations.filter(
+    const acceptedCount = ownerReservations.filter(
       (r) => r.status === "accepted"
     ).length;
-    const rejectedCount = allReservations.filter(
+    const rejectedCount = ownerReservations.filter(
       (r) => r.status === "rejected"
     ).length;
-    const paidCount = allReservations.filter((r) => r.status === "paid").length;
+    const paidCount = ownerReservations.filter(
+      (r) => r.status === "paid"
+    ).length;
 
     setStats({
       pending: pendingCount,
@@ -42,22 +55,42 @@ const Dashboard = () => {
       paid: paidCount,
     });
 
-    setReservations(allReservations);
+    setReservations(ownerReservations);
     setLoading(false);
-  }, []);
+  }, [user]);
 
   const handleAcceptReservation = (reservationId) => {
     // In a real app, this would be an API call
     // For demo purposes, we'll use localStorage
-    const updatedReservations = reservations.map((reservation) => {
+    const storedReservations = localStorage.getItem("reservations");
+    const allReservations = JSON.parse(storedReservations);
+
+    const updatedReservations = allReservations.map((reservation) => {
       if (reservation.id === reservationId) {
-        return { ...reservation, status: "accepted" };
+        return {
+          ...reservation,
+          status: "accepted",
+          acceptedAt: new Date().getTime(), // Add timestamp when reservation is accepted
+        };
       }
       return reservation;
     });
 
     localStorage.setItem("reservations", JSON.stringify(updatedReservations));
-    setReservations(updatedReservations);
+
+    // Update local state
+    setReservations((prevReservations) =>
+      prevReservations.map((reservation) => {
+        if (reservation.id === reservationId) {
+          return {
+            ...reservation,
+            status: "accepted",
+            acceptedAt: new Date().getTime(), // Add timestamp when reservation is accepted
+          };
+        }
+        return reservation;
+      })
+    );
 
     // Update stats
     setStats({
@@ -70,7 +103,10 @@ const Dashboard = () => {
   const handleRejectReservation = (reservationId) => {
     // In a real app, this would be an API call
     // For demo purposes, we'll use localStorage
-    const updatedReservations = reservations.map((reservation) => {
+    const storedReservations = localStorage.getItem("reservations");
+    const allReservations = JSON.parse(storedReservations);
+
+    const updatedReservations = allReservations.map((reservation) => {
       if (reservation.id === reservationId) {
         return { ...reservation, status: "rejected" };
       }
@@ -78,7 +114,16 @@ const Dashboard = () => {
     });
 
     localStorage.setItem("reservations", JSON.stringify(updatedReservations));
-    setReservations(updatedReservations);
+
+    // Update local state
+    setReservations((prevReservations) =>
+      prevReservations.map((reservation) => {
+        if (reservation.id === reservationId) {
+          return { ...reservation, status: "rejected" };
+        }
+        return reservation;
+      })
+    );
 
     // Update stats
     setStats({
@@ -108,7 +153,7 @@ const Dashboard = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8 text-center text-white">
-        Stadium Owner Dashboard
+        {user.stadiumName} Dashboard
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
@@ -278,15 +323,15 @@ const Dashboard = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                      ${
-                        reservation.status === "waiting"
-                          ? "bg-yellow-500/20 text-yellow-400"
-                          : reservation.status === "accepted"
-                          ? "bg-green-500/20 text-green-400"
-                          : reservation.status === "rejected"
-                          ? "bg-red-500/20 text-red-400"
-                          : "bg-blue-500/20 text-blue-400"
-                      }`}
+                    ${
+                      reservation.status === "waiting"
+                        ? "bg-yellow-500/20 text-yellow-400"
+                        : reservation.status === "accepted"
+                        ? "bg-green-500/20 text-green-400"
+                        : reservation.status === "rejected"
+                        ? "bg-red-500/20 text-red-400"
+                        : "bg-blue-500/20 text-blue-400"
+                    }`}
                       >
                         {reservation.status === "waiting"
                           ? "Pending"
