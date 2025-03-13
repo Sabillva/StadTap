@@ -152,7 +152,6 @@ const TeamDetail = () => {
       }
       return t;
     });
-
     localStorage.setItem("teams", JSON.stringify(updatedTeams));
     setTeam(updatedTeams.find((t) => t.id === id));
   };
@@ -260,7 +259,7 @@ const TeamDetail = () => {
                   Leave Team
                 </button>
               )}
-              {!isMember && !hasRequestedToJoin && (
+              {!isMember && !isCreator && !hasRequestedToJoin && (
                 <button
                   onClick={handleJoinRequest}
                   className="px-3 py-1 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
@@ -268,7 +267,7 @@ const TeamDetail = () => {
                   Request to Join
                 </button>
               )}
-              {!isMember && hasRequestedToJoin && (
+              {!isMember && !isCreator && hasRequestedToJoin && (
                 <button
                   onClick={handleCancelRequest}
                   className="px-3 py-1 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition-colors"

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../App";
+// Import the utility function at the top
+import { checkAndUpdateExpiredReservations } from "../utils/reservationUtils";
 
 const Dashboard = () => {
   const { user } = useContext(AuthContext);
@@ -15,7 +17,11 @@ const Dashboard = () => {
     paid: 0,
   });
 
+  // Add this to the useEffect in Dashboard
   useEffect(() => {
+    // Check for expired reservations first
+    checkAndUpdateExpiredReservations();
+
     // In a real app, this would be an API call
     // For demo purposes, we'll use localStorage
     const storedReservations = localStorage.getItem("reservations");
@@ -57,6 +63,45 @@ const Dashboard = () => {
 
     setReservations(ownerReservations);
     setLoading(false);
+
+    // Set up interval to check periodically (every minute)
+    const interval = setInterval(() => {
+      const updated = checkAndUpdateExpiredReservations();
+      if (updated) {
+        // Refresh the data if any reservations were updated
+        const refreshedReservations = JSON.parse(
+          localStorage.getItem("reservations") || "[]"
+        );
+        const refreshedOwnerReservations = refreshedReservations.filter(
+          (r) => r.stadiumName === user.stadiumName
+        );
+
+        setReservations(refreshedOwnerReservations);
+
+        // Update stats
+        const newPendingCount = refreshedOwnerReservations.filter(
+          (r) => r.status === "waiting"
+        ).length;
+        const newAcceptedCount = refreshedOwnerReservations.filter(
+          (r) => r.status === "accepted"
+        ).length;
+        const newRejectedCount = refreshedOwnerReservations.filter(
+          (r) => r.status === "rejected"
+        ).length;
+        const newPaidCount = refreshedOwnerReservations.filter(
+          (r) => r.status === "paid"
+        ).length;
+
+        setStats({
+          pending: newPendingCount,
+          accepted: newAcceptedCount,
+          rejected: newRejectedCount,
+          paid: newPaidCount,
+        });
+      }
+    }, 60000);
+
+    return () => clearInterval(interval);
   }, [user]);
 
   const handleAcceptReservation = (reservationId) => {

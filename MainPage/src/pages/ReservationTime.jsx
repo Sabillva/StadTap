@@ -23,6 +23,65 @@ const ReservationTime = () => {
   // Find the stadium with the matching ID
   const stadium = stadiumsData.find((s) => s.id === id);
 
+  useEffect(() => {
+    // Function to check and update expired reservations
+    const checkExpiredReservations = () => {
+      const allReservations = JSON.parse(
+        localStorage.getItem("reservations") || "[]"
+      );
+      const today = new Date().toISOString().split("T")[0];
+      const currentHour = new Date().getHours();
+
+      let hasUpdates = false;
+
+      const updatedReservations = allReservations.map((reservation) => {
+        // Only check waiting reservations
+        if (reservation.status === "waiting") {
+          // Check if the date is today or in the past
+          if (
+            reservation.date < today ||
+            (reservation.date === today &&
+              reservation.timeSlots.some((slot) => {
+                const slotHour = Number.parseInt(slot.split("-")[0], 10);
+                return slotHour <= currentHour;
+              }))
+          ) {
+            hasUpdates = true;
+            return { ...reservation, status: "rejected", autoRejected: true };
+          }
+        }
+
+        // Check if payment time expired for accepted reservations
+        if (reservation.status === "accepted" && reservation.acceptedAt) {
+          const expiryTime = reservation.acceptedAt + 60 * 60 * 1000; // 1 hour in milliseconds
+          if (new Date().getTime() > expiryTime) {
+            hasUpdates = true;
+            return { ...reservation, status: "rejected", autoRejected: true };
+          }
+        }
+
+        return reservation;
+      });
+
+      if (hasUpdates) {
+        localStorage.setItem(
+          "reservations",
+          JSON.stringify(updatedReservations)
+        );
+        // If we're on the reservations page, we might want to refresh the data
+        // This will be handled by the useEffect in MyReservations component
+      }
+    };
+
+    // Run once when component mounts
+    checkExpiredReservations();
+
+    // Set up interval to check periodically (every minute)
+    const interval = setInterval(checkExpiredReservations, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   // If stadium not found, redirect to reserve page
   useEffect(() => {
     if (!stadium) {
@@ -248,32 +307,44 @@ const ReservationTime = () => {
               {timeSlots.map((slot) => {
                 const isPast = isTimeSlotPast(slot.id);
                 const isSelected = selectedTimeSlots.includes(slot.id);
+                const isPaid = reservations.some(
+                  (r) => r.status === "paid" && r.timeSlots.includes(slot.id)
+                );
 
                 let bgColor = "bg-[#333]";
                 let borderColor = "border-gray-600";
+                let statusText = "Available";
 
                 if (isPast) {
                   bgColor = "bg-gray-700";
                   borderColor = "border-gray-600";
+                  statusText = "Past";
+                } else if (isPaid) {
+                  bgColor = "bg-blue-500/20";
+                  borderColor = "border-blue-500/30";
+                  statusText = "Paid";
                 } else if (slot.reserved) {
                   bgColor = "bg-red-500/20";
                   borderColor = "border-red-500/30";
+                  statusText = "Reserved";
                 } else if (isSelected) {
                   bgColor = "bg-green-500/20";
                   borderColor = "border-green-500";
+                  statusText = "Selected";
                 }
 
                 return (
                   <div
                     key={slot.id}
                     onClick={() =>
-                      !isPast && !slot.reserved && handleTimeSlotClick(slot.id)
+                      !isPast &&
+                      !slot.reserved &&
+                      !isPaid &&
+                      handleTimeSlotClick(slot.id)
                     }
                     className={`${bgColor} border-2 ${borderColor} rounded-md p-3 text-center cursor-pointer ${
-                      isPast
+                      isPast || slot.reserved || isPaid
                         ? "opacity-50 cursor-not-allowed"
-                        : slot.reserved
-                        ? ""
                         : isSelected
                         ? ""
                         : "hover:border-green-400"
@@ -283,16 +354,10 @@ const ReservationTime = () => {
                       {slot.start} - {slot.end}
                     </div>
                     <div className="text-xs mt-1 text-gray-300">
-                      {isPast
-                        ? "Past"
-                        : slot.reserved
-                        ? "Reserved"
-                        : isSelected
-                        ? "Selected"
-                        : "Available"}
+                      {statusText}
                     </div>
 
-                    {slot.reserved && !isPast && (
+                    {slot.reserved && !isPast && !isPaid && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();

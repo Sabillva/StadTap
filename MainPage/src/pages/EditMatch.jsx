@@ -3,6 +3,7 @@
 import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../App";
+import { validatePhoneNumber } from "../utils/validationUtils";
 
 const EditMatch = () => {
   const { id } = useParams();
@@ -15,8 +16,6 @@ const EditMatch = () => {
     time: "",
     stadiumName: "",
     city: "",
-    homeTeamId: "",
-    awayTeamName: "",
     contactPhone: "",
     notes: "",
   });
@@ -24,19 +23,8 @@ const EditMatch = () => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [userTeams, setUserTeams] = useState([]);
 
   useEffect(() => {
-    // Get user's teams
-    const storedTeams = localStorage.getItem("teams");
-    const teams = storedTeams ? JSON.parse(storedTeams) : [];
-    const myTeams = teams.filter((team) =>
-      team.members.some(
-        (member) => member.id === user.id && member.status === "accepted"
-      )
-    );
-    setUserTeams(myTeams);
-
     // Get match data
     const storedMatches = localStorage.getItem("matches");
     const matches = storedMatches ? JSON.parse(storedMatches) : [];
@@ -53,10 +41,15 @@ const EditMatch = () => {
       return;
     }
 
-    // Format date and time
-    const matchDate = new Date(match.date);
-    const dateString = matchDate.toISOString().split("T")[0];
-    const timeString = matchDate.toTimeString().slice(0, 5);
+    // Format date and time if they exist
+    let dateString = "";
+    let timeString = "";
+
+    if (match.date) {
+      const matchDate = new Date(match.date);
+      dateString = matchDate.toISOString().split("T")[0];
+      timeString = matchDate.toTimeString().slice(0, 5);
+    }
 
     setFormData({
       title: match.title || "Friendly Match",
@@ -64,8 +57,6 @@ const EditMatch = () => {
       time: timeString,
       stadiumName: match.stadiumName || "",
       city: match.city || "",
-      homeTeamId: match.homeTeamId || "",
-      awayTeamName: match.awayTeamName || "",
       contactPhone: match.contactPhone || "",
       notes: match.notes || "",
     });
@@ -92,28 +83,11 @@ const EditMatch = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.date) {
-      newErrors.date = "Date is required";
-    }
-
-    if (!formData.time) {
-      newErrors.time = "Time is required";
-    }
-
-    if (!formData.homeTeamId) {
-      newErrors.homeTeamId = "Home team is required";
-    }
-
-    if (!formData.awayTeamName.trim()) {
-      newErrors.awayTeamName = "Away team name is required";
-    }
-
-    if (!formData.city.trim()) {
-      newErrors.city = "City is required";
-    }
-
     if (!formData.contactPhone.trim()) {
       newErrors.contactPhone = "Contact phone is required";
+    } else if (!validatePhoneNumber(formData.contactPhone)) {
+      newErrors.contactPhone =
+        "Please enter a valid phone number format (e.g., +994 XX XXX XX XX)";
     }
 
     setErrors(newErrors);
@@ -127,8 +101,11 @@ const EditMatch = () => {
 
     setIsSubmitting(true);
 
-    // Combine date and time
-    const dateTime = new Date(`${formData.date}T${formData.time}`);
+    // Combine date and time if both are provided
+    let dateTime = null;
+    if (formData.date && formData.time) {
+      dateTime = new Date(`${formData.date}T${formData.time}`);
+    }
 
     // Update match
     setTimeout(() => {
@@ -139,14 +116,9 @@ const EditMatch = () => {
           return {
             ...match,
             title: formData.title,
-            date: dateTime.toISOString(),
-            stadiumName: formData.stadiumName,
-            city: formData.city,
-            homeTeamId: formData.homeTeamId,
-            homeTeamName: userTeams.find(
-              (team) => team.id === formData.homeTeamId
-            )?.name,
-            awayTeamName: formData.awayTeamName,
+            date: dateTime ? dateTime.toISOString() : undefined,
+            stadiumName: formData.stadiumName || undefined,
+            city: formData.city || undefined,
             contactPhone: formData.contactPhone,
             notes: formData.notes,
           };
@@ -219,7 +191,7 @@ const EditMatch = () => {
                   htmlFor="date"
                   className="block text-sm font-medium text-white mb-1"
                 >
-                  Date <span className="text-red-400">*</span>
+                  Date
                 </label>
                 <input
                   type="date"
@@ -231,7 +203,6 @@ const EditMatch = () => {
                   className={`w-full px-3 py-2 border ${
                     errors.date ? "border-red-500" : "border-gray-600"
                   } bg-[#333] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500`}
-                  required
                 />
                 {errors.date && (
                   <p className="mt-1 text-sm text-red-400">{errors.date}</p>
@@ -243,7 +214,7 @@ const EditMatch = () => {
                   htmlFor="time"
                   className="block text-sm font-medium text-white mb-1"
                 >
-                  Time <span className="text-red-400">*</span>
+                  Time
                 </label>
                 <input
                   type="time"
@@ -254,67 +225,11 @@ const EditMatch = () => {
                   className={`w-full px-3 py-2 border ${
                     errors.time ? "border-red-500" : "border-gray-600"
                   } bg-[#333] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500`}
-                  required
                 />
                 {errors.time && (
                   <p className="mt-1 text-sm text-red-400">{errors.time}</p>
                 )}
               </div>
-            </div>
-
-            <div>
-              <label
-                htmlFor="homeTeamId"
-                className="block text-sm font-medium text-white mb-1"
-              >
-                Your Team (Home Team) <span className="text-red-400">*</span>
-              </label>
-              <select
-                id="homeTeamId"
-                name="homeTeamId"
-                value={formData.homeTeamId}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border ${
-                  errors.homeTeamId ? "border-red-500" : "border-gray-600"
-                } bg-[#333] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500`}
-                required
-              >
-                <option value="">Select your team</option>
-                {userTeams.map((team) => (
-                  <option key={team.id} value={team.id}>
-                    {team.name}
-                  </option>
-                ))}
-              </select>
-              {errors.homeTeamId && (
-                <p className="mt-1 text-sm text-red-400">{errors.homeTeamId}</p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor="awayTeamName"
-                className="block text-sm font-medium text-white mb-1"
-              >
-                Opponent Team Name <span className="text-red-400">*</span>
-              </label>
-              <input
-                type="text"
-                id="awayTeamName"
-                name="awayTeamName"
-                value={formData.awayTeamName}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border ${
-                  errors.awayTeamName ? "border-red-500" : "border-gray-600"
-                } bg-[#333] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500`}
-                placeholder="Enter opponent team name"
-                required
-              />
-              {errors.awayTeamName && (
-                <p className="mt-1 text-sm text-red-400">
-                  {errors.awayTeamName}
-                </p>
-              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -323,7 +238,7 @@ const EditMatch = () => {
                   htmlFor="city"
                   className="block text-sm font-medium text-white mb-1"
                 >
-                  City <span className="text-red-400">*</span>
+                  City
                 </label>
                 <input
                   type="text"
@@ -335,7 +250,6 @@ const EditMatch = () => {
                     errors.city ? "border-red-500" : "border-gray-600"
                   } bg-[#333] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500`}
                   placeholder="Enter city"
-                  required
                 />
                 {errors.city && (
                   <p className="mt-1 text-sm text-red-400">{errors.city}</p>

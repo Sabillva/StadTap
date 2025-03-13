@@ -3,6 +3,7 @@
 import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../App";
+import { calculatePaymentTimeRemaining } from "../utils/reservationUtils";
 
 const Payment = () => {
   // Change from id to match the route parameter
@@ -23,13 +24,7 @@ const Payment = () => {
   const [countdown, setCountdown] = useState(0);
 
   // Calculate remaining time in seconds (1 hour from acceptance)
-  const calculateRemainingTime = (reservation) => {
-    if (!reservation || !reservation.acceptedAt) return 0;
-
-    const expiryTime = reservation.acceptedAt + 60 * 60 * 1000; // 1 hour in milliseconds
-    const remainingMs = expiryTime - new Date().getTime();
-    return Math.max(0, Math.floor(remainingMs / 1000)); // Convert to seconds, minimum 0
-  };
+  const calculateRemainingTime = calculatePaymentTimeRemaining;
 
   // Format seconds to HH:MM:SS
   const formatTime = (seconds) => {
@@ -108,11 +103,11 @@ const Payment = () => {
 
     // Handle card number formatting
     if (name === "cardNumber") {
-      const formattedValue = value
-        .replace(/\s/g, "")
-        .replace(/(\d{4})/g, "$1 ")
-        .trim()
-        .slice(0, 19);
+      // Only allow numbers
+      const numbersOnly = value.replace(/\D/g, "").slice(0, 16);
+
+      // Format with spaces every 4 digits
+      const formattedValue = numbersOnly.replace(/(\d{4})(?=\d)/g, "$1 ");
 
       setCardDetails({
         ...cardDetails,
@@ -121,10 +116,14 @@ const Payment = () => {
     }
     // Handle expiry date formatting
     else if (name === "expiryDate") {
-      const formattedValue = value
-        .replace(/\s/g, "")
-        .replace(/(\d{2})(\d{0,2})/, "$1/$2")
-        .slice(0, 5);
+      // Only allow numbers
+      const numbersOnly = value.replace(/\D/g, "").slice(0, 4);
+
+      // Format as MM/YY
+      let formattedValue = numbersOnly;
+      if (numbersOnly.length > 2) {
+        formattedValue = numbersOnly.slice(0, 2) + "/" + numbersOnly.slice(2);
+      }
 
       setCardDetails({
         ...cardDetails,
@@ -161,9 +160,12 @@ const Payment = () => {
     const newErrors = {};
 
     if (paymentMethod === "card") {
+      // Check card number - must be exactly 16 digits
+      const cardNumberDigits = cardDetails.cardNumber.replace(/\s/g, "");
       if (
-        !cardDetails.cardNumber.trim() ||
-        cardDetails.cardNumber.replace(/\s/g, "").length !== 16
+        !cardNumberDigits ||
+        cardNumberDigits.length !== 16 ||
+        !/^\d+$/.test(cardNumberDigits)
       ) {
         newErrors.cardNumber = "Please enter a valid 16-digit card number";
       }
@@ -172,6 +174,7 @@ const Payment = () => {
         newErrors.cardHolder = "Please enter the card holder name";
       }
 
+      // Check expiry date
       if (
         !cardDetails.expiryDate.trim() ||
         !cardDetails.expiryDate.includes("/")
@@ -182,18 +185,35 @@ const Payment = () => {
         const currentYear = new Date().getFullYear() % 100;
         const currentMonth = new Date().getMonth() + 1;
 
+        // Check if month is valid (1-12)
         if (
+          !/^\d{2}$/.test(month) ||
           Number.parseInt(month, 10) < 1 ||
-          Number.parseInt(month, 10) > 12 ||
-          Number.parseInt(year, 10) < currentYear ||
-          (Number.parseInt(year, 10) === currentYear &&
-            Number.parseInt(month, 10) < currentMonth)
+          Number.parseInt(month, 10) > 12
+        ) {
+          newErrors.expiryDate = "Please enter a valid month (01-12)";
+        }
+        // Check if year is valid (current year or later)
+        else if (
+          !/^\d{2}$/.test(year) ||
+          Number.parseInt(year, 10) < currentYear
+        ) {
+          newErrors.expiryDate = "Card has expired";
+        }
+        // Check if card is expired (current year and month is past)
+        else if (
+          Number.parseInt(year, 10) === currentYear &&
+          Number.parseInt(month, 10) < currentMonth
         ) {
           newErrors.expiryDate = "Card has expired";
         }
       }
 
-      if (!cardDetails.cvv.trim() || cardDetails.cvv.length !== 3) {
+      if (
+        !cardDetails.cvv.trim() ||
+        cardDetails.cvv.length !== 3 ||
+        !/^\d+$/.test(cardDetails.cvv)
+      ) {
         newErrors.cvv = "Please enter a valid 3-digit CVV";
       }
     }

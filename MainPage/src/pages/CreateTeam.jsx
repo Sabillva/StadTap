@@ -3,6 +3,7 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../App";
+import { validatePhoneNumber } from "../utils/validationUtils";
 
 const CreateTeam = () => {
   const { user } = useContext(AuthContext);
@@ -51,6 +52,9 @@ const CreateTeam = () => {
 
     if (!formData.phoneNumber.trim()) {
       newErrors.phoneNumber = "Phone number is required";
+    } else if (!validatePhoneNumber(formData.phoneNumber)) {
+      newErrors.phoneNumber =
+        "Please enter a valid phone number format (e.g., +994 XX XXX XX XX)";
     }
 
     setErrors(newErrors);
@@ -71,17 +75,11 @@ const CreateTeam = () => {
       creatorId: user.id,
       creatorName: `${user.firstName} ${user.lastName}`,
       description: formData.description,
-      memberCount: 1, // Creator is the first member
+      memberCount: 0, // Changed from 1 to 0 since creator doesn't count as a member
       maxMembers: Number.parseInt(formData.maxMembers),
       phoneNumber: formData.phoneNumber,
       createdAt: new Date().toISOString(),
-      members: [
-        {
-          id: user.id,
-          username: user.username,
-          status: "accepted", // Creator is always accepted
-        },
-      ],
+      members: [], // Creator is not added as a member
       joinRequests: [],
     };
 

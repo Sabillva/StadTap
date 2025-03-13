@@ -3,6 +3,11 @@
 import { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../App";
+// Import the utility function at the top
+import {
+  checkAndUpdateExpiredReservations,
+  calculatePaymentTimeRemaining,
+} from "../utils/reservationUtils";
 
 const MyReservations = () => {
   const { user } = useContext(AuthContext);
@@ -31,14 +36,8 @@ const MyReservations = () => {
     return reservation;
   };
 
-  // Calculate remaining time in seconds (1 hour from acceptance)
-  const calculateRemainingTime = (reservation) => {
-    if (!reservation.acceptedAt) return 0;
-
-    const expiryTime = reservation.acceptedAt + 60 * 60 * 1000; // 1 hour in milliseconds
-    const remainingMs = expiryTime - new Date().getTime();
-    return Math.max(0, Math.floor(remainingMs / 1000)); // Convert to seconds, minimum 0
-  };
+  // Use the imported function instead:
+  const calculateRemainingTime = calculatePaymentTimeRemaining;
 
   // Format seconds to HH:MM:SS
   const formatTime = (seconds) => {
@@ -52,6 +51,9 @@ const MyReservations = () => {
   };
 
   useEffect(() => {
+    // Check for expired reservations first
+    const hasUpdates = checkAndUpdateExpiredReservations();
+
     // In a real app, this would be an API call
     // For demo purposes, we'll use localStorage
     const allReservations = JSON.parse(
@@ -90,6 +92,12 @@ const MyReservations = () => {
           if (updatedCountdowns[id] > 0) {
             updatedCountdowns[id] -= 1;
             hasUpdates = true;
+          } else if (updatedCountdowns[id] === 0) {
+            // When countdown reaches zero, check if we need to auto-reject
+            const reservation = userReservations.find((r) => r.id === id);
+            if (reservation && reservation.status === "accepted") {
+              checkAndUpdateExpiredReservations();
+            }
           }
         });
 
@@ -214,7 +222,10 @@ const MyReservations = () => {
               <div className="md:flex">
                 <div className="md:flex-shrink-0">
                   <img
-                    src={reservation.stadiumImage || "/placeholder.svg"}
+                    src={
+                      reservation.stadiumImage ||
+                      `https://source.unsplash.com/random/300x200/?football,stadium&sig=${reservation.id}`
+                    }
                     alt={reservation.stadiumName}
                     className="h-48 w-full object-cover md:w-48"
                   />

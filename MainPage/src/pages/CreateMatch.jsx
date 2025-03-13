@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useContext } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../App";
+import { validatePhoneNumber } from "../utils/validationUtils";
 
 const CreateMatch = () => {
   const { user } = useContext(AuthContext);
@@ -14,39 +15,12 @@ const CreateMatch = () => {
     time: "",
     stadiumName: "",
     city: "",
-    homeTeamId: "",
-    awayTeamName: "",
     contactPhone: "",
     notes: "",
   });
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [userTeams, setUserTeams] = useState([]);
-
-  useEffect(() => {
-    // Get user's teams
-    const storedTeams = localStorage.getItem("teams");
-    const teams = storedTeams ? JSON.parse(storedTeams) : [];
-    const myTeams = teams.filter((team) =>
-      team.members.some(
-        (member) => member.id === user.id && member.status === "accepted"
-      )
-    );
-    setUserTeams(myTeams);
-
-    // Set default date to tomorrow
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const dateString = tomorrow.toISOString().split("T")[0];
-    const timeString = "18:00";
-
-    setFormData({
-      ...formData,
-      date: dateString,
-      time: timeString,
-    });
-  }, [user.id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -67,28 +41,11 @@ const CreateMatch = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.date) {
-      newErrors.date = "Date is required";
-    }
-
-    if (!formData.time) {
-      newErrors.time = "Time is required";
-    }
-
-    if (!formData.homeTeamId) {
-      newErrors.homeTeamId = "Home team is required";
-    }
-
-    if (!formData.awayTeamName.trim()) {
-      newErrors.awayTeamName = "Away team name is required";
-    }
-
-    if (!formData.city.trim()) {
-      newErrors.city = "City is required";
-    }
-
     if (!formData.contactPhone.trim()) {
       newErrors.contactPhone = "Contact phone is required";
+    } else if (!validatePhoneNumber(formData.contactPhone)) {
+      newErrors.contactPhone =
+        "Please enter a valid phone number format (only + at beginning and numbers allowed)";
     }
 
     setErrors(newErrors);
@@ -102,20 +59,19 @@ const CreateMatch = () => {
 
     setIsSubmitting(true);
 
-    // Combine date and time
-    const dateTime = new Date(`${formData.date}T${formData.time}`);
+    // Combine date and time if both are provided
+    let dateTime = null;
+    if (formData.date && formData.time) {
+      dateTime = new Date(`${formData.date}T${formData.time}`);
+    }
 
     // Create new match
     const newMatch = {
       id: Date.now().toString(),
       title: formData.title,
-      date: dateTime.toISOString(),
-      stadiumName: formData.stadiumName,
-      city: formData.city,
-      homeTeamId: formData.homeTeamId,
-      homeTeamName: userTeams.find((team) => team.id === formData.homeTeamId)
-        ?.name,
-      awayTeamName: formData.awayTeamName,
+      date: dateTime ? dateTime.toISOString() : undefined,
+      stadiumName: formData.stadiumName || undefined,
+      city: formData.city || undefined,
       contactPhone: formData.contactPhone,
       notes: formData.notes,
       creatorId: user.id,
@@ -168,7 +124,7 @@ const CreateMatch = () => {
                   htmlFor="date"
                   className="block text-sm font-medium text-white mb-1"
                 >
-                  Date <span className="text-red-400">*</span>
+                  Date
                 </label>
                 <input
                   type="date"
@@ -180,7 +136,6 @@ const CreateMatch = () => {
                   className={`w-full px-3 py-2 border ${
                     errors.date ? "border-red-500" : "border-gray-600"
                   } bg-[#333] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500`}
-                  required
                 />
                 {errors.date && (
                   <p className="mt-1 text-sm text-red-400">{errors.date}</p>
@@ -192,7 +147,7 @@ const CreateMatch = () => {
                   htmlFor="time"
                   className="block text-sm font-medium text-white mb-1"
                 >
-                  Time <span className="text-red-400">*</span>
+                  Time
                 </label>
                 <input
                   type="time"
@@ -203,72 +158,11 @@ const CreateMatch = () => {
                   className={`w-full px-3 py-2 border ${
                     errors.time ? "border-red-500" : "border-gray-600"
                   } bg-[#333] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500`}
-                  required
                 />
                 {errors.time && (
                   <p className="mt-1 text-sm text-red-400">{errors.time}</p>
                 )}
               </div>
-            </div>
-
-            <div>
-              <label
-                htmlFor="homeTeamId"
-                className="block text-sm font-medium text-white mb-1"
-              >
-                Your Team (Home Team) <span className="text-red-400">*</span>
-              </label>
-              <select
-                id="homeTeamId"
-                name="homeTeamId"
-                value={formData.homeTeamId}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border ${
-                  errors.homeTeamId ? "border-red-500" : "border-gray-600"
-                } bg-[#333] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500`}
-                required
-              >
-                <option value="">Select your team</option>
-                {userTeams.map((team) => (
-                  <option key={team.id} value={team.id}>
-                    {team.name}
-                  </option>
-                ))}
-              </select>
-              {errors.homeTeamId && (
-                <p className="mt-1 text-sm text-red-400">{errors.homeTeamId}</p>
-              )}
-              {userTeams.length === 0 && (
-                <p className="mt-1 text-sm text-yellow-400">
-                  You need to create or join a team first
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor="awayTeamName"
-                className="block text-sm font-medium text-white mb-1"
-              >
-                Opponent Team Name <span className="text-red-400">*</span>
-              </label>
-              <input
-                type="text"
-                id="awayTeamName"
-                name="awayTeamName"
-                value={formData.awayTeamName}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border ${
-                  errors.awayTeamName ? "border-red-500" : "border-gray-600"
-                } bg-[#333] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500`}
-                placeholder="Enter opponent team name"
-                required
-              />
-              {errors.awayTeamName && (
-                <p className="mt-1 text-sm text-red-400">
-                  {errors.awayTeamName}
-                </p>
-              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -277,7 +171,7 @@ const CreateMatch = () => {
                   htmlFor="city"
                   className="block text-sm font-medium text-white mb-1"
                 >
-                  City <span className="text-red-400">*</span>
+                  City
                 </label>
                 <input
                   type="text"
@@ -289,13 +183,11 @@ const CreateMatch = () => {
                     errors.city ? "border-red-500" : "border-gray-600"
                   } bg-[#333] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500`}
                   placeholder="Enter city"
-                  required
                 />
                 {errors.city && (
                   <p className="mt-1 text-sm text-red-400">{errors.city}</p>
                 )}
               </div>
-
               <div>
                 <label
                   htmlFor="stadiumName"
@@ -331,7 +223,7 @@ const CreateMatch = () => {
                 className={`w-full px-3 py-2 border ${
                   errors.contactPhone ? "border-red-500" : "border-gray-600"
                 } bg-[#333] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500`}
-                placeholder="+994 XX XXX XX XX"
+                placeholder="+994XXXXXXXXX"
                 required
               />
               {errors.contactPhone && (
@@ -370,11 +262,9 @@ const CreateMatch = () => {
 
               <button
                 type="submit"
-                disabled={isSubmitting || userTeams.length === 0}
+                disabled={isSubmitting}
                 className={`px-6 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 flex items-center ${
-                  isSubmitting || userTeams.length === 0
-                    ? "opacity-70 cursor-not-allowed"
-                    : ""
+                  isSubmitting ? "opacity-70 cursor-not-allowed" : ""
                 }`}
               >
                 {isSubmitting ? (

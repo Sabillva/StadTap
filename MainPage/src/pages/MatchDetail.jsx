@@ -11,7 +11,6 @@ const MatchDetail = () => {
   const [match, setMatch] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isCreator, setIsCreator] = useState(false);
-  const [userTeams, setUserTeams] = useState([]);
 
   useEffect(() => {
     // In a real app, this would be an API call
@@ -25,20 +24,14 @@ const MatchDetail = () => {
       return;
     }
 
-    // Get user's teams
-    const storedTeams = localStorage.getItem("teams");
-    const teams = storedTeams ? JSON.parse(storedTeams) : [];
-    const myTeams = teams.filter((team) =>
-      team.members.some((member) => member.id === user.id)
-    );
-    setUserTeams(myTeams);
-
     setMatch(foundMatch);
     setIsCreator(foundMatch.creatorId === user.id);
     setLoading(false);
   }, [id, navigate, user.id]);
 
   const formatDate = (dateString) => {
+    if (!dateString) return "Not specified";
+
     const date = new Date(dateString);
     return (
       date.toLocaleDateString() +
@@ -48,14 +41,11 @@ const MatchDetail = () => {
   };
 
   const isMatchPast = (dateString) => {
+    if (!dateString) return false;
+
     const matchDate = new Date(dateString);
     const now = new Date();
     return matchDate < now;
-  };
-
-  const getTeamName = (teamId) => {
-    const team = userTeams.find((t) => t.id === teamId);
-    return team ? team.name : "Unknown Team";
   };
 
   const handleDeleteMatch = () => {
@@ -115,16 +105,18 @@ const MatchDetail = () => {
               </p>
             </div>
             <div className="flex space-x-2">
-              <span
-                className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  isMatchPast(match.date)
-                    ? "bg-gray-500/20 text-gray-400"
-                    : "bg-green-500/20 text-green-400"
-                }`}
-              >
-                {isMatchPast(match.date) ? "Completed" : "Upcoming"}
-              </span>
-              {isCreator && !isMatchPast(match.date) && (
+              {match.date && (
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    isMatchPast(match.date)
+                      ? "bg-gray-500/20 text-gray-400"
+                      : "bg-green-500/20 text-green-400"
+                  }`}
+                >
+                  {isMatchPast(match.date) ? "Completed" : "Upcoming"}
+                </span>
+              )}
+              {isCreator && (!match.date || !isMatchPast(match.date)) && (
                 <>
                   <Link
                     to={`/matches/edit/${match.id}`}
@@ -143,26 +135,6 @@ const MatchDetail = () => {
             </div>
           </div>
 
-          <div className="bg-[#333] p-6 rounded-lg mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-center flex-1">
-                <div className="text-2xl font-semibold text-white">
-                  {match.homeTeamName || getTeamName(match.homeTeamId)}
-                </div>
-                <div className="text-sm text-gray-400">Home Team</div>
-              </div>
-              <div className="text-center px-6">
-                <div className="text-3xl font-bold text-white">VS</div>
-              </div>
-              <div className="text-center flex-1">
-                <div className="text-2xl font-semibold text-white">
-                  {match.awayTeamName || getTeamName(match.awayTeamId)}
-                </div>
-                <div className="text-sm text-gray-400">Away Team</div>
-              </div>
-            </div>
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div className="bg-[#333] p-4 rounded-lg">
               <div className="text-sm text-gray-400 mb-1">Date & Time:</div>
@@ -173,7 +145,7 @@ const MatchDetail = () => {
             <div className="bg-[#333] p-4 rounded-lg">
               <div className="text-sm text-gray-400 mb-1">Stadium:</div>
               <div className="font-medium text-white">
-                {match.stadiumName || "TBD"}
+                {match.stadiumName || "Not specified"}
               </div>
             </div>
             <div className="bg-[#333] p-4 rounded-lg">

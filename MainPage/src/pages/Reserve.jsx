@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import stadiumsData from "../utils/stadiumsData";
+import { getUpdatedStadiumData } from "../utils/stadiumUtils";
 
 const Reserve = () => {
   const [filters, setFilters] = useState({
@@ -17,12 +18,28 @@ const Reserve = () => {
     },
   });
 
+  const [stadiums, setStadiums] = useState([]);
   const [filteredStadiums, setFilteredStadiums] = useState([]);
   const [searched, setSearched] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
   const stadiumsPerPage = 4;
 
   const cities = ["Bakı", "Sumqayıt", "Gəncə"];
+
+  useEffect(() => {
+    try {
+      // Get updated stadium data with dynamic ratings and reviews
+      const updatedStadiums = getUpdatedStadiumData();
+      setStadiums(updatedStadiums);
+    } catch (error) {
+      console.error("Error loading stadium data:", error);
+      // Fallback to original data if there's an error
+      setStadiums(stadiumsData);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const handleCityChange = (e) => {
     setFilters({ ...filters, city: e.target.value });
@@ -49,9 +66,7 @@ const Reserve = () => {
     }
 
     // Filter stadiums based on selected criteria
-    let results = stadiumsData.filter(
-      (stadium) => stadium.city === filters.city
-    );
+    let results = stadiums.filter((stadium) => stadium.city === filters.city);
 
     // Apply amenity filters if any are selected
     const hasAmenityFilters = Object.values(filters.amenities).some(
@@ -100,6 +115,11 @@ const Reserve = () => {
 
   // Disable past dates in date picker
   const today = new Date().toISOString().split("T")[0];
+
+  // Handle image error
+  const handleImageError = (e) => {
+    e.target.src = `https://source.unsplash.com/random/800x600/?football,stadium&sig=${Math.random()}`;
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -170,7 +190,6 @@ const Reserve = () => {
               </button>
             </div>
           </div>
-
           <div>
             <span className="block text-sm font-medium text-white mb-2">
               Amenities
@@ -253,15 +272,24 @@ const Reserve = () => {
                     key={stadium.id}
                     className="bg-[#2a2a2a] border-2 border-white/20 rounded-xl shadow-lg overflow-hidden"
                   >
-                    <img
-                      src={stadium.image || "/placeholder.svg"}
-                      alt={stadium.name}
-                      className="w-full h-48 object-cover"
-                    />
+                    <div className="relative h-48">
+                      <img
+                        src={
+                          stadium.image ||
+                          `https://source.unsplash.com/random/800x600/?football,stadium&sig=${stadium.id}`
+                        }
+                        alt={stadium.name}
+                        className="w-full h-full object-cover"
+                        onError={handleImageError}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                      <div className="absolute bottom-0 left-0 p-4">
+                        <h2 className="text-xl font-bold text-white">
+                          {stadium.name}
+                        </h2>
+                      </div>
+                    </div>
                     <div className="p-6">
-                      <h2 className="text-xl font-semibold mb-2 text-white">
-                        {stadium.name}
-                      </h2>
                       <div className="flex items-center mb-2">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"

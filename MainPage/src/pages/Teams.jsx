@@ -22,9 +22,11 @@ const Teams = () => {
 
     setTeams(allTeams);
 
-    // Filter teams where user is a member
-    const myTeams = allTeams.filter((team) =>
-      team.members.some((member) => member.id === user.id)
+    // Filter teams where user is a member or creator
+    const myTeams = allTeams.filter(
+      (team) =>
+        team.members.some((member) => member.id === user.id) ||
+        team.creatorId === user.id
     );
     setUserTeams(myTeams);
 
