@@ -50,6 +50,7 @@ const MyReservations = () => {
     return [hours, minutes, secs].map((v) => (v < 10 ? "0" + v : v)).join(":");
   };
 
+  // Modify the useEffect hook to properly filter out deleted reservations
   useEffect(() => {
     // Check for expired reservations first
     const hasUpdates = checkAndUpdateExpiredReservations();
@@ -60,7 +61,10 @@ const MyReservations = () => {
       localStorage.getItem("reservations") || "[]"
     );
 
-    let userReservations = allReservations.filter((r) => r.userId === user.id);
+    // Filter to only show the current user's reservations that are NOT deleted
+    let userReservations = allReservations.filter(
+      (r) => r.userId === user.id && !r.deleted_by_user
+    );
 
     // Process each reservation to ensure acceptedAt is set for accepted reservations
     userReservations = userReservations.map(updateReservationWithAcceptedTime);

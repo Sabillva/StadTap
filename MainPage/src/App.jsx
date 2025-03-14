@@ -41,6 +41,16 @@ import EditProfile from "./pages/EditProfile";
 // Dashboard
 import Dashboard from "./pages/Dashboard";
 
+// Users and Chat Pages
+import Users from "./pages/Users";
+import UserDetail from "./pages/UserDetail";
+import Chat from "./pages/Chat";
+import ChatDetail from "./pages/ChatDetail";
+
+// Stadium Owner Pages
+import MyStadium from "./pages/MyStadium";
+// import EditStadium from "./pages/EditStadium";
+
 // Layout
 import MainLayout from "./components/layouts/MainLayout";
 
@@ -155,11 +165,18 @@ function App() {
           <Route path="matches/create" element={<CreateMatch />} />
           <Route path="matches/edit/:id" element={<EditMatch />} />
 
+          {/* Users and Chat Routes */}
+          <Route path="users" element={<Users />} />
+          <Route path="users/:id" element={<UserDetail />} />
+          <Route path="chat" element={<Chat />} />
+          <Route path="chat/:id" element={<ChatDetail />} />
+
           {/* Profile Routes */}
           <Route path="profile" element={<Profile />} />
           <Route path="profile/edit" element={<EditProfile />} />
 
-          {/* Stadium Owner Dashboard */}
+          {/* Stadium Owner Routes */}
+          <Route path="my-stadium" element={<MyStadium />} />
           <Route
             path="dashboard"
             element={
@@ -168,6 +185,14 @@ function App() {
               </StadiumOwnerRoute>
             }
           />
+          {/* <Route
+            path="my-stadium/edit"
+            element={
+              <StadiumOwnerRoute>
+                <EditStadium />
+              </StadiumOwnerRoute>
+            }
+          /> */}
         </Route>
 
         {/* Fallback Route */}
