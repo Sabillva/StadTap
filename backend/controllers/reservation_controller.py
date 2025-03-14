@@ -2,8 +2,12 @@ from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Depends
 from sqlalchemy.orm import Session
+from starlette import status
 
+from backend.auth.dependencies import get_current_user
 from backend.database import get_db
+from backend.models.models import AppUser
+from backend.services.reservation_code_service import approve_reservation_code
 from backend.services.reservation_service import ReservationService
 
 router = APIRouter(prefix="/reservations", tags=["Reservations"])
@@ -24,27 +28,19 @@ def get_available_time_slots(
 
     return response
 
-# @router.post("/create")
-# def create_reservation(
-#         user_id: int,
-#         stadium_id: int,
-#         time_slot: str,
-#         date: str,
-#         payment_intent_id: str,
-#         db: Session = Depends(get_db)
-# ):
-#     try:
-#         payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
-#         if payment_intent.status != "succeeded":
-#             raise HTTPException(status_code=400, detail="Payment not completed.")
-#     except Exception as e:
-#         raise HTTPException(status_code=400, detail=str(e))
-#
-#     response, status_code = ReservationService.create_reservation(
-#         user_id, stadium_id, time_slot, date, payment_intent_id, db
-#     )
-#
-#     if status_code != 201:
-#         raise HTTPException(status_code=status_code, detail=response["message"])
-#
-#     return response
+
+@router.post("/owner/approve-code")
+def approve_code(
+        code: str,
+        db: Session = Depends(get_db),
+        current_user: AppUser = Depends(get_current_user)
+):
+    # Ensure the current user is an owner
+    if current_user.role != "owner":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only owners can approve codes"
+        )
+
+    # Call the service to approve the code
+    return approve_reservation_code(db, code, current_user.id)

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, Text, Float, JSON, Enum, ForeignKey, Date
+from sqlalchemy import Column, Integer, String, Boolean, Text, Float, JSON, Enum, ForeignKey, Date, DateTime
 from sqlalchemy.orm import relationship
 
 from backend.database import Base_Model
@@ -95,8 +95,22 @@ class Reservation(Base_Model):
     date = Column(Date, nullable=False)
     time_slot = Column(String(20), nullable=False)
     payment_status = Column(Enum("pending", "successful", "rejected"), default="pending")
-    payment_intent_id = Column(String(50), nullable=True)  # Add this field
+    payment_intent_id = Column(String(50), nullable=True)
 
     # Relationships
     user = relationship("AppUser", back_populates="reservations")
     stadium = relationship("Stadium", back_populates="reservations")
+    reservation_code = relationship("ReservationCode", back_populates="reservation",
+                                    uselist=False)  # One-to-one relationship
+
+
+class ReservationCode(Base_Model):
+    __tablename__ = "reservation_codes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(50), unique=True, nullable=False)  # Unique code sent to the user
+    reservation_id = Column(Integer, ForeignKey("reservations.id"), nullable=False)  # Associated reservation
+    expires_at = Column(DateTime, nullable=False)  # Expiration time of the code
+
+    # Relationship to Reservation
+    reservation = relationship("Reservation", back_populates="reservation_code")
