@@ -10,13 +10,13 @@ export const incrementStadiumViews = (stadiumId) => {
   const viewCountsStr = localStorage.getItem("stadiumViewCounts");
   const viewCounts = viewCountsStr ? JSON.parse(viewCountsStr) : {};
 
-  // Increment the view count for this stadium
+  // Increment the view count for this stadium by 1 (not 2)
   viewCounts[stadiumId] = (viewCounts[stadiumId] || 0) + 1;
 
   // Save back to localStorage
   localStorage.setItem("stadiumViewCounts", JSON.stringify(viewCounts));
 
-  return viewCounts[stadiumId];
+  return viewCounts[stadiumId] || 0;
 };
 
 /**

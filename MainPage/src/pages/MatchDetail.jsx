@@ -11,6 +11,8 @@ const MatchDetail = () => {
   const [match, setMatch] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isCreator, setIsCreator] = useState(false);
+  const [hasRequestedToJoin, setHasRequestedToJoin] = useState(false);
+  const [activeTab, setActiveTab] = useState("details");
 
   useEffect(() => {
     // In a real app, this would be an API call
@@ -26,6 +28,14 @@ const MatchDetail = () => {
 
     setMatch(foundMatch);
     setIsCreator(foundMatch.creatorId === user.id);
+
+    // Check if user has already requested to join as opponent
+    setHasRequestedToJoin(
+      (foundMatch.joinRequests &&
+        foundMatch.joinRequests.some((request) => request.id === user.id)) ||
+        false
+    );
+
     setLoading(false);
   }, [id, navigate, user.id]);
 
@@ -61,6 +71,133 @@ const MatchDetail = () => {
 
     localStorage.setItem("matches", JSON.stringify(updatedMatches));
     navigate("/matches");
+  };
+
+  const handleJoinRequest = () => {
+    // In a real app, this would be an API call
+    // For demo purposes, we'll use localStorage
+    const storedMatches = localStorage.getItem("matches");
+    const matches = JSON.parse(storedMatches);
+    const updatedMatches = matches.map((m) => {
+      if (m.id === id) {
+        return {
+          ...m,
+          joinRequests: [
+            ...m.joinRequests,
+            {
+              id: user.id,
+              username: user.username,
+              requestDate: new Date().toISOString(),
+              status: "pending",
+            },
+          ],
+        };
+      }
+      return m;
+    });
+
+    localStorage.setItem("matches", JSON.stringify(updatedMatches));
+    setHasRequestedToJoin(true);
+
+    // Update the match state
+    setMatch(updatedMatches.find((m) => m.id === id));
+  };
+
+  const handleCancelRequest = () => {
+    // In a real app, this would be an API call
+    // For demo purposes, we'll use localStorage
+    const storedMatches = localStorage.getItem("matches");
+    const matches = JSON.parse(storedMatches);
+    const updatedMatches = matches.map((m) => {
+      if (m.id === id) {
+        return {
+          ...m,
+          joinRequests: m.joinRequests.filter(
+            (request) => request.id !== user.id
+          ),
+        };
+      }
+      return m;
+    });
+
+    localStorage.setItem("matches", JSON.stringify(updatedMatches));
+    setHasRequestedToJoin(false);
+
+    // Update the match state
+    setMatch(updatedMatches.find((m) => m.id === id));
+  };
+
+  const handleAcceptRequest = (requestId) => {
+    // In a real app, this would be an API call
+    // For demo purposes, we'll use localStorage
+    const storedMatches = localStorage.getItem("matches");
+    const matches = JSON.parse(storedMatches);
+    const updatedMatches = matches.map((m) => {
+      if (m.id === id) {
+        const request = m.joinRequests.find((r) => r.id === requestId);
+        return {
+          ...m,
+          hasOpponent: true,
+          opponentId: request.id,
+          opponentName: request.username,
+          joinRequests: [], // Clear all requests once an opponent is accepted
+        };
+      }
+      return m;
+    });
+
+    localStorage.setItem("matches", JSON.stringify(updatedMatches));
+
+    // Update the match state
+    setMatch(updatedMatches.find((m) => m.id === id));
+  };
+
+  const handleRejectRequest = (requestId) => {
+    // In a real app, this would be an API call
+    // For demo purposes, we'll use localStorage
+    const storedMatches = localStorage.getItem("matches");
+    const matches = JSON.parse(storedMatches);
+    const updatedMatches = matches.map((m) => {
+      if (m.id === id) {
+        return {
+          ...m,
+          joinRequests: m.joinRequests.filter((r) => r.id !== requestId),
+        };
+      }
+      return m;
+    });
+
+    localStorage.setItem("matches", JSON.stringify(updatedMatches));
+
+    // Update the match state
+    setMatch(updatedMatches.find((m) => m.id === id));
+  };
+
+  const handleRemoveOpponent = () => {
+    if (!confirm("Are you sure you want to remove the opponent?")) {
+      return;
+    }
+
+    // In a real app, this would be an API call
+    // For demo purposes, we'll use localStorage
+    const storedMatches = localStorage.getItem("matches");
+    const matches = JSON.parse(storedMatches);
+    const updatedMatches = matches.map((m) => {
+      if (m.id === id) {
+        return {
+          ...m,
+          hasOpponent: false,
+          opponentId: null,
+          opponentName: null,
+        };
+      }
+      return m;
+    });
+
+    localStorage.setItem("matches", JSON.stringify(updatedMatches));
+
+    // Update the match state
+    setMatch(updatedMatches.find((m) => m.id === id));
   };
 
   if (loading) {
@@ -132,42 +269,190 @@ const MatchDetail = () => {
                   </button>
                 </>
               )}
+
+              {/* Join as Opponent Button */}
+              {!isCreator &&
+                !match.hasOpponent &&
+                !hasRequestedToJoin &&
+                !isMatchPast(match.date) && (
+                  <button
+                    onClick={handleJoinRequest}
+                    className="px-3 py-1 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
+                  >
+                    Join as Opponent
+                  </button>
+                )}
+
+              {/* Cancel Request Button */}
+              {!isCreator && hasRequestedToJoin && !isMatchPast(match.date) && (
+                <button
+                  onClick={handleCancelRequest}
+                  className="px-3 py-1 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition-colors"
+                >
+                  Cancel Request
+                </button>
+              )}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div className="bg-[#333] p-4 rounded-lg">
-              <div className="text-sm text-gray-400 mb-1">Date & Time:</div>
-              <div className="font-medium text-white">
-                {formatDate(match.date)}
-              </div>
-            </div>
-            <div className="bg-[#333] p-4 rounded-lg">
-              <div className="text-sm text-gray-400 mb-1">Stadium:</div>
-              <div className="font-medium text-white">
-                {match.stadiumName || "Not specified"}
-              </div>
-            </div>
-            <div className="bg-[#333] p-4 rounded-lg">
-              <div className="text-sm text-gray-400 mb-1">City:</div>
-              <div className="font-medium text-white">
-                {match.city || "Not specified"}
-              </div>
-            </div>
-            <div className="bg-[#333] p-4 rounded-lg">
-              <div className="text-sm text-gray-400 mb-1">Contact:</div>
-              <div className="font-medium text-white">
-                {match.contactPhone || "Not provided"}
-              </div>
+          <div className="mb-4">
+            <div className="flex border-b border-gray-700">
+              <button
+                className={`px-4 py-2 font-medium ${
+                  activeTab === "details"
+                    ? "text-green-400 border-b-2 border-green-400"
+                    : "text-gray-400 hover:text-gray-300"
+                }`}
+                onClick={() => setActiveTab("details")}
+              >
+                Details
+              </button>
+              {isCreator && (
+                <button
+                  className={`px-4 py-2 font-medium ${
+                    activeTab === "requests"
+                      ? "text-green-400 border-b-2 border-green-400"
+                      : "text-gray-400 hover:text-gray-300"
+                  }`}
+                  onClick={() => setActiveTab("requests")}
+                >
+                  Join Requests
+                  {match.joinRequests && match.joinRequests.length > 0 && (
+                    <span className="ml-2 px-2 py-0.5 bg-green-500 text-white text-xs rounded-full">
+                      {match.joinRequests.length}
+                    </span>
+                  )}
+                </button>
+              )}
             </div>
           </div>
 
-          {match.notes && (
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-2 text-white">Notes</h2>
-              <div className="bg-[#333] p-4 rounded-lg">
-                <p className="text-gray-300">{match.notes}</p>
+          {activeTab === "details" && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="bg-[#333] p-4 rounded-lg">
+                  <div className="text-sm text-gray-400 mb-1">Date & Time:</div>
+                  <div className="font-medium text-white">
+                    {formatDate(match.date)}
+                  </div>
+                </div>
+                <div className="bg-[#333] p-4 rounded-lg">
+                  <div className="text-sm text-gray-400 mb-1">Stadium:</div>
+                  <div className="font-medium text-white">
+                    {match.stadiumName || "Not specified"}
+                  </div>
+                </div>
+                <div className="bg-[#333] p-4 rounded-lg">
+                  <div className="text-sm text-gray-400 mb-1">City:</div>
+                  <div className="font-medium text-white">
+                    {match.city || "Not specified"}
+                  </div>
+                </div>
+                <div className="bg-[#333] p-4 rounded-lg">
+                  <div className="text-sm text-gray-400 mb-1">Contact:</div>
+                  <div className="font-medium text-white">
+                    {match.contactPhone || "Not provided"}
+                  </div>
+                </div>
               </div>
+
+              {/* Opponent Section */}
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold mb-2 text-white">
+                  Opponent
+                </h2>
+                <div className="bg-[#333] p-4 rounded-lg">
+                  {match.hasOpponent ? (
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <div className="font-medium text-white">
+                          {match.opponentName}
+                        </div>
+                        <div className="text-sm text-gray-400">
+                          Opponent Team
+                        </div>
+                      </div>
+                      {isCreator && (
+                        <button
+                          onClick={handleRemoveOpponent}
+                          className="px-3 py-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors text-sm"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-gray-300">
+                      {isCreator
+                        ? "No opponent yet. Waiting for join requests."
+                        : hasRequestedToJoin
+                        ? "Your request to join as opponent is pending."
+                        : "This match is looking for an opponent."}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {match.notes && (
+                <div className="mb-6">
+                  <h2 className="text-xl font-semibold mb-2 text-white">
+                    Notes
+                  </h2>
+                  <div className="bg-[#333] p-4 rounded-lg">
+                    <p className="text-gray-300">{match.notes}</p>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {activeTab === "requests" && isCreator && (
+            <div className="bg-[#333] rounded-lg p-4 mb-6">
+              <h2 className="text-xl font-semibold mb-4 text-white">
+                Join Requests
+              </h2>
+
+              {match.joinRequests && match.joinRequests.length > 0 ? (
+                <ul className="divide-y divide-gray-700">
+                  {match.joinRequests.map((request) => (
+                    <li
+                      key={request.id}
+                      className="py-3 flex justify-between items-center"
+                    >
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                          {request.username.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="text-white">{request.username}</div>
+                          <div className="text-xs text-gray-400">
+                            Requested:{" "}
+                            {new Date(request.requestDate).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleAcceptRequest(request.id)}
+                          className="px-3 py-1 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors text-sm"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => handleRejectRequest(request.id)}
+                          className="px-3 py-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors text-sm"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-400 text-center py-4">
+                  No pending join requests
+                </p>
+              )}
             </div>
           )}
 

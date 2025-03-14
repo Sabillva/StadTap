@@ -160,9 +160,16 @@ const Teams = () => {
               className="bg-[#2a2a2a] border-2 border-white/20 rounded-xl shadow-lg overflow-hidden"
             >
               <div className="p-6">
-                <h2 className="text-xl font-semibold mb-2 text-white">
-                  {team.name}
-                </h2>
+                <div className="flex justify-between items-start mb-2">
+                  <h2 className="text-xl font-semibold text-white">
+                    {team.name}
+                  </h2>
+                  {team.memberCount >= team.maxMembers && (
+                    <span className="px-2 py-1 bg-red-500/20 text-red-400 text-xs font-medium rounded-full">
+                      Full
+                    </span>
+                  )}
+                </div>
                 <p className="text-gray-300 mb-4 line-clamp-2">
                   {team.description}
                 </p>
@@ -182,7 +189,13 @@ const Teams = () => {
                         d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                       />
                     </svg>
-                    <span className="text-gray-300">
+                    <span
+                      className={`text-gray-300 ${
+                        team.memberCount >= team.maxMembers
+                          ? "text-red-400 font-bold"
+                          : ""
+                      }`}
+                    >
                       {team.memberCount}/{team.maxMembers} members
                     </span>
                   </div>

@@ -262,9 +262,16 @@ const TeamDetail = () => {
               {!isMember && !isCreator && !hasRequestedToJoin && (
                 <button
                   onClick={handleJoinRequest}
-                  className="px-3 py-1 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
+                  disabled={team.memberCount >= team.maxMembers}
+                  className={`px-3 py-1 ${
+                    team.memberCount >= team.maxMembers
+                      ? "bg-gray-500 cursor-not-allowed"
+                      : "bg-green-500 hover:bg-green-600"
+                  } text-white rounded-full transition-colors`}
                 >
-                  Request to Join
+                  {team.memberCount >= team.maxMembers
+                    ? "Team is Full"
+                    : "Request to Join"}
                 </button>
               )}
               {!isMember && !isCreator && hasRequestedToJoin && (

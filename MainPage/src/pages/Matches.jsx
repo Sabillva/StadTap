@@ -151,17 +151,24 @@ const Matches = () => {
                   <h2 className="text-xl font-semibold text-white">
                     {match.title || "Football Match"}
                   </h2>
-                  {match.date && (
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        isMatchPast(match.date)
-                          ? "bg-gray-500/20 text-gray-400"
-                          : "bg-green-500/20 text-green-400"
-                      }`}
-                    >
-                      {isMatchPast(match.date) ? "Completed" : "Upcoming"}
-                    </span>
-                  )}
+                  <div className="flex space-x-2">
+                    {match.date && (
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          isMatchPast(match.date)
+                            ? "bg-gray-500/20 text-gray-400"
+                            : "bg-green-500/20 text-green-400"
+                        }`}
+                      >
+                        {isMatchPast(match.date) ? "Completed" : "Upcoming"}
+                      </span>
+                    )}
+                    {match.hasOpponent && (
+                      <span className="px-2 py-1 bg-red-500/20 text-red-400 text-xs font-medium rounded-full">
+                        Full
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-4">

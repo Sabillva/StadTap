@@ -77,6 +77,11 @@ const CreateMatch = () => {
       creatorId: user.id,
       creatorName: `${user.firstName} ${user.lastName}`,
       createdAt: new Date().toISOString(),
+      // Add opponent functionality
+      hasOpponent: false,
+      opponentId: null,
+      opponentName: null,
+      joinRequests: [], // For opponent requests
     };
 
     // Save to localStorage

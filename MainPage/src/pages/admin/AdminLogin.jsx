@@ -1,29 +1,19 @@
 "use client";
 
-import { useState, useContext, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { AuthContext } from "../App";
+import { useState, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../../App";
 
-const Login = () => {
+const AdminLogin = () => {
   const { setUser } = useContext(AuthContext);
   const navigate = useNavigate();
-  const location = useLocation();
   const [formData, setFormData] = useState({
     username: "",
     password: "",
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showRegistrationSuccess, setShowRegistrationSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showAdminDropdown, setShowAdminDropdown] = useState(false);
-
-  useEffect(() => {
-    // Check if user just registered
-    if (location.state?.registered) {
-      setShowRegistrationSuccess(true);
-    }
-  }, [location.state]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -58,148 +48,64 @@ const Login = () => {
 
     setIsSubmitting(true);
 
-    // Simulate API call to authenticate user
+    // Simulate API call to authenticate admin
     setTimeout(() => {
-      // In a real app, this would be an API call to authenticate the user
+      // In a real app, this would be an API call to authenticate the admin
       // For demo purposes, we'll just check against localStorage
 
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const user = users.find((u) => u.username === formData.username);
+      const admins = JSON.parse(localStorage.getItem("admins") || "[]");
+      const admin = admins.find((a) => a.username === formData.username);
 
-      if (!user) {
-        setErrors({ username: "Username not found" });
+      if (!admin) {
+        setErrors({ username: "Admin username not found" });
         setIsSubmitting(false);
         return;
       }
 
-      if (user.password !== formData.password) {
+      if (admin.password !== formData.password) {
         setErrors({ password: "Incorrect username or password" });
         setIsSubmitting(false);
         return;
       }
 
       // Login successful
-      const userData = {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        username: user.username,
-        userType: user.userType,
-        stadiumName: user.stadiumName, // Include stadiumName for stadium owners
+      const adminData = {
+        id: admin.id,
+        firstName: admin.firstName,
+        lastName: admin.lastName,
+        email: admin.email,
+        username: admin.username,
+        userType: "admin",
       };
 
-      // Store user in localStorage
-      localStorage.setItem("user", JSON.stringify(userData));
+      // Store admin in localStorage
+      localStorage.setItem("admin", JSON.stringify(adminData));
 
       // Update context
-      setUser(userData);
+      setUser({
+        ...adminData,
+        isAdmin: true,
+      });
 
       setIsSubmitting(false);
 
-      // Redirect to home
-      navigate("/stadiums");
+      // Redirect to admin dashboard
+      navigate("/admin/dashboard");
     }, 1000);
   };
 
-  const handleAdminLogin = () => {
-    navigate("/admin/login");
-  };
-
-  const handleAdminRegister = () => {
-    navigate("/admin/register");
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#222] py-12 px-4 sm:px-6 lg:px-8 relative">
-      {/* Admin Button */}
-      <div className="absolute top-4 right-4">
-        <div className="relative">
-          <button
-            onClick={() => setShowAdminDropdown(!showAdminDropdown)}
-            className="px-4 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors flex items-center"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-2"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
-            Admin
-          </button>
-
-          {showAdminDropdown && (
-            <div className="absolute right-0 mt-2 w-48 bg-[#2a2a2a] border border-gray-700 rounded-md shadow-lg z-10">
-              <div className="py-1">
-                <button
-                  onClick={handleAdminLogin}
-                  className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-[#333]"
-                >
-                  Admin Login
-                </button>
-                <button
-                  onClick={handleAdminRegister}
-                  className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-[#333]"
-                >
-                  Admin Register
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
+    <div className="min-h-screen flex items-center justify-center bg-[#222] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-[#2a2a2a] border-2 border-white/20 rounded-xl p-8 shadow-lg">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
-            Sign in to your account
+            Admin Login
           </h2>
           <p className="mt-2 text-center text-sm text-gray-300">
-            Enter your credentials to access the platform
+            Enter your admin credentials
           </p>
         </div>
 
-        {showRegistrationSuccess && (
-          <div className="rounded-md bg-green-500/20 p-4 mb-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-green-400"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-green-400">
-                  Registration successful
-                </h3>
-                <div className="mt-2 text-sm text-green-300">
-                  <p>
-                    Your account has been created successfully. You can now log
-                    in.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div className="mb-4">
@@ -207,7 +113,7 @@ const Login = () => {
                 htmlFor="username"
                 className="block text-sm font-medium text-white mb-1"
               >
-                Username
+                Admin Username
               </label>
               <input
                 id="username"
@@ -216,8 +122,8 @@ const Login = () => {
                 required
                 className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
                   errors.username ? "border-red-500" : "border-gray-600"
-                } bg-[#333] placeholder-gray-400 text-white rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm`}
-                placeholder="Username"
+                } bg-[#333] placeholder-gray-400 text-white rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm`}
+                placeholder="Admin Username"
                 value={formData.username}
                 onChange={handleChange}
               />
@@ -240,7 +146,7 @@ const Login = () => {
                   required
                   className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
                     errors.password ? "border-red-500" : "border-gray-600"
-                  } bg-[#333] placeholder-gray-400 text-white rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm pr-10`}
+                  } bg-[#333] placeholder-gray-400 text-white rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm pr-10`}
                   placeholder="Password"
                   value={formData.password}
                   onChange={handleChange}
@@ -299,7 +205,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-full text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-full text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
             >
               {isSubmitting ? (
                 <span className="flex items-center">
@@ -326,27 +232,27 @@ const Login = () => {
                   Signing in...
                 </span>
               ) : (
-                "Sign in"
+                "Sign in as Admin"
               )}
             </button>
           </div>
 
           <div className="text-center space-y-2">
             <p className="text-sm text-gray-300">
-              Don't have an account?{" "}
+              Don't have an admin account?{" "}
               <Link
-                to="/signup"
-                className="font-medium text-green-400 hover:text-green-300"
+                to="/admin/register"
+                className="font-medium text-purple-400 hover:text-purple-300"
               >
-                Sign up
+                Register as Admin
               </Link>
             </p>
             <p className="text-sm text-gray-300">
               <Link
-                to="/signup"
-                className="font-medium text-green-400 hover:text-green-300"
+                to="/login"
+                className="font-medium text-gray-400 hover:text-gray-300"
               >
-                Register as a Stadium Owner
+                Back to User Login
               </Link>
             </p>
           </div>
@@ -356,4 +262,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default AdminLogin;

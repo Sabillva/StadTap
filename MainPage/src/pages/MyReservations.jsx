@@ -115,13 +115,23 @@ const MyReservations = () => {
     const allReservations = JSON.parse(
       localStorage.getItem("reservations") || "[]"
     );
-    const updatedReservations = allReservations.filter(
-      (r) => r.id !== reservationId
-    );
+
+    // Instead of filtering out the reservation, mark it as deleted by user
+    const updatedReservations = allReservations.map((reservation) => {
+      if (reservation.id === reservationId) {
+        return {
+          ...reservation,
+          status: reservation.status, // Keep the original status
+          deleted_by_user: true, // Add this flag
+          deletedAt: new Date().getTime(),
+        };
+      }
+      return reservation;
+    });
 
     localStorage.setItem("reservations", JSON.stringify(updatedReservations));
 
-    // Update state
+    // Update state - only filter for the user's view
     setReservations(reservations.filter((r) => r.id !== reservationId));
   };
 
@@ -217,18 +227,32 @@ const MyReservations = () => {
           {reservations.map((reservation) => (
             <div
               key={reservation.id}
-              className="bg-[#2a2a2a] border-2 border-white/20 rounded-xl shadow-lg overflow-hidden"
+              className="bg-[#2a2a2a] border-2 border-white/20 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
             >
               <div className="md:flex">
-                <div className="md:flex-shrink-0">
+                <div className="md:flex-shrink-0 relative overflow-hidden">
                   <img
                     src={
                       reservation.stadiumImage ||
-                      `https://source.unsplash.com/random/300x200/?football,stadium&sig=${reservation.id}`
+                      `https://source.unsplash.com/random/300x200/?football,stadium&sig=${
+                        reservation.id || "/placeholder.svg"
+                      }`
                     }
                     alt={reservation.stadiumName}
-                    className="h-48 w-full object-cover md:w-48"
+                    className="h-48 w-full object-cover md:w-48 md:h-full transition-transform duration-500 hover:scale-110"
+                    onError={(e) => {
+                      e.target.src = `https://source.unsplash.com/random/300x200/?football,stadium&sig=${Math.random()}`;
+                    }}
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                  <div className="absolute bottom-0 left-0 p-2">
+                    <span className="bg-green-500/80 text-white text-xs font-bold px-2 py-1 rounded-full">
+                      {reservation.hourlyRate ||
+                        reservation.totalPrice /
+                          reservation.timeSlots.length}{" "}
+                      AZN/hour
+                    </span>
+                  </div>
                 </div>
                 <div className="p-6 w-full">
                   <div className="flex justify-between items-start">

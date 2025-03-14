@@ -34,13 +34,14 @@ const Dashboard = () => {
     console.log("Stadium name:", user.stadiumName);
 
     // Filter reservations for this owner's stadium only
+    // Don't show reservations that were deleted by users
     const ownerReservations = allReservations.filter(
-      (r) => r.stadiumName === user.stadiumName
+      (r) => r.stadiumName === user.stadiumName && !r.deleted_by_user
     );
 
     console.log("Owner reservations:", ownerReservations);
 
-    // Calculate stats
+    // Calculate stats - only count non-deleted reservations
     const pendingCount = ownerReservations.filter(
       (r) => r.status === "waiting"
     ).length;
@@ -73,7 +74,7 @@ const Dashboard = () => {
           localStorage.getItem("reservations") || "[]"
         );
         const refreshedOwnerReservations = refreshedReservations.filter(
-          (r) => r.stadiumName === user.stadiumName
+          (r) => r.stadiumName === user.stadiumName && !r.deleted_by_user
         );
 
         setReservations(refreshedOwnerReservations);

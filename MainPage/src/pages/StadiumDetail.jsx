@@ -24,7 +24,12 @@ const StadiumDetail = () => {
         return;
       }
 
-      // Increment view count and update reviews
+      // Get current view counts from localStorage to check if we need to increment
+      const viewCountsStr = localStorage.getItem("stadiumViewCounts");
+      const viewCounts = viewCountsStr ? JSON.parse(viewCountsStr) : {};
+      const currentCount = viewCounts[id] || 0;
+
+      // Increment view count every time the stadium detail page is viewed
       const viewCount = incrementStadiumViews(id);
 
       // Calculate dynamic rating based on paid reservations

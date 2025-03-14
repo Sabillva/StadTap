@@ -8,6 +8,12 @@ import SignUp from "./pages/SignUp";
 import SignUpStep2 from "./pages/SignUpStep2";
 import Login from "./pages/Login";
 
+// Admin Pages
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminRegister from "./pages/admin/AdminRegister";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminProfile from "./pages/admin/AdminProfile";
+
 // Main Pages
 import Stadiums from "./pages/Stadiums";
 import StadiumDetail from "./pages/StadiumDetail";
@@ -47,8 +53,15 @@ function App() {
   // Check if user is logged in
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
+    const storedAdmin = localStorage.getItem("admin");
+
     if (storedUser) {
       setUser(JSON.parse(storedUser));
+    } else if (storedAdmin) {
+      setUser({
+        ...JSON.parse(storedAdmin),
+        isAdmin: true,
+      });
     }
   }, []);
 
@@ -68,6 +81,14 @@ function App() {
     return children;
   };
 
+  // Admin route component
+  const AdminRoute = ({ children }) => {
+    if (!user || !user.isAdmin) {
+      return <Navigate to="/admin/login" />;
+    }
+    return children;
+  };
+
   return (
     <AuthContext.Provider value={{ user, setUser }}>
       <Routes>
@@ -75,6 +96,26 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/signup/step2" element={<SignUpStep2 />} />
         <Route path="/login" element={<Login />} />
+
+        {/* Admin Routes */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/register" element={<AdminRegister />} />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/profile"
+          element={
+            <AdminRoute>
+              <AdminProfile />
+            </AdminRoute>
+          }
+        />
 
         {/* Payment Route - Moved inside Protected Routes but outside MainLayout */}
         <Route
