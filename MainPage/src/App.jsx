@@ -49,7 +49,7 @@ import ChatDetail from "./pages/ChatDetail";
 
 // Stadium Owner Pages
 import MyStadium from "./pages/MyStadium";
-// import EditStadium from "./pages/EditStadium";
+import EditStadium from "./pages/EditStadium";
 
 // Layout
 import MainLayout from "./components/layouts/MainLayout";
@@ -185,14 +185,14 @@ function App() {
               </StadiumOwnerRoute>
             }
           />
-          {/* <Route
+          <Route
             path="my-stadium/edit"
             element={
               <StadiumOwnerRoute>
                 <EditStadium />
               </StadiumOwnerRoute>
             }
-          /> */}
+          />
         </Route>
 
         {/* Fallback Route */}

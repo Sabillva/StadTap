@@ -37,8 +37,8 @@ const MainLayout = () => {
 
   return (
     <div className="min-h-screen bg-[#222]">
-      {/* Header */}
-      <header className="bg-[#2a2a2a] border-b border-gray-700 py-4 px-6">
+      {/* Header - Fixed at the top */}
+      <header className="bg-[#2a2a2a] border-b border-gray-700 py-4 px-6 fixed top-0 left-0 right-0 z-50">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center">
             <Link to="/" className="text-2xl font-bold text-white">
@@ -218,7 +218,7 @@ const MainLayout = () => {
 
       {/* Mobile Navigation */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-[#2a2a2a] border-b border-gray-700">
+        <div className="md:hidden bg-[#2a2a2a] border-b border-gray-700 fixed top-16 left-0 right-0 z-40">
           <nav className="container mx-auto py-4 px-6 flex flex-col space-y-4">
             <Link
               to="/stadiums"
@@ -327,8 +327,8 @@ const MainLayout = () => {
         </div>
       )}
 
-      {/* Main Content */}
-      <main>
+      {/* Main Content - Add padding to account for fixed header */}
+      <main className="pt-16">
         <Outlet />
       </main>
     </div>

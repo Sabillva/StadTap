@@ -22,6 +22,7 @@ const EditProfile = () => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [changePassword, setChangePassword] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     // In a real app, this would be an API call
@@ -180,6 +181,23 @@ const EditProfile = () => {
       setIsSubmitting(false);
       navigate("/profile");
     }, 1000);
+  };
+
+  const handleDeleteAccount = () => {
+    // Remove user from localStorage
+    const storedUsers = localStorage.getItem("users");
+    const users = storedUsers ? JSON.parse(storedUsers) : [];
+    const updatedUsers = users.filter((u) => u.id !== user.id);
+    localStorage.setItem("users", JSON.stringify(updatedUsers));
+
+    // Clear current user session
+    localStorage.removeItem("user");
+
+    // Log out the user
+    setUser(null);
+
+    // Redirect to login page
+    navigate("/login");
   };
 
   return (
@@ -462,6 +480,35 @@ const EditProfile = () => {
           </div>
         </form>
       </div>
+
+      {/* Delete Account Confirmation Modal - Updated with semi-transparent background */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#2a2a2a] border-2 border-white/20 rounded-xl shadow-lg p-6 max-w-md w-full">
+            <h2 className="text-xl font-bold text-white mb-4">
+              Delete Account
+            </h2>
+            <p className="text-gray-300 mb-6">
+              Are you sure you want to delete your account? This action cannot
+              be undone and all your data will be permanently removed.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 bg-gray-600 text-white rounded-full hover:bg-gray-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                className="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
+              >
+                Delete Account
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

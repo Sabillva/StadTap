@@ -79,22 +79,31 @@ export const getUpdatedStadiumData = () => {
   const customStadiumMap = {};
   customStadiums.forEach((stadium) => {
     customStadiumMap[stadium.id] = stadium;
+
+    // Also map by name for easier lookup
+    if (stadium.name) {
+      customStadiumMap[stadium.name] = stadium;
+    }
+
+    // If there's an originalId, map that too
+    if (stadium.originalId) {
+      customStadiumMap[stadium.originalId] = stadium;
+    }
   });
 
   // Update each stadium with dynamic data
   const updatedStadiums = stadiumsData.map((stadium) => {
     // Check if there's a custom stadium with the same ID or name
     const customStadium =
-      customStadiumMap[stadium.id] ||
-      customStadiums.find((s) => s.name === stadium.name);
+      customStadiumMap[stadium.id] || customStadiumMap[stadium.name];
 
     // If there's a custom stadium, use its data
     if (customStadium) {
       // Merge the original stadium with the custom stadium data
       stadium = {
         ...stadium,
-        name: customStadium.name,
-        hourlyRate: customStadium.hourlyRate,
+        name: customStadium.name || stadium.name,
+        hourlyRate: customStadium.hourlyRate || stadium.hourlyRate,
         description: customStadium.description || stadium.description,
       };
     }
@@ -145,11 +154,77 @@ export const getUpdatedStadiumData = () => {
  * @returns {Object|null} Stadium object or null if not found
  */
 export const getStadiumById = (stadiumId) => {
-  // Get all updated stadiums
-  const updatedStadiums = getUpdatedStadiumData();
+  // First check if there's a custom stadium with this ID
+  const customStadiumsStr = localStorage.getItem("customStadiums");
+  const customStadiums = customStadiumsStr ? JSON.parse(customStadiumsStr) : [];
 
-  // Find the stadium with the matching ID
-  return updatedStadiums.find((stadium) => stadium.id === stadiumId) || null;
+  // Look for a direct match by ID
+  let customStadium = customStadiums.find((s) => s.id === stadiumId);
+
+  // If not found, look for a stadium that was created to override an original stadium
+  if (!customStadium) {
+    customStadium = customStadiums.find((s) => s.originalId === stadiumId);
+  }
+
+  // If we found a custom stadium, use that with updated reviews/rating
+  if (customStadium) {
+    const viewCounts = JSON.parse(
+      localStorage.getItem("stadiumViewCounts") || "{}"
+    );
+    const reviews = viewCounts[customStadium.id] || 0;
+    const calculatedRating = calculateStadiumRating(customStadium.id);
+    const rating = calculatedRating || customStadium.rating || 4.0;
+
+    return {
+      ...customStadium,
+      reviews,
+      rating,
+    };
+  }
+
+  // Otherwise, get the original stadium and check if there's a custom override by name
+  const originalStadium = stadiumsData.find((s) => s.id === stadiumId);
+  if (originalStadium) {
+    // Check if there's a custom stadium with the same name
+    const nameMatch = customStadiums.find(
+      (s) => s.name === originalStadium.name
+    );
+
+    if (nameMatch) {
+      // Merge the original stadium with the custom data
+      const viewCounts = JSON.parse(
+        localStorage.getItem("stadiumViewCounts") || "{}"
+      );
+      const reviews = viewCounts[originalStadium.id] || 0;
+      const calculatedRating = calculateStadiumRating(originalStadium.id);
+      const rating = calculatedRating || originalStadium.rating;
+
+      return {
+        ...originalStadium,
+        name: nameMatch.name || originalStadium.name,
+        hourlyRate: nameMatch.hourlyRate || originalStadium.hourlyRate,
+        description: nameMatch.description || originalStadium.description,
+        reviews,
+        rating,
+      };
+    }
+
+    // No custom override, return the original with updated reviews/rating
+    const viewCounts = JSON.parse(
+      localStorage.getItem("stadiumViewCounts") || "{}"
+    );
+    const reviews = viewCounts[originalStadium.id] || 0;
+    const calculatedRating = calculateStadiumRating(originalStadium.id);
+    const rating = calculatedRating || originalStadium.rating;
+
+    return {
+      ...originalStadium,
+      reviews,
+      rating,
+    };
+  }
+
+  return null;
 };
 
 /**
@@ -158,13 +233,71 @@ export const getStadiumById = (stadiumId) => {
  * @returns {Object|null} Stadium object or null if not found
  */
 export const getStadiumByName = (stadiumName) => {
-  // Get all updated stadiums
-  const updatedStadiums = getUpdatedStadiumData();
+  // First check if there's a custom stadium with this name
+  const customStadiumsStr = localStorage.getItem("customStadiums");
+  const customStadiums = customStadiumsStr ? JSON.parse(customStadiumsStr) : [];
 
-  // Find the stadium with the matching name
-  return (
-    updatedStadiums.find((stadium) => stadium.name === stadiumName) || null
-  );
+  const customStadium = customStadiums.find((s) => s.name === stadiumName);
+
+  // If we found a custom stadium, use that with updated reviews/rating
+  if (customStadium) {
+    const viewCounts = JSON.parse(
+      localStorage.getItem("stadiumViewCounts") || "{}"
+    );
+    const reviews = viewCounts[customStadium.id] || 0;
+    const calculatedRating = calculateStadiumRating(customStadium.id);
+    const rating = calculatedRating || customStadium.rating || 4.0;
+
+    return {
+      ...customStadium,
+      reviews,
+      rating,
+    };
+  }
+
+  // Otherwise, get the original stadium
+  const originalStadium = stadiumsData.find((s) => s.name === stadiumName);
+  if (originalStadium) {
+    // Check if there's a custom stadium that overrides this one
+    const idMatch = customStadiums.find(
+      (s) => s.originalId === originalStadium.id
+    );
+
+    if (idMatch) {
+      // Use the custom stadium data
+      const viewCounts = JSON.parse(
+        localStorage.getItem("stadiumViewCounts") || "{}"
+      );
+      const reviews = viewCounts[originalStadium.id] || 0;
+      const calculatedRating = calculateStadiumRating(originalStadium.id);
+      const rating = calculatedRating || originalStadium.rating;
+
+      return {
+        ...originalStadium,
+        name: idMatch.name || originalStadium.name,
+        hourlyRate: idMatch.hourlyRate || originalStadium.hourlyRate,
+        description: idMatch.description || originalStadium.description,
+        reviews,
+        rating,
+      };
+    }
+
+    // No custom override, return the original with updated reviews/rating
+    const viewCounts = JSON.parse(
+      localStorage.getItem("stadiumViewCounts") || "{}"
+    );
+    const reviews = viewCounts[originalStadium.id] || 0;
+    const calculatedRating = calculateStadiumRating(originalStadium.id);
+    const rating = calculatedRating || originalStadium.rating;
+
+    return {
+      ...originalStadium,
+      reviews,
+      rating,
+    };
+  }
+
+  return null;
 };
 
 /**

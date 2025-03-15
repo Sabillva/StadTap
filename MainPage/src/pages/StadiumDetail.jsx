@@ -3,44 +3,43 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import stadiumsData from "../utils/stadiumsData";
-import {
-  incrementStadiumViews,
-  calculateStadiumRating,
-} from "../utils/stadiumUtils";
+import { incrementStadiumViews } from "../utils/stadiumUtils";
+import { getStadiumById } from "../utils/stadiumUtils";
 
 const StadiumDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [stadium, setStadium] = useState(null);
   const [loading, setLoading] = useState(true);
+  // Add a new state for stadium posts
+  const [stadiumPosts, setStadiumPosts] = useState([]);
+  const [showGalleryModal, setShowGalleryModal] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   useEffect(() => {
     try {
-      // Find the stadium with the matching ID
-      const foundStadium = stadiumsData.find((s) => s.id === id);
+      // Find the stadium with the matching ID using our utility function
+      // This will include any custom updates to the stadium
+      const foundStadium = getStadiumById(id);
 
       if (!foundStadium) {
         navigate("/stadiums");
         return;
       }
 
-      // Get current view counts from localStorage to check if we need to increment
-      const viewCountsStr = localStorage.getItem("stadiumViewCounts");
-      const viewCounts = viewCountsStr ? JSON.parse(viewCountsStr) : {};
-      const currentCount = viewCounts[id] || 0;
-
       // Increment view count every time the stadium detail page is viewed
       const viewCount = incrementStadiumViews(id);
-
-      // Calculate dynamic rating based on paid reservations
-      const dynamicRating = calculateStadiumRating(id);
 
       // Update stadium with dynamic data
       setStadium({
         ...foundStadium,
         reviews: viewCount,
-        rating: dynamicRating || foundStadium.rating,
       });
+
+      // Load posts for this stadium
+      const allPosts = JSON.parse(localStorage.getItem("stadiumPosts") || "[]");
+      const stadiumPosts = allPosts.filter((post) => post.stadiumId === id);
+      setStadiumPosts(stadiumPosts);
     } catch (error) {
       console.error("Error loading stadium details:", error);
       // Fallback to original data if there's an error
@@ -55,6 +54,19 @@ const StadiumDetail = () => {
       setLoading(false);
     }
   }, [id, navigate]);
+
+  // Add these functions for the gallery
+  const openGallery = (index) => {
+    setSelectedImageIndex(index);
+    setShowGalleryModal(true);
+  };
+
+  const navigateGallery = (direction) => {
+    let newIndex = selectedImageIndex + direction;
+    if (newIndex < 0) newIndex = stadiumPosts.length - 1;
+    if (newIndex >= stadiumPosts.length) newIndex = 0;
+    setSelectedImageIndex(newIndex);
+  };
 
   // Handle image error
   const handleImageError = (e) => {
@@ -138,7 +150,7 @@ const StadiumDetail = () => {
                   viewBox="0 0 20 20"
                   fill="currentColor"
                 >
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-.118L2.98 8.72c-.783-.57-.38-1.81.588-.181h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
                 <span className="text-white">
                   {stadium.rating} ({stadium.reviews} reviews)
@@ -225,6 +237,187 @@ const StadiumDetail = () => {
                 ))}
             </div>
           </div>
+
+          <div className="mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-white">
+                Stadium Gallery
+              </h2>
+              {stadiumPosts.length > 0 && (
+                <button
+                  onClick={() => openGallery(0)}
+                  className="text-green-400 hover:text-green-300 flex items-center text-sm"
+                >
+                  View all photos
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 ml-1"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+              )}
+            </div>
+
+            {stadiumPosts.length === 0 ? (
+              <div className="bg-[#333] p-6 rounded-lg text-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-16 w-16 text-gray-500 mx-auto mb-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                <p className="text-gray-400">
+                  No gallery photos available for this stadium yet.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {stadiumPosts.slice(0, 8).map((post, index) => (
+                  <div
+                    key={post.id}
+                    className="aspect-square overflow-hidden rounded-lg cursor-pointer relative group"
+                    onClick={() => openGallery(index)}
+                  >
+                    <img
+                      src={post.imageUrl || "/placeholder.svg"}
+                      alt="Stadium gallery"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                      {post.caption && (
+                        <p className="text-white text-sm p-2 line-clamp-2">
+                          {post.caption}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {stadiumPosts.length > 8 && (
+                  <div
+                    className="aspect-square overflow-hidden rounded-lg cursor-pointer bg-[#333] flex items-center justify-center hover:bg-[#444] transition-colors duration-300"
+                    onClick={() => openGallery(8)}
+                  >
+                    <div className="text-white text-center">
+                      <span className="text-2xl font-bold">
+                        +{stadiumPosts.length - 8}
+                      </span>
+                      <p className="text-sm">more photos</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Gallery Modal */}
+          {showGalleryModal && stadiumPosts.length > 0 && (
+            <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-50">
+              <button
+                onClick={() => setShowGalleryModal(false)}
+                className="absolute top-4 right-4 text-white hover:text-gray-300 p-2 bg-black/30 rounded-full transition-colors"
+                aria-label="Close gallery"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+
+              <button
+                onClick={() => navigateGallery(-1)}
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 p-2 bg-black/30 rounded-full transition-colors"
+                aria-label="Previous image"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-8 w-8"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+              </button>
+
+              <div className="max-w-5xl max-h-[90vh] p-4">
+                <img
+                  src={
+                    stadiumPosts[selectedImageIndex].imageUrl ||
+                    "/placeholder.svg"
+                  }
+                  alt="Stadium gallery"
+                  className="max-w-full max-h-[75vh] object-contain mx-auto rounded-lg shadow-2xl"
+                />
+                <div className="mt-4 bg-black/50 p-3 rounded-lg">
+                  {stadiumPosts[selectedImageIndex].caption ? (
+                    <p className="text-white text-center">
+                      {stadiumPosts[selectedImageIndex].caption}
+                    </p>
+                  ) : (
+                    <p className="text-gray-400 text-center italic">
+                      No caption
+                    </p>
+                  )}
+                  <div className="mt-2 text-center text-gray-400 flex items-center justify-center">
+                    <span className="px-2 py-1 bg-black/50 rounded-full text-xs">
+                      {selectedImageIndex + 1} / {stadiumPosts.length}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => navigateGallery(1)}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 p-2 bg-black/30 rounded-full transition-colors"
+                aria-label="Next image"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-8 w-8"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </button>
+            </div>
+          )}
 
           <div className="flex space-x-4">
             <button

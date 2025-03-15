@@ -3,7 +3,7 @@
 import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../App";
-import stadiumsData from "../utils/stadiumsData";
+import { getStadiumById } from "../utils/stadiumUtils";
 
 const ReservationTime = () => {
   const { id } = useParams();
@@ -21,7 +21,7 @@ const ReservationTime = () => {
   const [totalPrice, setTotalPrice] = useState(0);
 
   // Find the stadium with the matching ID
-  const stadium = stadiumsData.find((s) => s.id === id);
+  const stadium = getStadiumById(id);
 
   useEffect(() => {
     // Function to check and update expired reservations
@@ -47,16 +47,55 @@ const ReservationTime = () => {
               }))
           ) {
             hasUpdates = true;
-            return { ...reservation, status: "rejected", autoRejected: true };
+            return {
+              ...reservation,
+              status: "rejected",
+              autoRejected: true,
+              rejectedAt: new Date().getTime(),
+              rejectionReason: "Automatically rejected: Time slot has passed",
+            };
           }
         }
 
         // Check if payment time expired for accepted reservations
         if (reservation.status === "accepted" && reservation.acceptedAt) {
-          const expiryTime = reservation.acceptedAt + 60 * 60 * 1000; // 1 hour in milliseconds
+          // Calculate the expiry time based on the minimum of:
+          // 1. Standard 1 hour payment window
+          // 2. Time until the reservation starts (if it's a future reservation)
+          let expiryTime = reservation.acceptedAt + 60 * 60 * 1000; // Default: 1 hour in milliseconds
+
+          // Check if this is a reservation for today
+          if (reservation.date === today) {
+            // Find the earliest time slot
+            const earliestSlotHour = Math.min(
+              ...reservation.timeSlots.map((slot) =>
+                Number.parseInt(slot.split("-")[0], 10)
+              )
+            );
+
+            // Calculate when this slot starts today
+            const slotStartTime = new Date();
+            slotStartTime.setHours(earliestSlotHour, 0, 0, 0);
+
+            // If the slot starts in the future but sooner than our 1-hour window
+            if (
+              slotStartTime.getTime() > new Date().getTime() &&
+              slotStartTime.getTime() < expiryTime
+            ) {
+              // Set expiry time to when the slot starts
+              expiryTime = slotStartTime.getTime();
+            }
+          }
+
           if (new Date().getTime() > expiryTime) {
             hasUpdates = true;
-            return { ...reservation, status: "rejected", autoRejected: true };
+            return {
+              ...reservation,
+              status: "rejected",
+              autoRejected: true,
+              rejectedAt: new Date().getTime(),
+              rejectionReason: "Automatically rejected: Payment time expired",
+            };
           }
         }
 
@@ -68,9 +107,9 @@ const ReservationTime = () => {
           "reservations",
           JSON.stringify(updatedReservations)
         );
-        // If we're on the reservations page, we might want to refresh the data
-        // This will be handled by the useEffect in MyReservations component
       }
+
+      return hasUpdates;
     };
 
     // Run once when component mounts
@@ -144,8 +183,12 @@ const ReservationTime = () => {
 
   // Calculate total price when selected time slots change
   useEffect(() => {
-    setTotalPrice(selectedTimeSlots.length * stadium?.hourlyRate || 0);
-  }, [selectedTimeSlots, stadium]);
+    // Get the latest stadium data to ensure we have the current hourly rate
+    const currentStadium = getStadiumById(id);
+    const hourlyRate = currentStadium ? currentStadium.hourlyRate : 0;
+
+    setTotalPrice(selectedTimeSlots.length * hourlyRate);
+  }, [selectedTimeSlots, id]);
 
   const handleDateChange = (e) => {
     setSelectedDate(e.target.value);
