@@ -82,7 +82,6 @@ function App() {
     }
     return children;
   };
-
   // Stadium owner route component
   const StadiumOwnerRoute = ({ children }) => {
     if (!user || user.userType !== "owner") {
@@ -98,7 +97,6 @@ function App() {
     }
     return children;
   };
-
   return (
     <AuthContext.Provider value={{ user, setUser }}>
       <Routes>
