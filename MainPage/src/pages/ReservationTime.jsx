@@ -390,7 +390,7 @@ const ReservationTime = () => {
                 e.target.src = `https://source.unsplash.com/random/800x600/?football,stadium&sig=${Math.random()}`;
               }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0e100f] via-[#0e100f]/60 to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#161412] via-[#171717]/60 to-transparent"></div>
 
             {/* Stadium info overlay */}
             <motion.div
