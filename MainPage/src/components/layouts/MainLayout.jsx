@@ -414,7 +414,7 @@ const MainLayout = () => {
                           >
                             {item.label}
                           </Link>
-                          <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#fffce1] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
+                          <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#fffce1] transform scale-x-0 transition-transform duration-300"></span>
                         </motion.div>
                       ))}
                     </div>
@@ -443,7 +443,7 @@ const MainLayout = () => {
                             <span className="mr-2">{item.icon}</span>
                             {item.label}
                           </Link>
-                          <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#fffce1] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
+                          <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#fffce1] transform scale-x-0 transition-transform duration-300"></span>
                         </motion.div>
                       ))}
                     </div>
