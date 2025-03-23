@@ -277,7 +277,7 @@ const Stadiums = () => {
             {showCityOptions && (
               <motion.div
                 ref={cityMenuRef}
-                className="absolute z-[9999] w-full bg-[#0e100f]/90 backdrop-blur-md border-2 border-white/15 rounded-xl shadow-lg overflow-hidden"
+                className="absolute z-[9999] w-full bg-[#0e100f]/90 backdrop-blur-md border-2 border-white/15 rounded-3xl shadow-lg overflow-hidden"
                 style={{
                   top: "calc(100% + 8px)",
                   left: 0,
@@ -291,7 +291,7 @@ const Stadiums = () => {
                 <div className="p-2 max-h-60 overflow-y-auto">
                   <button
                     onClick={() => handleCitySelect("")}
-                    className={`w-full text-left px-4 py-2 rounded-lg flex items-center ${
+                    className={`w-full text-left px-4 py-2 my-1 rounded-3xl flex items-center ${
                       selectedCity === ""
                         ? "bg-[#4de840]/20 text-[#4de840]"
                         : "text-[#fffce1] hover:bg-[#4de840]/10 hover:text-[#fffce1]"
@@ -304,7 +304,7 @@ const Stadiums = () => {
                     <button
                       key={city}
                       onClick={() => handleCitySelect(city)}
-                      className={`w-full text-left px-4 py-2 rounded-lg flex items-center ${
+                      className={`w-full text-left px-4 py-2 my-1 rounded-3xl flex items-center ${
                         selectedCity === city
                           ? "bg-[#4de840]/20 text-[#4de840]"
                           : "text-[#fffce1] hover:bg-[#4de840]/10 hover:text-[#fffce1]"
@@ -363,7 +363,7 @@ const Stadiums = () => {
             {showSortOptions && (
               <motion.div
                 ref={sortMenuRef}
-                className="absolute z-[9999] bg-[#0e100f]/90 backdrop-blur-md border-2 border-white/15 rounded-xl shadow-lg overflow-hidden"
+                className="absolute z-[9999] bg-[#0e100f]/90 backdrop-blur-md border-2 border-white/15 rounded-3xl shadow-lg overflow-hidden"
                 style={{
                   top: "calc(100% + 8px)",
                   right: 0,
@@ -379,7 +379,7 @@ const Stadiums = () => {
                 <div className="p-2">
                   <button
                     onClick={() => handleSortChange("rating")}
-                    className={`w-full text-left px-4 py-2 rounded-lg flex items-center justify-between ${
+                    className={`w-full text-left px-4 py-2 my-1 rounded-3xl flex items-center justify-between ${
                       sortBy === "rating"
                         ? "bg-[#4de840]/20 text-[#4de840]"
                         : "text-[#fffce1] hover:bg-[#4de840]/10 hover:text-[#fffce1]"
@@ -424,7 +424,7 @@ const Stadiums = () => {
 
                   <button
                     onClick={() => handleSortChange("reviews")}
-                    className={`w-full text-left px-4 py-2 rounded-lg flex items-center justify-between ${
+                    className={`w-full text-left px-4 py-2 my-1 rounded-3xl flex items-center justify-between ${
                       sortBy === "reviews"
                         ? "bg-[#4de840]/20 text-[#4de840]"
                         : "text-[#fffce1] hover:bg-[#4de840]/10 hover:text-[#fffce1]"
@@ -469,7 +469,7 @@ const Stadiums = () => {
 
                   <button
                     onClick={() => handleSortChange("price")}
-                    className={`w-full text-left px-4 py-2 rounded-lg flex items-center justify-between ${
+                    className={`w-full text-left px-4 py-2 rounded-3xl flex items-center justify-between ${
                       sortBy === "price"
                         ? "bg-[#4de840]/20 text-[#4de840]"
                         : "text-[#fffce1] hover:bg-[#4de840]/10 hover:text-[#fffce1]"
@@ -518,7 +518,7 @@ const Stadiums = () => {
                         setSortBy("none");
                         setShowSortOptions(false);
                       }}
-                      className="w-full text-left px-4 py-2 text-white/50 hover:bg-[#4de840]/10 hover:text-[#fffce1] rounded-lg mt-1 flex items-center transition-colors duration-200"
+                      className="w-full text-left px-4 py-2 text-white/50 hover:bg-red-500/10 hover:text-[#fffce1] rounded-3xl mt-1 flex items-center transition-colors duration-200"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
