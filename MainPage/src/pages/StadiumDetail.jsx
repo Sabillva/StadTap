@@ -583,7 +583,7 @@ const StadiumDetail = () => {
                               initial={{ opacity: 0, y: 10 }}
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ delay: 0.1 * Math.random() }}
-                              className="flex items-center p-3 rounded-xl border border-white/5 hover:border-[#4de840]/20 transition-colors duration-300"
+                              className="flex bg-[rgb(28,28,28)] items-center p-3 rounded-xl border border-white/5 hover:border-[#4de840]/20 transition-colors duration-300"
                             >
                               <div className="w-10 h-10 rounded-full bg-[#4de840]/10 flex items-center justify-center mr-3">
                                 <svg
@@ -652,7 +652,7 @@ const StadiumDetail = () => {
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ delay: 0.05 * index }}
-                          className="px-4 py-2 bg-[#171717] border border-white/10 text-[#fffce1]/90 rounded-full text-sm hover:border-[#4de840]/20 hover:bg-[#4de840]/5 transition-colors duration-300"
+                          className="px-4 py-2 bg-[rgb(28,28,28)] border border-white/10 text-[#fffce1]/90 rounded-full text-sm hover:border-[#4de840]/20 hover:bg-[#4de840]/5 transition-colors duration-300"
                         >
                           {feature}
                         </motion.div>
