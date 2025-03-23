@@ -231,7 +231,7 @@ const Stadiums = () => {
             <button
               ref={cityButtonRef}
               onClick={() => setShowCityOptions(!showCityOptions)}
-              className="w-full px-4 py-3 bg-[#0e100f]/80 border-2 border-white/15 rounded-3xl text-[#fffce1] hover:border-[#4de840] transition-all duration-300 flex items-center justify-between"
+              className="w-full px-4 py-3 bg-[#0e100f]/80 border-2 border-white/15 rounded-3xl text-[#fffce1] hover:border-[#4de840] transition-all duration-300 flex items-center justify-between cursor-pointer"
             >
               <span className="flex items-center">
                 <svg
@@ -291,7 +291,7 @@ const Stadiums = () => {
                 <div className="p-2 max-h-60 overflow-y-auto">
                   <button
                     onClick={() => handleCitySelect("")}
-                    className={`w-full text-left px-4 py-2 my-1 rounded-3xl flex items-center ${
+                    className={`w-full text-left px-4 py-2 my-1 rounded-3xl flex cursor-pointer items-center ${
                       selectedCity === ""
                         ? "bg-[#4de840]/20 text-[#4de840]"
                         : "text-[#fffce1] hover:bg-[#4de840]/10 hover:text-[#fffce1]"
@@ -304,7 +304,7 @@ const Stadiums = () => {
                     <button
                       key={city}
                       onClick={() => handleCitySelect(city)}
-                      className={`w-full text-left px-4 py-2 my-1 rounded-3xl flex items-center ${
+                      className={`w-full text-left px-4 py-2 my-1 rounded-3xl flex cursor-pointer items-center ${
                         selectedCity === city
                           ? "bg-[#4de840]/20 text-[#4de840]"
                           : "text-[#fffce1] hover:bg-[#4de840]/10 hover:text-[#fffce1]"
@@ -323,7 +323,7 @@ const Stadiums = () => {
             <button
               ref={sortButtonRef}
               onClick={() => setShowSortOptions(!showSortOptions)}
-              className="w-full md:w-auto px-4 py-3 bg-[#0e100f]/80 border-2 border-white/15 rounded-3xl text-[#fffce1] hover:border-[#4de840] transition-all duration-300 flex items-center justify-between"
+              className="w-full md:w-auto px-4 py-3 bg-[#0e100f]/80 border-2 border-white/15 rounded-3xl text-[#fffce1] hover:border-[#4de840] transition-all duration-300 flex items-center justify-between cursor-pointer"
             >
               <span className="flex items-center">
                 <svg
@@ -379,7 +379,7 @@ const Stadiums = () => {
                 <div className="p-2">
                   <button
                     onClick={() => handleSortChange("rating")}
-                    className={`w-full text-left px-4 py-2 my-1 rounded-3xl flex items-center justify-between ${
+                    className={`w-full text-left px-4 py-2 my-1 rounded-3xl flex cursor-pointer items-center justify-between ${
                       sortBy === "rating"
                         ? "bg-[#4de840]/20 text-[#4de840]"
                         : "text-[#fffce1] hover:bg-[#4de840]/10 hover:text-[#fffce1]"
@@ -424,7 +424,7 @@ const Stadiums = () => {
 
                   <button
                     onClick={() => handleSortChange("reviews")}
-                    className={`w-full text-left px-4 py-2 my-1 rounded-3xl flex items-center justify-between ${
+                    className={`w-full text-left px-4 py-2 my-1 rounded-3xl flex cursor-pointer items-center justify-between ${
                       sortBy === "reviews"
                         ? "bg-[#4de840]/20 text-[#4de840]"
                         : "text-[#fffce1] hover:bg-[#4de840]/10 hover:text-[#fffce1]"
@@ -469,7 +469,7 @@ const Stadiums = () => {
 
                   <button
                     onClick={() => handleSortChange("price")}
-                    className={`w-full text-left px-4 py-2 rounded-3xl flex items-center justify-between ${
+                    className={`w-full text-left px-4 py-2 rounded-3xl flex cursor-pointer items-center justify-between ${
                       sortBy === "price"
                         ? "bg-[#4de840]/20 text-[#4de840]"
                         : "text-[#fffce1] hover:bg-[#4de840]/10 hover:text-[#fffce1]"
@@ -518,7 +518,7 @@ const Stadiums = () => {
                         setSortBy("none");
                         setShowSortOptions(false);
                       }}
-                      className="w-full text-left px-4 py-2 text-white/50 hover:bg-red-500/10 hover:text-[#fffce1] rounded-3xl mt-1 flex items-center transition-colors duration-200"
+                      className="w-full text-left px-4 py-2 text-white/50 hover:bg-red-500/10 hover:text-[#fffce1] rounded-3xl mt-1 flex items-center transition-colors duration-200 cursor-pointer"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -551,7 +551,7 @@ const Stadiums = () => {
                 <span>City: {selectedCity}</span>
                 <button
                   onClick={() => setSelectedCity("")}
-                  className="ml-2 text-white/50 hover:text-[#fffce1] transition-colors duration-200"
+                  className="ml-2 text-white/50 hover:text-[#fffce1] transition-colors duration-200 cursor-pointer"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -582,7 +582,7 @@ const Stadiums = () => {
                 </span>
                 <button
                   onClick={() => setSortBy("none")}
-                  className="ml-2 text-[#4de840] hover:text-[#4de840]/80 transition-colors duration-200"
+                  className="ml-2 text-[#4de840] hover:text-[#4de840]/80 transition-colors duration-200 cursor-pointer"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -780,7 +780,7 @@ const Stadiums = () => {
                     paginate(currentPage > 1 ? currentPage - 1 : 1)
                   }
                   disabled={currentPage === 1}
-                  className={`px-4 py-2 flex items-center rounded-3xl border-2 border-white/15 bg-[#0e100f]/70 backdrop-blur-[10px] ${
+                  className={`px-4 py-2 flex items-center rounded-3xl border-2 border-white/15 bg-[#0e100f]/70 backdrop-blur-[10px] cursor-pointer ${
                     currentPage === 1
                       ? "text-white/30 cursor-not-allowed"
                       : "text-[#fffce1] hover:bg-white/10 hover:border-[#4de840]/50"
@@ -812,7 +812,7 @@ const Stadiums = () => {
                     <button
                       key={index}
                       onClick={() => paginate(index + 1)}
-                      className={`relative w-10 h-10 flex items-center justify-center rounded-full overflow-hidden transition-all duration-200 ${
+                      className={`relative w-10 h-10 flex items-center justify-center rounded-full overflow-hidden transition-all duration-200 cursor-pointer ${
                         currentPage === index + 1
                           ? "bg-[#4de840] text-[#0e100f] font-medium shadow-lg shadow-[#4de840]/20"
                           : "text-[#fffce1] bg-[#0e100f]/70 backdrop-blur-[10px] border-2 border-white/15 hover:border-[#4de840]/50"
@@ -846,7 +846,7 @@ const Stadiums = () => {
                     currentPage ===
                     Math.ceil(filteredStadiums.length / stadiumsPerPage)
                   }
-                  className={`px-4 py-2 flex items-center rounded-3xl border-2 border-white/15 bg-[#0e100f]/70 backdrop-blur-[10px] ${
+                  className={`px-4 py-2 flex items-center rounded-3xl border-2 border-white/15 bg-[#0e100f]/70 backdrop-blur-[10px] cursor-pointer ${
                     currentPage ===
                     Math.ceil(filteredStadiums.length / stadiumsPerPage)
                       ? "text-white/30 cursor-not-allowed"
