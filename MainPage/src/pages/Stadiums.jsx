@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import stadiumsData from "../utils/stadiumsData";
 import { getUpdatedStadiumData } from "../utils/stadiumUtils";
 
@@ -19,6 +19,15 @@ const Stadiums = () => {
   const [sortOrder, setSortOrder] = useState("desc");
   const [showSortOptions, setShowSortOptions] = useState(false);
 
+  // Add state for city dropdown
+  const [showCityOptions, setShowCityOptions] = useState(false);
+
+  // Refs for dropdown positioning
+  const cityButtonRef = useRef(null);
+  const sortButtonRef = useRef(null);
+  const cityMenuRef = useRef(null);
+  const sortMenuRef = useRef(null);
+
   useEffect(() => {
     try {
       // Get updated stadium data with dynamic ratings and reviews
@@ -31,6 +40,52 @@ const Stadiums = () => {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        showCityOptions &&
+        cityButtonRef.current &&
+        !cityButtonRef.current.contains(event.target) &&
+        cityMenuRef.current &&
+        !cityMenuRef.current.contains(event.target)
+      ) {
+        setShowCityOptions(false);
+      }
+
+      if (
+        showSortOptions &&
+        sortButtonRef.current &&
+        !sortButtonRef.current.contains(event.target) &&
+        sortMenuRef.current &&
+        !sortMenuRef.current.contains(event.target)
+      ) {
+        setShowSortOptions(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showCityOptions, showSortOptions]);
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      // Close dropdowns on mobile
+      if (window.innerWidth < 768) {
+        setShowCityOptions(false);
+        setShowSortOptions(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   // Get unique cities for filter
@@ -90,6 +145,12 @@ const Stadiums = () => {
     setShowSortOptions(false);
   };
 
+  // Handle city selection
+  const handleCitySelect = (city) => {
+    setSelectedCity(city);
+    setShowCityOptions(false);
+  };
+
   // Get sort button text
   const getSortButtonText = () => {
     if (sortBy === "none") return "Sort By";
@@ -133,7 +194,7 @@ const Stadiums = () => {
 
       {/* Filter Section */}
       <motion.div
-        className="mb-8 border-2 border-white/15 rounded-[30px] bg-[#0e100f]/70 backdrop-blur-[10px] px-6 pt-6 pb-2 shadow-lg overflow-hidden"
+        className="mb-8 bg-[#0e100f]/70 backdrop-blur-[10px] px-6 pt-6 pb-2 overflow-visible relative z-10"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
@@ -164,23 +225,42 @@ const Stadiums = () => {
               </svg>
             </div>
           </div>
-          <div className="md:w-64">
-            <div className="relative">
-              <select
-                value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
-                className="w-full px-4 py-3 bg-[#0e100f]/80 border-2 border-white/15 rounded-3xl text-[#fffce1] focus:outline-none focus:border-[#4de840] focus:ring-1 focus:ring-[#4de840] transition-all duration-300 appearance-none"
-              >
-                <option value="">All Cities</option>
-                {cities.map((city) => (
-                  <option key={city} value={city}>
-                    {city}
-                  </option>
-                ))}
-              </select>
+
+          {/* Custom City Dropdown */}
+          <div className="md:w-64 relative">
+            <button
+              ref={cityButtonRef}
+              onClick={() => setShowCityOptions(!showCityOptions)}
+              className="w-full px-4 py-3 bg-[#0e100f]/80 border-2 border-white/15 rounded-3xl text-[#fffce1] hover:border-[#4de840] transition-all duration-300 flex items-center justify-between"
+            >
+              <span className="flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-2 text-[#4de840]"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                {selectedCity || "All Cities"}
+              </span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-white/50 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+                className={`h-5 w-5 ml-2 transition-transform duration-200 ${
+                  showCityOptions ? "rotate-180" : ""
+                }`}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -192,10 +272,56 @@ const Stadiums = () => {
                   d="M19 9l-7 7-7-7"
                 />
               </svg>
-            </div>
+            </button>
+
+            {showCityOptions && (
+              <motion.div
+                ref={cityMenuRef}
+                className="absolute z-[9999] w-full bg-[#0e100f]/90 backdrop-blur-md border-2 border-white/15 rounded-xl shadow-lg overflow-hidden"
+                style={{
+                  top: "calc(100% + 8px)",
+                  left: 0,
+                  width: "100%",
+                }}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="p-2 max-h-60 overflow-y-auto">
+                  <button
+                    onClick={() => handleCitySelect("")}
+                    className={`w-full text-left px-4 py-2 rounded-lg flex items-center ${
+                      selectedCity === ""
+                        ? "bg-[#4de840]/20 text-[#4de840]"
+                        : "text-[#fffce1] hover:bg-[#4de840]/10 hover:text-[#fffce1]"
+                    } transition-colors duration-200`}
+                  >
+                    All Cities
+                  </button>
+
+                  {cities.map((city) => (
+                    <button
+                      key={city}
+                      onClick={() => handleCitySelect(city)}
+                      className={`w-full text-left px-4 py-2 rounded-lg flex items-center ${
+                        selectedCity === city
+                          ? "bg-[#4de840]/20 text-[#4de840]"
+                          : "text-[#fffce1] hover:bg-[#4de840]/10 hover:text-[#fffce1]"
+                      } transition-colors duration-200`}
+                    >
+                      {city}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
           </div>
+
+          {/* Sort Dropdown */}
           <div className="relative">
             <button
+              ref={sortButtonRef}
               onClick={() => setShowSortOptions(!showSortOptions)}
               className="w-full md:w-auto px-4 py-3 bg-[#0e100f]/80 border-2 border-white/15 rounded-3xl text-[#fffce1] hover:border-[#4de840] transition-all duration-300 flex items-center justify-between"
             >
@@ -234,180 +360,186 @@ const Stadiums = () => {
               </svg>
             </button>
 
-            <AnimatePresence>
-              {showSortOptions && (
-                <motion.div
-                  className="absolute right-0 mt-2 w-64 bg-[#0e100f]/90 backdrop-blur-md border-2 border-white/15 rounded-xl shadow-lg z-10 overflow-hidden"
-                  initial={{ opacity: 0, y: -10, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: "auto" }}
-                  exit={{ opacity: 0, y: -10, height: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <div className="p-2">
-                    <button
-                      onClick={() => handleSortChange("rating")}
-                      className={`w-full text-left px-4 py-2 rounded-lg flex items-center justify-between ${
-                        sortBy === "rating"
-                          ? "bg-[#4de840]/20 text-[#4de840]"
-                          : "text-[#fffce1] hover:bg-white/10"
-                      } transition-colors duration-200`}
-                    >
-                      <span className="flex items-center">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5 mr-2"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-                          />
-                        </svg>
-                        Rating
-                      </span>
-                      {sortBy === "rating" && (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className={`h-5 w-5 ${
-                            sortOrder === "desc" ? "" : "rotate-180"
-                          }`}
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
-                      )}
-                    </button>
-
-                    <button
-                      onClick={() => handleSortChange("reviews")}
-                      className={`w-full text-left px-4 py-2 rounded-lg flex items-center justify-between ${
-                        sortBy === "reviews"
-                          ? "bg-[#4de840]/20 text-[#4de840]"
-                          : "text-[#fffce1] hover:bg-white/10"
-                      } transition-colors duration-200`}
-                    >
-                      <span className="flex items-center">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5 mr-2"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"
-                          />
-                        </svg>
-                        Reviews
-                      </span>
-                      {sortBy === "reviews" && (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className={`h-5 w-5 ${
-                            sortOrder === "desc" ? "" : "rotate-180"
-                          }`}
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
-                      )}
-                    </button>
-
-                    <button
-                      onClick={() => handleSortChange("price")}
-                      className={`w-full text-left px-4 py-2 rounded-lg flex items-center justify-between ${
-                        sortBy === "price"
-                          ? "bg-[#4de840]/20 text-[#4de840]"
-                          : "text-[#fffce1] hover:bg-white/10"
-                      } transition-colors duration-200`}
-                    >
-                      <span className="flex items-center">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5 mr-2"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                        Price
-                      </span>
-                      {sortBy === "price" && (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className={`h-5 w-5 ${
-                            sortOrder === "desc" ? "" : "rotate-180"
-                          }`}
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
-                      )}
-                    </button>
-
-                    {sortBy !== "none" && (
-                      <button
-                        onClick={() => {
-                          setSortBy("none");
-                          setShowSortOptions(false);
-                        }}
-                        className="w-full text-left px-4 py-2 text-white/50 hover:bg-white/10 hover:text-[#fffce1] rounded-lg mt-1 flex items-center transition-colors duration-200"
+            {showSortOptions && (
+              <motion.div
+                ref={sortMenuRef}
+                className="absolute z-[9999] bg-[#0e100f]/90 backdrop-blur-md border-2 border-white/15 rounded-xl shadow-lg overflow-hidden"
+                style={{
+                  top: "calc(100% + 8px)",
+                  right: 0,
+                  width: sortButtonRef.current
+                    ? `${sortButtonRef.current.offsetWidth}px`
+                    : "auto",
+                }}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="p-2">
+                  <button
+                    onClick={() => handleSortChange("rating")}
+                    className={`w-full text-left px-4 py-2 rounded-lg flex items-center justify-between ${
+                      sortBy === "rating"
+                        ? "bg-[#4de840]/20 text-[#4de840]"
+                        : "text-[#fffce1] hover:bg-[#4de840]/10 hover:text-[#fffce1]"
+                    } transition-colors duration-200`}
+                  >
+                    <span className="flex items-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5 mr-2"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                        Clear Sorting
-                      </button>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                        />
+                      </svg>
+                      Rating
+                    </span>
+                    {sortBy === "rating" && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className={`h-5 w-5 ${
+                          sortOrder === "desc" ? "" : "rotate-180"
+                        }`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
                     )}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  </button>
+
+                  <button
+                    onClick={() => handleSortChange("reviews")}
+                    className={`w-full text-left px-4 py-2 rounded-lg flex items-center justify-between ${
+                      sortBy === "reviews"
+                        ? "bg-[#4de840]/20 text-[#4de840]"
+                        : "text-[#fffce1] hover:bg-[#4de840]/10 hover:text-[#fffce1]"
+                    } transition-colors duration-200`}
+                  >
+                    <span className="flex items-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"
+                        />
+                      </svg>
+                      Reviews
+                    </span>
+                    {sortBy === "reviews" && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className={`h-5 w-5 ${
+                          sortOrder === "desc" ? "" : "rotate-180"
+                        }`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => handleSortChange("price")}
+                    className={`w-full text-left px-4 py-2 rounded-lg flex items-center justify-between ${
+                      sortBy === "price"
+                        ? "bg-[#4de840]/20 text-[#4de840]"
+                        : "text-[#fffce1] hover:bg-[#4de840]/10 hover:text-[#fffce1]"
+                    } transition-colors duration-200`}
+                  >
+                    <span className="flex items-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      Price
+                    </span>
+                    {sortBy === "price" && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className={`h-5 w-5 ${
+                          sortOrder === "desc" ? "" : "rotate-180"
+                        }`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    )}
+                  </button>
+
+                  {sortBy !== "none" && (
+                    <button
+                      onClick={() => {
+                        setSortBy("none");
+                        setShowSortOptions(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-white/50 hover:bg-[#4de840]/10 hover:text-[#fffce1] rounded-lg mt-1 flex items-center transition-colors duration-200"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                      Clear Sorting
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            )}
           </div>
         </div>
 
@@ -604,26 +736,30 @@ const Stadiums = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {stadium.features.slice(0, 3).map((feature, index) => (
-                      <span
-                        key={index}
-                        className="px-2 py-1 bg-white/5 border border-white/10 text-[#fffce1]/70 rounded-full text-xs"
-                      >
-                        {feature}
-                      </span>
-                    ))}
-                    {stadium.features.length > 3 && (
-                      <span className="px-2 py-1 bg-white/5 border border-white/10 text-[#fffce1]/70 rounded-full text-xs">
-                        +{stadium.features.length - 3} more
-                      </span>
-                    )}
+                  <div className="flex mb-4 h-8 overflow-hidden relative">
+                    <div className="flex gap-2 items-center absolute">
+                      {stadium.features.slice(0, 2).map((feature, index) => (
+                        <span
+                          key={index}
+                          className="px-2 py-1 bg-white/5 border border-white/10 text-[#fffce1]/70 rounded-full text-xs whitespace-nowrap"
+                        >
+                          {feature}
+                        </span>
+                      ))}
+                      {stadium.features.length > 2 && (
+                        <span className="px-2 py-1 bg-white/5 border border-white/10 text-[#fffce1]/70 rounded-full text-xs whitespace-nowrap">
+                          +{stadium.features.length - 2} more
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <Link
                     to={`/stadiums/${stadium.id}`}
-                    className="block w-full text-center bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] py-2.5 rounded-full font-medium hover:shadow-lg hover:shadow-[#4de840]/20 transition-all duration-300 transform hover:translate-y-[-2px]"
+                    className="block w-full text-center bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] py-2.5 rounded-full font-medium hover:shadow-lg hover:shadow-[#4de840]/20 transition-all duration-300 transform hover:translate-y-[-2px] relative overflow-hidden group"
                   >
-                    View Details
+                    <span className="relative z-10">View Details</span>
+                    <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out transform rotate-12 opacity-0 group-hover:opacity-100"></span>
+                    <span className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cGF0aCBkPSJNNTAsMTAwQTUwLDUwLDAsMSwxLDEwMCw1MEE1MC4wNiw1MC4wNiwwLDAsMSw1MCwxMDBaTTUwLDEwQTQwLDQwLDAsMSwwLDkwLDUwLDQwLDQwLDAsMCwwLDUwLDEwWiIgZmlsbD0iI2ZmZiIgb3BhY2l0eT0iMC4yIi8+PHBhdGggZD0iTTMwLDUwLDUwLDcwLDcwLDUwLDUwLDMwWiIgZmlsbD0iI2ZmZiIgb3BhY2l0eT0iMC4yIi8+PC9zdmc+')] bg-repeat-x bg-size-contain -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out opacity-0 group-hover:opacity-100"></span>
                   </Link>
                 </div>
               </motion.div>
@@ -638,17 +774,17 @@ const Stadiums = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <nav className="inline-flex rounded-full shadow-lg overflow-hidden border-2 border-white/15 bg-[#0e100f]/70 backdrop-blur-[10px]">
+              <nav className="inline-flex items-center gap-3">
                 <button
                   onClick={() =>
                     paginate(currentPage > 1 ? currentPage - 1 : 1)
                   }
                   disabled={currentPage === 1}
-                  className={`px-4 py-2 flex items-center ${
+                  className={`px-4 py-2 flex items-center rounded-3xl border-2 border-white/15 bg-[#0e100f]/70 backdrop-blur-[10px] ${
                     currentPage === 1
                       ? "text-white/30 cursor-not-allowed"
-                      : "text-[#fffce1] hover:bg-white/10"
-                  } transition-colors duration-200`}
+                      : "text-[#fffce1] hover:bg-white/10 hover:border-[#4de840]/50"
+                  } transition-all duration-200`}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -667,7 +803,7 @@ const Stadiums = () => {
                   Prev
                 </button>
 
-                <div className="hidden md:flex">
+                <div className="hidden md:flex gap-3">
                   {Array.from({
                     length: Math.ceil(
                       filteredStadiums.length / stadiumsPerPage
@@ -676,18 +812,21 @@ const Stadiums = () => {
                     <button
                       key={index}
                       onClick={() => paginate(index + 1)}
-                      className={`px-4 py-2 border-l border-r border-white/15 ${
+                      className={`relative w-10 h-10 flex items-center justify-center rounded-full overflow-hidden transition-all duration-200 ${
                         currentPage === index + 1
-                          ? "bg-[#4de840] text-[#0e100f] font-medium"
-                          : "text-[#fffce1] hover:bg-white/10"
-                      } transition-colors duration-200`}
+                          ? "bg-[#4de840] text-[#0e100f] font-medium shadow-lg shadow-[#4de840]/20"
+                          : "text-[#fffce1] bg-[#0e100f]/70 backdrop-blur-[10px] border-2 border-white/15 hover:border-[#4de840]/50"
+                      }`}
                     >
-                      {index + 1}
+                      {currentPage === index + 1 && (
+                        <span className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cGF0aCBkPSJNNTAsMTAwQTUwLDUwLDAsMSwxLDEwMCw1MEE1MC4wNiw1MC4wNiwwLDAsMSw1MCwxMDBaTTUwLDEwQTQwLDQwLDAsMSwwLDkwLDUwLDQwLDQwLDAsMCwwLDUwLDEwWiIgZmlsbD0iIzBlMTAwZiIgb3BhY2l0eT0iMC4yIi8+PHBhdGggZD0iTTMwLDUwLDUwLDcwLDcwLDUwLDUwLDMwWiIgZmlsbD0iIzBlMTAwZiIgb3BhY2l0eT0iMC4yIi8+PC9zdmc+')] bg-repeat bg-contain opacity-30"></span>
+                      )}
+                      <span className="relative z-10">{index + 1}</span>
                     </button>
                   ))}
                 </div>
 
-                <div className="flex md:hidden items-center px-4 text-[#fffce1]">
+                <div className="flex md:hidden items-center px-4 py-2 rounded-full border-2 border-white/15 bg-[#0e100f]/70 backdrop-blur-[10px] text-[#fffce1]">
                   <span>
                     {currentPage} /{" "}
                     {Math.ceil(filteredStadiums.length / stadiumsPerPage)}
@@ -707,12 +846,12 @@ const Stadiums = () => {
                     currentPage ===
                     Math.ceil(filteredStadiums.length / stadiumsPerPage)
                   }
-                  className={`px-4 py-2 flex items-center ${
+                  className={`px-4 py-2 flex items-center rounded-3xl border-2 border-white/15 bg-[#0e100f]/70 backdrop-blur-[10px] ${
                     currentPage ===
                     Math.ceil(filteredStadiums.length / stadiumsPerPage)
                       ? "text-white/30 cursor-not-allowed"
-                      : "text-[#fffce1] hover:bg-white/10"
-                  } transition-colors duration-200`}
+                      : "text-[#fffce1] hover:bg-white/10 hover:border-[#4de840]/50"
+                  } transition-all duration-200`}
                 >
                   Next
                   <svg

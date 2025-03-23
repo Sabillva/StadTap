@@ -210,7 +210,7 @@ const MainLayout = () => {
   return (
     <div className="min-h-screen bg-[#0e100f]">
       {/* Header - Fixed with glassmorphism effect */}
-      <header className="fixed top-0 left-0 right-0 z-40 transition-all duration-300 mx-25 mt-4">
+      <header className="fixed top-0 left-0 right-0 z-40 transition-all duration-300 mx-25 mt-8">
         <div className="border-2 border-white/15 rounded-[30px] bg-[#0e100f]/70 backdrop-blur-[10px] mx-auto overflow-hidden">
           <div className="container mx-auto">
             <div className="flex justify-between items-center h-14 px-6">
