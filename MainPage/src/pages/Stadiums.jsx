@@ -42,6 +42,11 @@ const Stadiums = () => {
     }
   }, []);
 
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCity, sortBy, sortOrder]);
+
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -167,6 +172,53 @@ const Stadiums = () => {
     return `${criteriaText}: ${orderText}`;
   };
 
+  // Generate pagination items with ellipsis
+  const getPaginationItems = () => {
+    const totalPages = Math.ceil(filteredStadiums.length / stadiumsPerPage);
+
+    if (totalPages <= 5) {
+      // If 5 or fewer pages, show all
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    // Always show first and last page
+    const items = [1, totalPages];
+
+    // Calculate range around current page
+    let startPage = Math.max(2, currentPage - 1);
+    let endPage = Math.min(totalPages - 1, currentPage + 1);
+
+    // Adjust range to always show 3 pages if possible
+    if (currentPage <= 2) {
+      endPage = Math.min(4, totalPages - 1);
+    } else if (currentPage >= totalPages - 1) {
+      startPage = Math.max(2, totalPages - 3);
+    }
+
+    // Add ellipsis indicators
+    if (startPage > 2) {
+      items.push("start-ellipsis");
+    }
+
+    // Add pages in range
+    for (let i = startPage; i <= endPage; i++) {
+      items.push(i);
+    }
+
+    if (endPage < totalPages - 1) {
+      items.push("end-ellipsis");
+    }
+
+    // Sort and remove duplicates
+    return [...new Set(items)].sort((a, b) => {
+      if (a === "start-ellipsis") return -1;
+      if (b === "start-ellipsis") return 1;
+      if (a === "end-ellipsis") return 1;
+      if (b === "end-ellipsis") return -1;
+      return a - b;
+    });
+  };
+
   // Card variants for animation
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -231,7 +283,7 @@ const Stadiums = () => {
             <button
               ref={cityButtonRef}
               onClick={() => setShowCityOptions(!showCityOptions)}
-              className="w-full px-4 py-3 bg-[#0e100f]/80 border-2 border-white/15 rounded-3xl text-[#fffce1] hover:border-[#4de840] transition-all duration-300 flex items-center justify-between cursor-pointer"
+              className="w-full px-4 py-3 bg-[#0e100f]/70 border-2 backdrop-blur-[10px] border-white/15 rounded-3xl text-[#fffce1] hover:border-[#4de840] transition-all duration-300 flex items-center justify-between cursor-pointer"
             >
               <span className="flex items-center">
                 <svg
@@ -277,7 +329,7 @@ const Stadiums = () => {
             {showCityOptions && (
               <motion.div
                 ref={cityMenuRef}
-                className="absolute z-[9999] w-full bg-[#0e100f]/90 backdrop-blur-md border-2 border-white/15 rounded-3xl shadow-lg overflow-hidden"
+                className="absolute z-[9999] w-full bg-[#0e100f]/70 backdrop-blur-[10px] border-2 border-white/15 rounded-3xl shadow-lg overflow-hidden"
                 style={{
                   top: "calc(100% + 8px)",
                   left: 0,
@@ -288,7 +340,7 @@ const Stadiums = () => {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="p-2 max-h-60 overflow-y-auto">
+                <div className="p-2 max-h-60 overflow-y-auto backdrop-blur-[10px]">
                   <button
                     onClick={() => handleCitySelect("")}
                     className={`w-full text-left px-4 py-2 my-1 rounded-3xl flex cursor-pointer items-center ${
@@ -323,7 +375,7 @@ const Stadiums = () => {
             <button
               ref={sortButtonRef}
               onClick={() => setShowSortOptions(!showSortOptions)}
-              className="w-full md:w-auto px-4 py-3 bg-[#0e100f]/80 border-2 border-white/15 rounded-3xl text-[#fffce1] hover:border-[#4de840] transition-all duration-300 flex items-center justify-between cursor-pointer"
+              className="w-full md:w-auto px-4 py-3 bg-[#0e100f]/80 border-2 border-white/15 backdrop-blur-[10px] rounded-3xl text-[#fffce1] hover:border-[#4de840] transition-all duration-300 flex items-center justify-between cursor-pointer"
             >
               <span className="flex items-center">
                 <svg
@@ -359,11 +411,10 @@ const Stadiums = () => {
                 />
               </svg>
             </button>
-
             {showSortOptions && (
               <motion.div
                 ref={sortMenuRef}
-                className="absolute z-[9999] bg-[#0e100f]/90 backdrop-blur-md border-2 border-white/15 rounded-3xl shadow-lg overflow-hidden"
+                className="absolute z-[9999] bg-[#0e100f]/90 border-2 border-white/15 rounded-3xl shadow-lg overflow-hidden backdrop-blur-[10px]"
                 style={{
                   top: "calc(100% + 8px)",
                   right: 0,
@@ -758,8 +809,8 @@ const Stadiums = () => {
                     className="block w-full text-center bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] py-2.5 rounded-full font-medium hover:shadow-lg hover:shadow-[#4de840]/20 transition-all duration-300 transform hover:translate-y-[-2px] relative overflow-hidden group"
                   >
                     <span className="relative z-10">View Details</span>
-                    <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out transform rotate-12 opacity-0 group-hover:opacity-100"></span>
-                    <span className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cGF0aCBkPSJNNTAsMTAwQTUwLDUwLDAsMSwxLDEwMCw1MEE1MC4wNiw1MC4wNiwwLDAsMSw1MCwxMDBaTTUwLDEwQTQwLDQwLDAsMSwwLDkwLDUwLDQwLDQwLDAsMCwwLDUwLDEwWiIgZmlsbD0iI2ZmZiIgb3BhY2l0eT0iMC4yIi8+PHBhdGggZD0iTTMwLDUwLDUwLDcwLDcwLDUwLDUwLDMwWiIgZmlsbD0iI2ZmZiIgb3BhY2l0eT0iMC4yIi8+PC9zdmc+')] bg-repeat-x bg-size-contain -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out opacity-0 group-hover:opacity-100"></span>
+                    {/* Soccer ball pattern animation */}
+                    <span className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNDAgNjAiPjxwYXRoIGQ9Ik0wLDYwIEwwLDAgTDI0MCwwIEwyNDAsNjAgTDAsNjAgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJub25lIi8+PHBvbHlnb24gcG9pbnRzPSIwLDAgMjAsMCAxMCwxNSIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjIwLDAgNDAsMCAzMCwxNSAxMCwxNSIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjQwLDAgNjAsMCA1MCwxNSAzMCwxNSIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjYwLDAgODAsMCA3MCwxNSA1MCwxNSIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjgwLDAgMTAwLDAgOTAsMTUgNzAsMTUiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxMDAsMCAxMjAsMCAxMTAsMTUgOTAsMTUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxMjAsMCAxNDAsMCAxMzAsMTUgMTEwLDE1IiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMTQwLDAgMTYwLDAgMTUwLDE1IDEzMCwxNSIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjE2MCwwIDE4MCwwIDE3MCwxNSAxNTAsMTUiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxODAsMCAyMDAsMCAxOTAsMTUgMTcwLDE1IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMjAwLDAgMjIwLDAgMjEwLDE1IDE5MCwxNSIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjIyMCwwIDI0MCwwIDIzMCwxNSAyMTAsMTUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxMCwxNSAzMCwxNSAyMCwzMCAwLDMwIDAsMTUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIzMCwxNSA1MCwxNSA0MCwzMCAyMCwzMCIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjUwLDE1IDcwLDE1IDYwLDMwIDQwLDMwIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iNzAsMTUgOTAsMTUgODAsMzAgNjAsMzAiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSI5MCwxNSAxMTAsMTUgMTAwLDMwIDgwLDMwIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMTEwLDE1IDEzMCwxNSAxMjAsMzAgMTAwLDMwIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMTMwLDE1IDE1MCwxNSAxNDAsMzAgMTIwLDMwIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMTUwLDE1IDE3MCwxNSAxNjAsMzAgMTQwLDMwIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMTcwLDE1IDE5MCwxNSAxODAsMzAgMTYwLDMwIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMTkwLDE1IDIxMCwxNSAyMDAsMzAgMTgwLDMwIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMjEwLDE1IDIzMCwxNSAyMjAsMzAgMjAwLDMwIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMjMwLDE1IDI0MCwxNSAyNDAsMzAgMjIwLDMwIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMCwzMCAwLDQ1IDEwLDQ1IDIwLDMwIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMjAsMzAgNDAsMzAgMzAsNDUgMTAsNDUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSI0MCwzMCA2MCwzMCA1MCw0NSAzMCw0NSIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjYwLDMwIDgwLDMwIDcwLDQ1IDUwLDQ1IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iODAsMzAgMTAwLDMwIDkwLDQ1IDcwLDQ1IiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMTAwLDMwIDEyMCwzMCAxMTAsNDUgOTAsNDUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxMjAsMzAgMTQwLDMwIDEzMCw0NSAxMTAsNDUiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxNDAsMzAgMTYwLDMwIDE1MCw0NSAxMzAsNDUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxNjAsMzAgMTgwLDMwIDE3MCw0NSAxNTAsNDUiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxODAsMzAgMjAwLDMwIDE5MCw0NSAxNzAsNDUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIyMDAsMzAgMjIwLDMwIDIxMCw0NSAxOTAsNDUiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIyMjAsMzAgMjQwLDMwIDI0MCw0NSAyMzAsNDUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxMCw0NSAzMCw0NSAyMCw2MCAwLDYwIDAuNDUsIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMzAsNDUgNTAsNDUgNDAsNjAgMjAsNjAiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSI1MCw0NSA3MCw0NSA2MCw2MCA0MCw2MCIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjcwLDQ1IDkwLDQ1IDgwLDYwIDYwLDYwIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iOTAsNDUgMTEwLDQ1IDEwMCw2MCA4MCw2MCIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjExMCw0NSAxMzAsNDUgMTIwLDYwIDEwMCw2MCIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjEzMCw0NSAxNTAsNDUgMTQwLDYwIDEyMCw2MCIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjE1MCw0NSAxNzAsNDUgMTYwLDYwIDE0MCw2MCIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjE3MCw0NSAxOTAsNDUgMTgwLDYwIDE2MCw2MCIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjE5MCw0NSAyMTAsNDUgMjAwLDYwIDE4MCw2MCIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjIxMCw0NSAyMzAsNDUgMjIwLDYwIDIwMCw2MCIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjIzMCw0NSAyNDAsNDUgMjQwLDYwIDIyMCw2MCIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48L3N2Zz4=')] bg-repeat-x bg-size-contain -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out opacity-0 group-hover:opacity-100"></span>
                   </Link>
                 </div>
               </motion.div>
@@ -803,34 +854,50 @@ const Stadiums = () => {
                   Prev
                 </button>
 
-                <div className="hidden md:flex gap-3">
-                  {Array.from({
-                    length: Math.ceil(
-                      filteredStadiums.length / stadiumsPerPage
-                    ),
-                  }).map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => paginate(index + 1)}
-                      className={`relative w-10 h-10 flex items-center justify-center rounded-full overflow-hidden transition-all duration-200 cursor-pointer ${
-                        currentPage === index + 1
-                          ? "bg-[#4de840] text-[#0e100f] font-medium shadow-lg shadow-[#4de840]/20"
-                          : "text-[#fffce1] bg-[#0e100f]/70 backdrop-blur-[10px] border-2 border-white/15 hover:border-[#4de840]/50"
-                      }`}
-                    >
-                      {currentPage === index + 1 && (
-                        <span className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cGF0aCBkPSJNNTAsMTAwQTUwLDUwLDAsMSwxLDEwMCw1MEE1MC4wNiw1MC4wNiwwLDAsMSw1MCwxMDBaTTUwLDEwQTQwLDQwLDAsMSwwLDkwLDUwLDQwLDQwLDAsMCwwLDUwLDEwWiIgZmlsbD0iIzBlMTAwZiIgb3BhY2l0eT0iMC4yIi8+PHBhdGggZD0iTTMwLDUwLDUwLDcwLDcwLDUwLDUwLDMwWiIgZmlsbD0iIzBlMTAwZiIgb3BhY2l0eT0iMC4yIi8+PC9zdmc+')] bg-repeat bg-contain opacity-30"></span>
-                      )}
-                      <span className="relative z-10">{index + 1}</span>
-                    </button>
-                  ))}
-                </div>
+                {/* Pagination numbers - visible on all screen sizes */}
+                <div className="flex gap-3">
+                  {getPaginationItems().map((item, index) => {
+                    if (item === "start-ellipsis" || item === "end-ellipsis") {
+                      return (
+                        <div
+                          key={`ellipsis-${index}`}
+                          className="w-10 h-10 flex items-center justify-center text-[#fffce1]/50"
+                        >
+                          ...
+                        </div>
+                      );
+                    }
 
-                <div className="flex md:hidden items-center px-4 py-2 rounded-full border-2 border-white/15 bg-[#0e100f]/70 backdrop-blur-[10px] text-[#fffce1]">
-                  <span>
-                    {currentPage} /{" "}
-                    {Math.ceil(filteredStadiums.length / stadiumsPerPage)}
-                  </span>
+                    return (
+                      <button
+                        key={item}
+                        onClick={() => paginate(item)}
+                        className="relative w-12 h-12 flex items-center justify-center overflow-hidden transition-all duration-200 cursor-pointer"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="-10 -10 120 120"
+                          className="absolute inset-0 w-full h-full"
+                        >
+                          <polygon
+                            points="50,0 100,35 82,100 18,100 0,35"
+                            fill={currentPage === item ? "#2df827" : "#0e100f"}
+                            stroke="#444"
+                            strokeWidth="4"
+                            strokeLinejoin="round"
+                            className={`transition-all duration-300 ${
+                              currentPage === item
+                                ? "shadow-lg shadow-[#4de840]"
+                                : "hover:stroke-[#4de840]"
+                            }`}
+                          />
+                        </svg>
+                        <span className="relative z-10 text-[#fffce1] font-medium">
+                          {item}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
 
                 <button
