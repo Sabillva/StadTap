@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../App";
 import { motion, AnimatePresence } from "framer-motion";
+import { createPortal } from "react-dom";
 
 const MainLayout = () => {
   const { user, setUser } = useContext(AuthContext);
@@ -11,6 +12,10 @@ const MainLayout = () => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileButtonRef = useRef(null);
+  const profileMenuRef = useRef(null);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
 
   // Check if user is logged in
   useEffect(() => {
@@ -32,6 +37,79 @@ const MainLayout = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Calculate menu position when it's shown
+  useEffect(() => {
+    if (showProfileMenu && profileButtonRef.current) {
+      const buttonRect = profileButtonRef.current.getBoundingClientRect();
+      const menuWidth = 224; // Width of the menu (w-56 = 14rem = 224px)
+      const windowWidth = window.innerWidth;
+
+      // Calculate top position (always below the button)
+      const top = buttonRect.bottom + window.scrollY + 8;
+
+      // Calculate left position (centered under the button)
+      const buttonCenter = buttonRect.left + buttonRect.width / 2;
+      const idealLeft = buttonCenter - menuWidth / 2;
+
+      // Ensure menu doesn't go off screen
+      const left = Math.max(
+        16,
+        Math.min(windowWidth - menuWidth - 16, idealLeft)
+      );
+
+      setMenuPosition({ top, left });
+    }
+  }, [showProfileMenu]);
+
+  // Update menu position on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (showProfileMenu && profileButtonRef.current) {
+        const buttonRect = profileButtonRef.current.getBoundingClientRect();
+        const menuWidth = 224; // Width of the menu (w-56 = 14rem = 224px)
+        const windowWidth = window.innerWidth;
+
+        // Calculate top position (always below the button)
+        const top = buttonRect.bottom + window.scrollY + 8;
+
+        // Calculate left position (centered under the button)
+        const buttonCenter = buttonRect.left + buttonRect.width / 2;
+        const idealLeft = buttonCenter - menuWidth / 2;
+
+        // Ensure menu doesn't go off screen
+        const left = Math.max(
+          16,
+          Math.min(windowWidth - menuWidth - 16, idealLeft)
+        );
+
+        setMenuPosition({ top, left });
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [showProfileMenu]);
+
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        showProfileMenu &&
+        profileButtonRef.current &&
+        !profileButtonRef.current.contains(event.target) &&
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target)
+      ) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showProfileMenu]);
 
   const handleLogout = () => {
     // Remove user from localStorage
@@ -184,65 +262,85 @@ const MainLayout = () => {
                 ))}
               </nav>
 
-              {/* Desktop Profile Dropdown */}
-              <div className="hidden lg:block relative group">
-                <button className="flex items-center text-[#fffce1] hover:text-[#4de840] transition-colors duration-200 rounded-full p-1">
-                  <div className="w-9 h-9 bg-gradient-to-br from-[#4de840] to-[#2ca322] rounded-full flex items-center justify-center text-[#0e100f] font-bold mr-2 shadow-md">
-                    {user?.firstName?.charAt(0) || "U"}
-                  </div>
-                  <span className="hidden md:inline font-medium">
-                    {user?.firstName || "User"}
-                  </span>
+              {/* NEW Profile Button - Just an icon */}
+              <div className="relative hidden lg:block">
+                <motion.button
+                  ref={profileButtonRef}
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-[#0e100f] to-[#0e100f] rounded-full text-white/50 hover:text-[#fffce1] shadow-md hover:shadow-lg transition-all duration-300 p-2 cursor-pointer"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 ml-1 transition-transform duration-200 group-hover:rotate-180"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="w-full h-full"
                   >
-                    <path
-                      fillRule="evenodd"
-                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                      clipRule="evenodd"
-                    />
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
                   </svg>
-                </button>
+                </motion.button>
 
-                {/* Desktop Profile Menu - Always in DOM but hidden with opacity/pointer-events */}
-                <div className="absolute right-0 mt-2 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-[#0e100f]/90 backdrop-blur-md border-2 border-white/15 rounded-2xl shadow-xl overflow-hidden">
-                  <div className="py-1">
-                    {profileMenuItems.map((item) => (
-                      <Link
-                        key={item.path}
-                        to={item.path}
-                        className="flex items-center space-x-2 px-4 py-3 text-sm text-[#fffce1] hover:bg-white/10 transition-colors duration-150"
-                      >
-                        {item.icon}
-                        <span>{item.label}</span>
-                      </Link>
-                    ))}
-                    <div className="border-t border-white/10 my-1"></div>
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center space-x-2 w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-500/10 transition-colors duration-150"
+                {/* Profile Menu - Using Portal to ensure it's at the root level */}
+                {showProfileMenu &&
+                  createPortal(
+                    <motion.div
+                      ref={profileMenuRef}
+                      className="fixed z-50 w-50 bg-[#0e100f]/70 backdrop-blur-md border-2 border-white/15 rounded-3xl shadow-xl overflow-hidden"
+                      style={{
+                        top: `${menuPosition.top}px`,
+                        left: `${menuPosition.left}px`,
+                      }}
+                      initial={{ opacity: 0, y: -10, x: -40 }}
+                      animate={{ opacity: 1, y: 10 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                        <polyline points="16 17 21 12 16 7"></polyline>
-                        <line x1="21" y1="12" x2="9" y2="12"></line>
-                      </svg>
-                      <span>Sign out</span>
-                    </button>
-                  </div>
-                </div>
+                      <div className="py-1">
+                        {profileMenuItems.map((item) => (
+                          <Link
+                            key={item.path}
+                            to={item.path}
+                            className="flex items-center space-x-2 px-4 py-3 text-sm text-[#fffce1] hover:bg-white/10 transition-colors duration-150"
+                            onClick={() => setShowProfileMenu(false)}
+                          >
+                            {item.icon}
+                            <span>{item.label}</span>
+                          </Link>
+                        ))}
+                        <div className="border-t border-white/10 my-1"></div>
+                        <button
+                          onClick={() => {
+                            handleLogout();
+                            setShowProfileMenu(false);
+                          }}
+                          className="flex items-center space-x-2 w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-500/10 transition-colors duration-150"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                          </svg>
+                          <span>Sign out</span>
+                        </button>
+                      </div>
+                    </motion.div>,
+                    document.body
+                  )}
               </div>
 
               {/* Mobile Menu Button */}
