@@ -24,29 +24,15 @@ const MainLayout = () => {
     }
   }, [user, navigate]);
 
-  // Add scroll event listener to change header appearance on scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // Calculate menu position when it's shown
-  useEffect(() => {
-    if (showProfileMenu && profileButtonRef.current) {
+  // Calculate menu position
+  const updateMenuPosition = () => {
+    if (profileButtonRef.current) {
       const buttonRect = profileButtonRef.current.getBoundingClientRect();
       const menuWidth = 224; // Width of the menu (w-56 = 14rem = 224px)
       const windowWidth = window.innerWidth;
 
       // Calculate top position (always below the button)
-      const top = buttonRect.bottom + window.scrollY + 8;
+      const top = buttonRect.bottom + 10; // Add a small gap
 
       // Calculate left position (centered under the button)
       const buttonCenter = buttonRect.left + buttonRect.width / 2;
@@ -60,30 +46,45 @@ const MainLayout = () => {
 
       setMenuPosition({ top, left });
     }
+  };
+
+  // Update menu position when it's shown
+  useEffect(() => {
+    if (showProfileMenu) {
+      updateMenuPosition();
+    }
   }, [showProfileMenu]);
 
-  // Update menu position on window resize
+  // Add scroll event listener to change header appearance on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+
+      // Update menu position on scroll if menu is open
+      if (showProfileMenu) {
+        updateMenuPosition();
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [showProfileMenu]);
+
+  // Update menu position on window resize and close menu on mobile
   useEffect(() => {
     const handleResize = () => {
-      if (showProfileMenu && profileButtonRef.current) {
-        const buttonRect = profileButtonRef.current.getBoundingClientRect();
-        const menuWidth = 224; // Width of the menu (w-56 = 14rem = 224px)
-        const windowWidth = window.innerWidth;
+      // Close profile menu when screen size becomes mobile
+      if (window.innerWidth < 1024 && showProfileMenu) {
+        setShowProfileMenu(false);
+      }
 
-        // Calculate top position (always below the button)
-        const top = buttonRect.bottom + window.scrollY + 8;
-
-        // Calculate left position (centered under the button)
-        const buttonCenter = buttonRect.left + buttonRect.width / 2;
-        const idealLeft = buttonCenter - menuWidth / 2;
-
-        // Ensure menu doesn't go off screen
-        const left = Math.max(
-          16,
-          Math.min(windowWidth - menuWidth - 16, idealLeft)
-        );
-
-        setMenuPosition({ top, left });
+      // Update menu position if it's still open
+      if (showProfileMenu) {
+        updateMenuPosition();
       }
     };
 
@@ -161,7 +162,6 @@ const MainLayout = () => {
       ),
     },
   ];
-
   // Add owner-specific menu items
   if (user?.userType === "owner") {
     profileMenuItems.push(
@@ -262,11 +262,17 @@ const MainLayout = () => {
                 ))}
               </nav>
 
-              {/* NEW Profile Button - Just an icon */}
+              {/* Profile Button - Just an icon */}
               <div className="relative hidden lg:block">
                 <motion.button
                   ref={profileButtonRef}
-                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  onClick={() => {
+                    setShowProfileMenu(!showProfileMenu);
+                    // Update position immediately when opening
+                    if (!showProfileMenu) {
+                      setTimeout(updateMenuPosition, 0);
+                    }
+                  }}
                   className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-[#0e100f] to-[#0e100f] rounded-full text-white/50 hover:text-[#fffce1] shadow-md hover:shadow-lg transition-all duration-300 p-2 cursor-pointer"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
@@ -291,13 +297,13 @@ const MainLayout = () => {
                   createPortal(
                     <motion.div
                       ref={profileMenuRef}
-                      className="fixed z-50 w-50 bg-[#0e100f]/70 backdrop-blur-md border-2 border-white/15 rounded-3xl shadow-xl overflow-hidden"
+                      className="fixed z-50 w-44 bg-[#0e100f]/70 backdrop-blur-md border-2 border-white/15 rounded-3xl shadow-xl overflow-hidden mt-2"
                       style={{
                         top: `${menuPosition.top}px`,
                         left: `${menuPosition.left}px`,
                       }}
-                      initial={{ opacity: 0, y: -10, x: -40 }}
-                      animate={{ opacity: 1, y: 10 }}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.2 }}
                     >
@@ -319,7 +325,7 @@ const MainLayout = () => {
                             handleLogout();
                             setShowProfileMenu(false);
                           }}
-                          className="flex items-center space-x-2 w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-500/10 transition-colors duration-150"
+                          className="flex items-center space-x-2 w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-500/10 transition-colors duration-150 cursor-pointer"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -345,7 +351,7 @@ const MainLayout = () => {
 
               {/* Mobile Menu Button */}
               <motion.button
-                className="lg:hidden text-[#fffce1] focus:outline-none"
+                className="lg:hidden text-[#fffce1] focus:outline-none cursor-pointer"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -441,7 +447,6 @@ const MainLayout = () => {
                         </motion.div>
                       ))}
                     </div>
-
                     {/* Sign out button - more prominent */}
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
@@ -458,7 +463,7 @@ const MainLayout = () => {
                           handleLogout();
                           setIsMobileMenuOpen(false);
                         }}
-                        className="w-full py-2 px-6 rounded-full bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] font-medium shadow-[4px_4px_8px_rgba(14,16,15,0.2),-1px_-1px_10px_rgba(255,255,255,0.2)]"
+                        className="w-full py-2 px-6 rounded-full bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] font-medium shadow-[4px_4px_8px_rgba(14,16,15,0.2),-1px_-1px_10px_rgba(255,255,255,0.2)] cursor-pointer"
                         whileHover={{ scale: 0.95 }}
                         whileTap={{ scale: 0.9 }}
                       >

@@ -11,9 +11,9 @@ import Faqs from "./Faqs.jsx";
 import Words from "./Words.jsx";
 import Contact from "./Contact.jsx";
 import Footer from "./Footer.jsx";
-import Register from "../../../MainPage/src/pages/Register.jsx";
 
-// Register səhifəsini əlavə edirik
+import SignUp from "../../../MainPage/src/pages/SignUp.jsx";
+import Login from "../../../MainPage/src/pages/Login.jsx";
 
 function App() {
   return (
@@ -37,7 +37,8 @@ function App() {
             </>
           }
         />
-        <Route path="/register" element={<Register />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/login" element={<Login />} />
       </Routes>
     </Router>
   );

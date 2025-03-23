@@ -29,12 +29,6 @@ document.addEventListener("click", (event) => {
 });
 
 function Header() {
-
-  const navigate = useNavigate();
-
-const goToRegister = () => {
-  navigate("/register");
-};
   useEffect(() => {
     const links = document.querySelectorAll("a[href^='#']");
 
@@ -135,7 +129,7 @@ const goToRegister = () => {
                 />
               </div>
               <motion.button
-                onClick={goToRegister}
+                to="/login"
                 whileHover={{ scale: 0.95 }}
                 whileTap={{ scale: 0.9 }}
                 transition={{ duration: 0.3 }}
@@ -144,7 +138,7 @@ const goToRegister = () => {
                 Log In
               </motion.button>
               <motion.button
-                onClick={goToRegister}
+                to="/signup"
                 whileHover={{ scale: 0.95 }}
                 whileTap={{ scale: 0.9 }}
                 transition={{ duration: 0.3 }}
@@ -178,7 +172,7 @@ const goToRegister = () => {
                     </Link>
                   ))}
                   <motion.button
-                    onClick={goToRegister}
+                    to="/login"
                     whileHover={{ scale: 0.95 }}
                     whileTap={{ scale: 0.9 }}
                     transition={{ duration: 0.3 }}
@@ -187,7 +181,7 @@ const goToRegister = () => {
                     Log In
                   </motion.button>
                   <motion.button
-                    onClick={goToRegister}
+                    to="/signup"
                     whileHover={{ scale: 0.95 }}
                     whileTap={{ scale: 0.9 }}
                     transition={{ duration: 0.3 }}

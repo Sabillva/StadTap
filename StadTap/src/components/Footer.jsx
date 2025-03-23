@@ -70,6 +70,7 @@ function Footer() {
 
               <div className="footer-button-div">
                 <motion.button
+                  to="/login"
                   whileHover={{ scale: 0.95 }}
                   whileTap={{ scale: 0.9 }}
                   transition={{ duration: 0.3 }}
