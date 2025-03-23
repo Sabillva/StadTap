@@ -211,7 +211,7 @@ const MainLayout = () => {
     <div className="min-h-screen bg-[#0e100f]">
       {/* Header - Fixed with glassmorphism effect */}
       <header className="fixed top-0 left-0 right-0 z-40 transition-all duration-300 mx-25 mt-8">
-        <div className="border-2 border-white/15 rounded-[30px] bg-[#0e100f]/70 backdrop-blur-[10px] mx-auto overflow-hidden">
+        <div className="border-2 border-white/15 rounded-[30px] bg-[#171717]/70 backdrop-blur-[10px] mx-auto overflow-hidden">
           <div className="container mx-auto">
             <div className="flex justify-between items-center h-14 px-6">
               <motion.div
@@ -273,7 +273,7 @@ const MainLayout = () => {
                       setTimeout(updateMenuPosition, 0);
                     }
                   }}
-                  className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-[#0e100f] to-[#0e100f] rounded-full text-white/50 hover:text-[#fffce1] shadow-md hover:shadow-lg transition-all duration-300 p-2 cursor-pointer"
+                  className="flex items-center justify-center w-10 h-10 bg-gradient-to-br rounded-full text-white/50 hover:text-[#fffce1] hover:shadow-sm transition-all duration-300 p-2 cursor-pointer"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >

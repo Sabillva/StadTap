@@ -259,7 +259,7 @@ const Stadiums = () => {
                 placeholder="Search stadiums..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-3 pl-10 bg-[#0e100f]/80 border-2 border-white/15 rounded-3xl text-[#fffce1] focus:outline-none focus:border-[#4de840] focus:ring-1 focus:ring-[#4de840] transition-all duration-300"
+                className="w-full px-4 py-3 pl-10 bg-[#171717]/80 border-2 border-white/15 rounded-3xl text-[#fffce1] focus:outline-none focus:border-[#4de840] focus:ring-1 focus:ring-[#4de840] transition-all duration-300"
               />
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -283,7 +283,7 @@ const Stadiums = () => {
             <button
               ref={cityButtonRef}
               onClick={() => setShowCityOptions(!showCityOptions)}
-              className="w-full px-4 py-3 bg-[#0e100f]/70 border-2 backdrop-blur-[10px] border-white/15 rounded-3xl text-[#fffce1] hover:border-[#4de840] transition-all duration-300 flex items-center justify-between cursor-pointer"
+              className="w-full px-4 py-3 bg-[#171717]/70 border-2 backdrop-blur-[10px] border-white/15 rounded-3xl text-[#fffce1] hover:border-[#4de840] transition-all duration-300 flex items-center justify-between cursor-pointer"
             >
               <span className="flex items-center">
                 <svg
@@ -329,7 +329,7 @@ const Stadiums = () => {
             {showCityOptions && (
               <motion.div
                 ref={cityMenuRef}
-                className="absolute z-[9999] w-full bg-[#0e100f]/70 backdrop-blur-[10px] border-2 border-white/15 rounded-3xl shadow-lg overflow-hidden"
+                className="absolute z-[9999] w-full bg-[#171717]/70 backdrop-blur-[10px] border-2 border-white/15 rounded-3xl shadow-lg overflow-hidden"
                 style={{
                   top: "calc(100% + 8px)",
                   left: 0,
@@ -375,7 +375,7 @@ const Stadiums = () => {
             <button
               ref={sortButtonRef}
               onClick={() => setShowSortOptions(!showSortOptions)}
-              className="w-full md:w-auto px-4 py-3 bg-[#0e100f]/80 border-2 border-white/15 backdrop-blur-[10px] rounded-3xl text-[#fffce1] hover:border-[#4de840] transition-all duration-300 flex items-center justify-between cursor-pointer"
+              className="w-full md:w-auto px-4 py-3 bg-[#171717]/80 border-2 border-white/15 backdrop-blur-[10px] rounded-3xl text-[#fffce1] hover:border-[#4de840] transition-all duration-300 flex items-center justify-between cursor-pointer"
             >
               <span className="flex items-center">
                 <svg
@@ -414,7 +414,7 @@ const Stadiums = () => {
             {showSortOptions && (
               <motion.div
                 ref={sortMenuRef}
-                className="absolute z-[9999] bg-[#0e100f]/90 border-2 border-white/15 rounded-3xl shadow-lg overflow-hidden backdrop-blur-[10px]"
+                className="absolute z-[9999] bg-[#171717]/90 border-2 border-white/15 rounded-3xl shadow-lg overflow-hidden backdrop-blur-[10px]"
                 style={{
                   top: "calc(100% + 8px)",
                   right: 0,
@@ -680,7 +680,7 @@ const Stadiums = () => {
         </div>
       ) : filteredStadiums.length === 0 ? (
         <motion.div
-          className="text-center py-16 border-2 border-white/15 rounded-[30px] bg-[#0e100f]/70 backdrop-blur-[10px] shadow-lg"
+          className="text-center py-16 border-2 border-white/15 rounded-[30px] bg-[#171717]/60 backdrop-blur-[10px] shadow-lg"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
@@ -717,7 +717,7 @@ const Stadiums = () => {
                 variants={cardVariants}
                 initial="hidden"
                 animate="visible"
-                className="border-2 border-white/15 rounded-[20px] bg-[#0e100f]/70 backdrop-blur-[10px] shadow-lg overflow-hidden group hover:border-[#4de840] transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl"
+                className="border-2 border-white/15 rounded-[20px] bg-[#171717]/70 backdrop-blur-[10px] shadow-lg overflow-hidden group hover:border-[#4de840] transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl"
               >
                 <div className="relative h-48 overflow-hidden">
                   <img
@@ -831,10 +831,10 @@ const Stadiums = () => {
                     paginate(currentPage > 1 ? currentPage - 1 : 1)
                   }
                   disabled={currentPage === 1}
-                  className={`px-4 py-2 flex items-center rounded-3xl border-2 border-white/15 bg-[#0e100f]/70 backdrop-blur-[10px] cursor-pointer ${
+                  className={`px-4 py-2 flex items-center rounded-3xl border-2 border-white/15 bg-[#171717]/70 backdrop-blur-[10px] cursor-pointer ${
                     currentPage === 1
                       ? "text-white/30 cursor-not-allowed"
-                      : "text-[#fffce1] hover:bg-white/10 hover:border-[#4de840]/50"
+                      : "text-[#fffce1] hover:bg-[#171717] hover:border-[#4de840]/50"
                   } transition-all duration-200`}
                 >
                   <svg
@@ -913,11 +913,11 @@ const Stadiums = () => {
                     currentPage ===
                     Math.ceil(filteredStadiums.length / stadiumsPerPage)
                   }
-                  className={`px-4 py-2 flex items-center rounded-3xl border-2 border-white/15 bg-[#0e100f]/70 backdrop-blur-[10px] cursor-pointer ${
+                  className={`px-4 py-2 flex items-center rounded-3xl border-2 border-white/15 bg-[#171717]/60 backdrop-blur-[10px] cursor-pointer ${
                     currentPage ===
                     Math.ceil(filteredStadiums.length / stadiumsPerPage)
                       ? "text-white/30 cursor-not-allowed"
-                      : "text-[#fffce1] hover:bg-white/10 hover:border-[#4de840]/50"
+                      : "text-[#fffce1] hover:bg-[#171717] hover:border-[#4de840]/50"
                   } transition-all duration-200`}
                 >
                   Next
