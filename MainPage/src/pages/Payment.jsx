@@ -352,9 +352,9 @@ const Payment = () => {
       },
     },
     hover: {
-      y: -5,
-      boxShadow: "0 10px 25px -5px rgba(77, 232, 64, 0.1)",
-      borderColor: "rgba(77, 232, 64, 0.3)",
+      // y: -5,
+      boxShadow: "0 1px 2px -5px rgba(77, 232, 64, 0.1)",
+      // borderColor: "rgba(77, 232, 64, 0.3)",
       transition: {
         duration: 0.3,
       },

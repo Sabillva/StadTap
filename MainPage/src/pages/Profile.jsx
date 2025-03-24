@@ -170,11 +170,11 @@ const Profile = () => {
       },
     }),
     hover: {
-      y: -5,
-      boxShadow: "0 10px 25px -5px rgba(77, 232, 64, 0.1)",
-      borderColor: "rgba(77, 232, 64, 0.3)",
+      // y: -2,
+      boxShadow: "0 1px 2px -5px rgba(77, 232, 64, 0.1)",
+      // borderColor: "rgba(77, 232, 64, 0.3)",
       transition: {
-        duration: 0.3,
+        duration: 0.4,
       },
     },
   };
@@ -663,9 +663,9 @@ const Profile = () => {
                       key={team.id || index}
                       custom={index}
                       variants={cardVariants}
-                      whileHover={{
-                        backgroundColor: "rgba(255, 255, 255, 0.05)",
-                      }}
+                      // whileHover={{
+                      //   backgroundColor: "rgba(255, 255, 255, 0.05)",
+                      // }}
                       className="transition-colors duration-300"
                     >
                       <Link to={`/teams/${team.id}`} className="block p-4">
@@ -839,9 +839,9 @@ const Profile = () => {
                       key={match.id || index}
                       custom={index}
                       variants={cardVariants}
-                      whileHover={{
-                        backgroundColor: "rgba(255, 255, 255, 0.05)",
-                      }}
+                      // whileHover={{
+                      //   backgroundColor: "rgba(255, 255, 255, 0.05)",
+                      // }}
                       className="transition-colors duration-300"
                     >
                       <Link to={`/matches/${match.id}`} className="block p-4">
