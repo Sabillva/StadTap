@@ -759,7 +759,7 @@ const StadiumDetail = () => {
                       </div>
                       <div>
                         <p className="text-[#fffce1]/50 text-xs">Hours</p>
-                        <p className="text-[#fffce1]">8:00 - 23:00</p>
+                        <p className="text-[#fffce1]">10:00 - 23:00</p>
                       </div>
                     </div>
                   </div>
