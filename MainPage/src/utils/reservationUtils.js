@@ -1,5 +1,3 @@
-// Create a new file for reservation utilities
-
 /**
  * Checks and updates expired reservations
  * - Auto-rejects waiting reservations if the time slot has passed

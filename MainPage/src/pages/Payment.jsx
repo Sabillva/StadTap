@@ -79,6 +79,29 @@ const Payment = () => {
       setCountdown((prevCountdown) => {
         if (prevCountdown <= 0) {
           clearInterval(timer);
+          // When countdown reaches zero, update the reservation status to rejected
+          const allReservations = JSON.parse(
+            localStorage.getItem("reservations") || "[]"
+          );
+          const updatedReservations = allReservations.map((r) => {
+            if (r.id === id && r.status === "accepted") {
+              return {
+                ...r,
+                status: "rejected",
+                autoRejected: true,
+                rejectedAt: new Date().getTime(),
+                rejectionReason: "Automatically rejected: Payment time expired",
+              };
+            }
+            return r;
+          });
+          localStorage.setItem(
+            "reservations",
+            JSON.stringify(updatedReservations)
+          );
+
+          // Redirect to my reservations page
+          navigate("/my-reservations");
           return 0;
         }
         return prevCountdown - 1;
@@ -173,7 +196,6 @@ const Payment = () => {
       if (!cardDetails.cardHolder.trim()) {
         newErrors.cardHolder = "Please enter the card holder name";
       }
-
       // Check expiry date
       if (
         !cardDetails.expiryDate.trim() ||
@@ -521,7 +543,6 @@ const Payment = () => {
                           </p>
                         )}
                       </div>
-
                       <div>
                         <label
                           htmlFor="cvv"

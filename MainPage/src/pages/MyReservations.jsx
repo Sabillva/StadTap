@@ -130,7 +130,7 @@ const MyReservations = () => {
       if (reservation.id === reservationId) {
         return {
           ...reservation,
-          status: reservation.status, // Keep the original status
+          status: "rejected", // Change status to rejected to make the slot available
           deleted_by_user: true, // Add this flag
           deletedAt: new Date().getTime(),
         };
@@ -1036,7 +1036,6 @@ const MyReservations = () => {
                                 )}
                               </>
                             )}
-
                             {reservation.status === "paid" && (
                               <div className="text-sm text-[#4de840] bg-[#4de840]/10 px-4 py-2 rounded-full flex items-center mt-2">
                                 <svg
