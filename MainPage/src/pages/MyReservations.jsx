@@ -413,7 +413,7 @@ const MyReservations = () => {
       ) : reservations.length === 0 ? (
         <motion.div
           variants={itemVariants}
-          className="text-center py-16 bg-[#171717]/60 backdrop-blur-[10px] border border-white/15 rounded-[20px] shadow-lg"
+          className="text-center py-16 bg-[#171717]/60 backdrop-blur-[10px] border-2 border-white/15 rounded-[20px] shadow-lg"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
