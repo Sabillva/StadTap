@@ -186,7 +186,7 @@ const CreateTeam = () => {
               <motion.div variants={itemVariants}>
                 <label
                   htmlFor="name"
-                  className="block text-sm font-medium text-[#fffce1] mb-2 flex items-center"
+                  className="flex items-center text-sm font-medium text-[#fffce1] mb-2"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -248,7 +248,7 @@ const CreateTeam = () => {
               <motion.div variants={itemVariants}>
                 <label
                   htmlFor="description"
-                  className="block text-sm font-medium text-[#fffce1] mb-2 flex items-center"
+                  className="flex items-center text-sm font-medium text-[#fffce1] mb-2"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -315,7 +315,7 @@ const CreateTeam = () => {
               <motion.div variants={itemVariants}>
                 <label
                   htmlFor="maxMembers"
-                  className="block text-sm font-medium text-[#fffce1] mb-2 flex items-center"
+                  className="flex items-center text-sm font-medium text-[#fffce1] mb-2"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -463,7 +463,7 @@ const CreateTeam = () => {
               <motion.div variants={itemVariants}>
                 <label
                   htmlFor="phoneNumber"
-                  className="block text-sm font-medium text-[#fffce1] mb-2 flex items-center"
+                  className="flex items-center text-sm font-medium text-[#fffce1] mb-2"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -534,7 +534,7 @@ const CreateTeam = () => {
                   whileHover="hover"
                   whileTap="tap"
                   variants={buttonVariants}
-                  className="px-6 py-3 bg-[rgb(25,25,25)] border-2 border-white/15 text-[#fffce1] rounded-full hover:border-white/30 transition-all duration-300 flex items-center justify-center hover:bg-[rgb(26,26,26)] cursor-pointer"
+                  className="px-6 py-3 bg-[rgb(25,25,25)] border-2 border-white/10 text-[#fffce1] rounded-full hover:border-[#4de840]/30 transition-all duration-300 flex items-center justify-center hover:bg-[rgb(26,26,26)] cursor-pointer"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

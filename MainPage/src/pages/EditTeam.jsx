@@ -275,7 +275,7 @@ const EditTeam = () => {
               <motion.div variants={itemVariants}>
                 <label
                   htmlFor="name"
-                  className="block text-sm font-medium text-[#fffce1] mb-2 flex items-center"
+                  className="text-sm font-medium text-[#fffce1] mb-2 flex items-center"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -337,7 +337,7 @@ const EditTeam = () => {
               <motion.div variants={itemVariants}>
                 <label
                   htmlFor="description"
-                  className="block text-sm font-medium text-[#fffce1] mb-2 flex items-center"
+                  className="text-sm font-medium text-[#fffce1] mb-2 flex items-center"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -404,7 +404,7 @@ const EditTeam = () => {
               <motion.div variants={itemVariants}>
                 <label
                   htmlFor="maxMembers"
-                  className="block text-sm font-medium text-[#fffce1] mb-2 flex items-center"
+                  className="text-sm font-medium text-[#fffce1] mb-2 flex items-center"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -552,7 +552,7 @@ const EditTeam = () => {
               <motion.div variants={itemVariants}>
                 <label
                   htmlFor="phoneNumber"
-                  className="block text-sm font-medium text-[#fffce1] mb-2 flex items-center"
+                  className="text-sm font-medium text-[#fffce1] mb-2 flex items-center"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
