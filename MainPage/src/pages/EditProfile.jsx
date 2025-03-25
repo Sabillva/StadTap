@@ -25,6 +25,8 @@ const EditProfile = () => {
   const [changePassword, setChangePassword] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [activeSection, setActiveSection] = useState("basic"); // basic, password
+  const [loading, setLoading] = useState(true);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   useEffect(() => {
     // In a real app, this would be an API call
@@ -45,6 +47,11 @@ const EditProfile = () => {
         stadiumName: userProfile.stadiumName || "",
       });
     }
+
+    // Add a small delay to make the loading animation visible
+    setTimeout(() => {
+      setLoading(false);
+    }, 800);
   }, [user.id]);
 
   const handleChange = (e) => {
@@ -181,7 +188,14 @@ const EditProfile = () => {
       setUser(updatedUser);
 
       setIsSubmitting(false);
-      navigate("/profile");
+
+      // Show success message
+      setShowSuccessMessage(true);
+
+      // Navigate after showing success message
+      setTimeout(() => {
+        navigate("/profile");
+      }, 1500);
     }, 1000);
   };
 
@@ -307,6 +321,58 @@ const EditProfile = () => {
     },
   };
 
+  const successVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.4,
+        ease: "easeOut",
+      },
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.8,
+      transition: {
+        duration: 0.3,
+        ease: "easeIn",
+      },
+    },
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-[80vh]">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center"
+        >
+          <motion.div
+            animate={{
+              rotate: 360,
+              transition: {
+                duration: 1.5,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "linear",
+              },
+            }}
+            className="w-16 h-16 border-4 border-[#4de840] border-t-transparent rounded-full mx-auto"
+          ></motion.div>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mt-4 text-[#fffce1]/70 text-lg"
+          >
+            Loading your profile...
+          </motion.p>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <motion.div
       initial="hidden"
@@ -319,6 +385,33 @@ const EditProfile = () => {
         <div className="absolute -top-[30%] -left-[10%] w-[70%] h-[70%] bg-[#4de840]/5 rounded-full blur-[120px]"></div>
         <div className="absolute -bottom-[30%] -right-[10%] w-[70%] h-[70%] bg-[#4de840]/5 rounded-full blur-[120px]"></div>
       </div>
+
+      {/* Floating back button */}
+      <motion.button
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3 }}
+        onClick={() => navigate("/profile")}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        className="fixed left-4 top-24 z-30 md:left-8 md:top-28 bg-[#171717]/60 backdrop-blur-[10px] border-2 border-white/15 rounded-full p-3 text-[#fffce1] hover:border-[#4de840] transition-all duration-300 cursor-pointer"
+        aria-label="Go back to profile"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-5 w-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M15 19l-7-7 7-7"
+          />
+        </svg>
+      </motion.button>
 
       <div className="max-w-4xl mx-auto">
         {/* Header */}
@@ -956,58 +1049,31 @@ const EditProfile = () => {
             </div>
 
             {/* Form actions */}
-            <div className="p-6 border-t border-white/10 flex flex-wrap justify-between gap-4">
-              <div className="flex gap-3">
-                <motion.button
-                  whileHover="hover"
-                  whileTap="tap"
-                  variants={buttonVariants}
-                  type="button"
-                  onClick={() => navigate("/profile")}
-                  className="px-5 py-2.5 bg-[rgb(25,25,25)] border-2 border-white/10 text-[#fffce1] rounded-full hover:border-white/30 transition-all duration-300 flex items-center hover:bg-[rgb(26,26,26)] cursor-pointer"
+            <div className="p-6 border-t border-white/10 flex flex-wrap justify-end gap-4">
+              <motion.button
+                whileHover="hover"
+                whileTap="tap"
+                variants={buttonVariants}
+                type="button"
+                onClick={() => setShowDeleteModal(true)}
+                className="px-5 py-2.5 bg-rose-500/10 text-rose-400 border-2 border-rose-500/20 rounded-full hover:bg-rose-500/20 transition-all duration-300 flex items-center cursor-pointer"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 mr-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 mr-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                    />
-                  </svg>
-                  Back to Profile
-                </motion.button>
-
-                <motion.button
-                  whileHover="hover"
-                  whileTap="tap"
-                  variants={buttonVariants}
-                  type="button"
-                  onClick={() => setShowDeleteModal(true)}
-                  className="px-5 py-2.5 bg-rose-500/10 text-rose-400 border-2 border-rose-500/20 rounded-full hover:bg-rose-500/20 transition-all duration-300 flex items-center cursor-pointer"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 mr-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
-                  </svg>
-                  Delete Account
-                </motion.button>
-              </div>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+                Delete Account
+              </motion.button>
 
               <motion.button
                 whileHover="hover"
@@ -1021,17 +1087,26 @@ const EditProfile = () => {
               >
                 {isSubmitting ? (
                   <>
-                    <motion.div
-                      animate={{
-                        rotate: 360,
-                      }}
-                      transition={{
-                        duration: 1,
-                        repeat: Number.POSITIVE_INFINITY,
-                        ease: "linear",
-                      }}
-                      className="w-4 h-4 border-2 border-[#0e100f] border-t-transparent rounded-full mr-2"
-                    ></motion.div>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-5 w-5 text-[#0e100f]"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
                     Saving Changes...
                   </>
                 ) : (
@@ -1123,6 +1198,59 @@ const EditProfile = () => {
                   Delete Account
                 </motion.button>
               </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Success message overlay */}
+      <AnimatePresence>
+        {showSuccessMessage && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
+              onClick={() => setShowSuccessMessage(false)}
+            ></motion.div>
+            <motion.div
+              variants={successVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#171717]/90 backdrop-blur-[10px] border border-[#4de840]/30 rounded-xl shadow-lg p-6 max-w-md w-full z-50 text-center"
+            >
+              <div className="w-16 h-16 bg-[#4de840]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-10 w-10 text-[#4de840]"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-[#fffce1] mb-2">
+                Profile Updated Successfully!
+              </h2>
+              <p className="text-[#fffce1]/70 mb-4">
+                Your profile information has been updated. Redirecting you back
+                to the profile page...
+              </p>
+              <motion.div
+                initial={{ width: "0%" }}
+                animate={{ width: "100%" }}
+                transition={{ duration: 1.5, ease: "linear" }}
+                className="h-1 bg-[#4de840] rounded-full"
+              ></motion.div>
             </motion.div>
           </>
         )}
