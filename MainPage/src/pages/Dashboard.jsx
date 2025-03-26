@@ -390,7 +390,7 @@ const Dashboard = () => {
           whileHover="hover"
           className={`relative overflow-hidden bg-[#171717]/60 backdrop-blur-[10px] border-2 ${
             activeTab === "pending" ? "border-[#ffb700]" : "border-white/15"
-          } rounded-[20px] shadow-lg p-6 cursor-pointer transition-all duration-300`}
+          } rounded-[30px] shadow-lg p-6 cursor-pointer transition-all duration-300`}
           onClick={() => setActiveTab("pending")}
         >
           {/* Decorative background pattern */}
@@ -463,7 +463,7 @@ const Dashboard = () => {
           whileHover="hover"
           className={`relative overflow-hidden bg-[#171717]/60 backdrop-blur-[10px] border-2 ${
             activeTab === "accepted" ? "border-[#4de840]" : "border-white/15"
-          } rounded-[20px] shadow-lg p-6 cursor-pointer transition-all duration-300`}
+          } rounded-[30px] shadow-lg p-6 cursor-pointer transition-all duration-300`}
           onClick={() => setActiveTab("accepted")}
         >
           {/* Decorative background pattern */}
@@ -538,7 +538,7 @@ const Dashboard = () => {
           whileHover="hover"
           className={`relative overflow-hidden bg-[#171717]/60 backdrop-blur-[10px] border-2 ${
             activeTab === "rejected" ? "border-[#ff4d4d]" : "border-white/15"
-          } rounded-[20px] shadow-lg p-6 cursor-pointer transition-all duration-300`}
+          } rounded-[30px] shadow-lg p-6 cursor-pointer transition-all duration-300`}
           onClick={() => setActiveTab("rejected")}
         >
           {/* Decorative background pattern */}
@@ -611,7 +611,7 @@ const Dashboard = () => {
           whileHover="hover"
           className={`relative overflow-hidden bg-[#171717]/60 backdrop-blur-[10px] border-2 ${
             activeTab === "paid" ? "border-[#4dabff]" : "border-white/15"
-          } rounded-[20px] shadow-lg p-6 cursor-pointer transition-all duration-300`}
+          } rounded-[30px] shadow-lg p-6 cursor-pointer transition-all duration-300`}
           onClick={() => setActiveTab("paid")}
         >
           {/* Decorative background pattern */}
@@ -795,7 +795,7 @@ const Dashboard = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="text-center py-16 bg-[#171717]/60 backdrop-blur-[10px] border-2 border-white/15 rounded-[20px] shadow-lg"
+            className="text-center py-16 bg-[#171717]/60 backdrop-blur-[10px] border-2 border-white/15 rounded-[30px] shadow-lg"
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
@@ -895,7 +895,7 @@ const Dashboard = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="bg-[#171717]/60 backdrop-blur-[10px] border-2 border-white/15 rounded-[20px] shadow-lg overflow-hidden"
+            className="bg-[#171717]/60 backdrop-blur-[10px] border-2 border-white/15 rounded-[30px] shadow-lg overflow-hidden"
           >
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-white/10">
