@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useContext, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../../App";
+import { motion } from "framer-motion";
 
 const AdminLogin = () => {
   const { setUser } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -14,6 +16,19 @@ const AdminLogin = () => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+
+  useEffect(() => {
+    // Check if user was redirected from registration
+    if (location.state?.registered) {
+      setShowSuccessMessage(true);
+      // Hide success message after 5 seconds
+      const timer = setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [location]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -95,18 +110,124 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#222] py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-[#2a2a2a] border-2 border-white/20 rounded-xl p-8 shadow-lg">
+    <div
+      className="min-h-screen flex items-center justify-center bg-cover bg-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
+      style={{
+        backgroundImage:
+          "linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8)), url('/placeholder.svg?height=1080&width=1920')",
+      }}
+    >
+      {/* Animated soccer balls */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute w-16 h-16 bg-white rounded-full opacity-10"
+          style={{
+            top: "10%",
+            left: "10%",
+            backgroundImage:
+              "radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(220,220,220,1) 70%, rgba(200,200,200,1) 100%)",
+            boxShadow: "0 0 20px rgba(255,255,255,0.5)",
+          }}
+          animate={{
+            y: [0, 100, 0],
+            x: [0, 50, 0],
+            rotate: 360,
+          }}
+          transition={{
+            duration: 15,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute w-20 h-20 bg-white rounded-full opacity-10"
+          style={{
+            top: "60%",
+            right: "15%",
+            backgroundImage:
+              "radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(220,220,220,1) 70%, rgba(200,200,200,1) 100%)",
+            boxShadow: "0 0 20px rgba(255,255,255,0.5)",
+          }}
+          animate={{
+            y: [0, -120, 0],
+            x: [0, -70, 0],
+            rotate: -360,
+          }}
+          transition={{
+            duration: 18,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
+          }}
+        />
+      </div>
+
+      {/* Success message */}
+      {showSuccessMessage && (
+        <motion.div
+          className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg"
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: -50, opacity: 0 }}
+        >
+          Admin account created successfully! Please log in.
+        </motion.div>
+      )}
+
+      <motion.div
+        className="max-w-md w-full space-y-8 backdrop-blur-sm bg-black/40 border border-green-500/30 rounded-xl p-8 shadow-2xl relative z-10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
+          <motion.div
+            className="mx-auto flex justify-center"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+          >
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-10 w-10 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+          </motion.div>
+          <motion.h2
+            className="mt-6 text-center text-3xl font-extrabold text-white"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
             Admin Login
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-300">
+          </motion.h2>
+          <motion.p
+            className="mt-2 text-center text-sm text-gray-300"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
             Enter your admin credentials
-          </p>
+          </motion.p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <motion.form
+          className="mt-8 space-y-6"
+          onSubmit={handleSubmit}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
           <div className="rounded-md shadow-sm -space-y-px">
             <div className="mb-4">
               <label
@@ -121,8 +242,8 @@ const AdminLogin = () => {
                 type="text"
                 required
                 className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
-                  errors.username ? "border-red-500" : "border-gray-600"
-                } bg-[#333] placeholder-gray-400 text-white rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm`}
+                  errors.username ? "border-red-500" : "border-green-500/50"
+                } bg-black/50 placeholder-gray-400 text-white rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm transition-all duration-200`}
                 placeholder="Admin Username"
                 value={formData.username}
                 onChange={handleChange}
@@ -145,8 +266,8 @@ const AdminLogin = () => {
                   type={showPassword ? "text" : "password"}
                   required
                   className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
-                    errors.password ? "border-red-500" : "border-gray-600"
-                  } bg-[#333] placeholder-gray-400 text-white rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm pr-10`}
+                    errors.password ? "border-red-500" : "border-green-500/50"
+                  } bg-black/50 placeholder-gray-400 text-white rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm pr-10 transition-all duration-200`}
                   placeholder="Password"
                   value={formData.password}
                   onChange={handleChange}
@@ -202,10 +323,12 @@ const AdminLogin = () => {
           </div>
 
           <div>
-            <button
+            <motion.button
               type="submit"
               disabled={isSubmitting}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-full text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-full text-white bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300 shadow-lg hover:shadow-xl cursor-pointer"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
               {isSubmitting ? (
                 <span className="flex items-center">
@@ -232,32 +355,58 @@ const AdminLogin = () => {
                   Signing in...
                 </span>
               ) : (
-                "Sign in as Admin"
+                <span className="flex items-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                    />
+                  </svg>
+                  Sign in as Admin
+                </span>
               )}
-            </button>
+            </motion.button>
           </div>
 
           <div className="text-center space-y-2">
-            <p className="text-sm text-gray-300">
+            <motion.p
+              className="text-sm text-gray-300"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+            >
               Don't have an admin account?{" "}
               <Link
                 to="/admin/register"
-                className="font-medium text-purple-400 hover:text-purple-300"
+                className="font-medium text-green-400 hover:text-green-300 transition-colors"
               >
                 Register as Admin
               </Link>
-            </p>
-            <p className="text-sm text-gray-300">
+            </motion.p>
+            <motion.p
+              className="text-sm text-gray-300"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.7 }}
+            >
               <Link
                 to="/login"
-                className="font-medium text-gray-400 hover:text-gray-300"
+                className="font-medium text-gray-400 hover:text-gray-300 transition-colors"
               >
                 Back to User Login
               </Link>
-            </p>
+            </motion.p>
           </div>
-        </form>
-      </div>
+        </motion.form>
+      </motion.div>
     </div>
   );
 };
