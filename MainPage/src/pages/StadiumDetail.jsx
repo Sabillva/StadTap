@@ -807,7 +807,7 @@ const StadiumDetail = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => openGallery(0)}
-                  className="text-[#4de840] hover:text-[#4de840]/80 flex items-center text-sm bg-[#4de840]/10 px-3 py-1.5 rounded-full border border-[#4de840]/20"
+                  className="text-[#4de840] hover:text-[#4de840]/80 flex items-center text-sm bg-[#4de840]/10 px-3 py-1.5 rounded-full border border-[#4de840]/20 cursor-pointer"
                 >
                   View all photos
                   <svg
