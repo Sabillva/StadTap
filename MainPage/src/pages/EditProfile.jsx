@@ -182,13 +182,14 @@ const EditProfile = () => {
         lastName: formData.lastName,
         email: formData.email,
         username: formData.username,
+        stadiumName:
+          user.userType === "owner" ? formData.stadiumName : user.stadiumName,
       };
 
       localStorage.setItem("user", JSON.stringify(updatedUser));
       setUser(updatedUser);
 
       setIsSubmitting(false);
-
       // Show success message
       setShowSuccessMessage(true);
 
