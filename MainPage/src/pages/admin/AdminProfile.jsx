@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { AuthContext } from "../../App";
 
 const AdminProfile = () => {
@@ -21,6 +22,88 @@ const AdminProfile = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+      },
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut",
+      },
+    },
+    hover: {
+      boxShadow: "0 10px 25px -5px rgba(124, 58, 237, 0.1)",
+      transition: {
+        duration: 0.3,
+      },
+    },
+  };
+
+  const buttonVariants = {
+    hover: { scale: 1.05 },
+    tap: { scale: 0.95 },
+  };
+
+  const modalVariants = {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut",
+      },
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.9,
+      transition: {
+        duration: 0.2,
+        ease: "easeIn",
+      },
+    },
+  };
+
+  const overlayVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.3,
+      },
+    },
+    exit: {
+      opacity: 0,
+      transition: {
+        duration: 0.2,
+      },
+    },
+  };
 
   useEffect(() => {
     // Check if user is admin
@@ -42,7 +125,10 @@ const AdminProfile = () => {
       confirmPassword: "",
     });
 
-    setLoading(false);
+    // Add a small delay to make the loading animation visible
+    setTimeout(() => {
+      setLoading(false);
+    }, 800);
   }, [user, navigate]);
 
   const handleChange = (e) => {
@@ -169,7 +255,12 @@ const AdminProfile = () => {
       });
 
       setIsSubmitting(false);
-      alert("Profile updated successfully");
+      setShowSuccessMessage(true);
+
+      // Hide success message after 3 seconds
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 3000);
     }, 1000);
   };
 
@@ -190,47 +281,148 @@ const AdminProfile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#222] flex items-center justify-center">
-        <svg
-          className="animate-spin h-10 w-10 text-purple-500"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
+      <div className="min-h-screen bg-[#0a0a12] flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center"
         >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-          ></circle>
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          ></path>
-        </svg>
+          <motion.div
+            animate={{
+              rotate: 360,
+              transition: {
+                duration: 1.5,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "linear",
+              },
+            }}
+            className="w-14 h-14 border-4 border-purple-600 border-t-transparent rounded-full mx-auto"
+          ></motion.div>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mt-4 text-gray-300 text-base"
+          >
+            Loading profile...
+          </motion.p>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#222] py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-white">Admin Profile</h1>
-          <button
-            onClick={() => navigate("/admin/dashboard")}
-            className="px-4 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors"
-          >
-            Back to Dashboard
-          </button>
-        </div>
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      className="min-h-screen bg-[#0a0a12] py-12 px-4 sm:px-6 lg:px-8"
+    >
+      {/* Background decorative elements */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <motion.div
+          initial={{ opacity: 0.3 }}
+          animate={{
+            opacity: [0.3, 0.5, 0.3],
+            transition: {
+              duration: 8,
+              repeat: Number.POSITIVE_INFINITY,
+              ease: "easeInOut",
+            },
+          }}
+          className="absolute -top-[30%] -left-[10%] w-[70%] h-[70%] bg-purple-600/5 rounded-full blur-[120px]"
+        ></motion.div>
+        <motion.div
+          initial={{ opacity: 0.3 }}
+          animate={{
+            opacity: [0.3, 0.5, 0.3],
+            transition: {
+              duration: 8,
+              repeat: Number.POSITIVE_INFINITY,
+              ease: "easeInOut",
+              delay: 2,
+            },
+          }}
+          className="absolute -bottom-[30%] -right-[10%] w-[70%] h-[70%] bg-indigo-600/5 rounded-full blur-[120px]"
+        ></motion.div>
+        <motion.div
+          initial={{ opacity: 0.3 }}
+          animate={{
+            opacity: [0.3, 0.5, 0.3],
+            transition: {
+              duration: 8,
+              repeat: Number.POSITIVE_INFINITY,
+              ease: "easeInOut",
+              delay: 4,
+            },
+          }}
+          className="absolute top-[40%] left-[60%] w-[40%] h-[40%] bg-pink-600/5 rounded-full blur-[100px]"
+        ></motion.div>
+      </div>
 
-        <div className="bg-[#2a2a2a] border-2 border-white/20 rounded-xl shadow-lg p-6">
+      <div className="max-w-3xl mx-auto">
+        <motion.div
+          variants={itemVariants}
+          className="flex justify-between items-center mb-8"
+        >
+          <div className="flex items-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-lg mr-3">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+            </div>
+            <h1 className="text-2xl md:text-3xl font-bold text-white">
+              Admin Profile
+            </h1>
+          </div>
+          <motion.button
+            whileHover="hover"
+            whileTap="tap"
+            variants={buttonVariants}
+            onClick={() => navigate("/admin/dashboard")}
+            className="px-4 py-2 bg-gradient-to-br from-purple-500 to-indigo-600 text-white rounded-full hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 flex items-center cursor-pointer"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 mr-1.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+            Back to Dashboard
+          </motion.button>
+        </motion.div>
+
+        <motion.div
+          variants={cardVariants}
+          whileHover="hover"
+          className="bg-gradient-to-br from-[#1a1a2e]/90 to-[#16162a]/90 backdrop-blur-md border border-white/10 rounded-2xl shadow-xl p-6 md:p-8 overflow-hidden relative"
+        >
+          <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-purple-500/5 rounded-full blur-xl"></div>
+
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <motion.div
+              variants={itemVariants}
+              className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"
+            >
               <div>
                 <label
                   htmlFor="firstName"
@@ -245,8 +437,8 @@ const AdminProfile = () => {
                   value={formData.firstName}
                   onChange={handleChange}
                   className={`w-full px-3 py-2 border ${
-                    errors.firstName ? "border-red-500" : "border-gray-600"
-                  } bg-[#333] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                    errors.firstName ? "border-red-500" : "border-white/10"
+                  } bg-white/5 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors`}
                 />
                 {errors.firstName && (
                   <p className="mt-1 text-sm text-red-400">
@@ -269,16 +461,16 @@ const AdminProfile = () => {
                   value={formData.lastName}
                   onChange={handleChange}
                   className={`w-full px-3 py-2 border ${
-                    errors.lastName ? "border-red-500" : "border-gray-600"
-                  } bg-[#333] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                    errors.lastName ? "border-red-500" : "border-white/10"
+                  } bg-white/5 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors`}
                 />
                 {errors.lastName && (
                   <p className="mt-1 text-sm text-red-400">{errors.lastName}</p>
                 )}
               </div>
-            </div>
+            </motion.div>
 
-            <div className="mb-6">
+            <motion.div variants={itemVariants} className="mb-6">
               <label
                 htmlFor="email"
                 className="block text-sm font-medium text-white mb-1"
@@ -292,15 +484,15 @@ const AdminProfile = () => {
                 value={formData.email}
                 onChange={handleChange}
                 className={`w-full px-3 py-2 border ${
-                  errors.email ? "border-red-500" : "border-gray-600"
-                } bg-[#333] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                  errors.email ? "border-red-500" : "border-white/10"
+                } bg-white/5 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors`}
               />
               {errors.email && (
                 <p className="mt-1 text-sm text-red-400">{errors.email}</p>
               )}
-            </div>
+            </motion.div>
 
-            <div className="mb-6">
+            <motion.div variants={itemVariants} className="mb-6">
               <label
                 htmlFor="username"
                 className="block text-sm font-medium text-white mb-1"
@@ -314,18 +506,39 @@ const AdminProfile = () => {
                 value={formData.username}
                 onChange={handleChange}
                 className={`w-full px-3 py-2 border ${
-                  errors.username ? "border-red-500" : "border-gray-600"
-                } bg-[#333] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                  errors.username ? "border-red-500" : "border-white/10"
+                } bg-white/5 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors`}
               />
               {errors.username && (
                 <p className="mt-1 text-sm text-red-400">{errors.username}</p>
               )}
-            </div>
+            </motion.div>
 
-            <div className="border-t border-gray-700 pt-6 mt-6">
-              <h2 className="text-xl font-semibold text-white mb-4">
-                Change Password
-              </h2>
+            <motion.div
+              variants={itemVariants}
+              className="border-t border-white/10 pt-6 mt-6"
+            >
+              <div className="flex items-center mb-4">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-lg mr-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                    />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-semibold text-white">
+                  Change Password
+                </h2>
+              </div>
 
               <div className="mb-6">
                 <label
@@ -344,8 +557,8 @@ const AdminProfile = () => {
                     className={`w-full px-3 py-2 border ${
                       errors.currentPassword
                         ? "border-red-500"
-                        : "border-gray-600"
-                    } bg-[#333] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 pr-10`}
+                        : "border-white/10"
+                    } bg-white/5 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors pr-10`}
                   />
                   <button
                     type="button"
@@ -413,8 +626,8 @@ const AdminProfile = () => {
                     value={formData.newPassword}
                     onChange={handleChange}
                     className={`w-full px-3 py-2 border ${
-                      errors.newPassword ? "border-red-500" : "border-gray-600"
-                    } bg-[#333] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                      errors.newPassword ? "border-red-500" : "border-white/10"
+                    } bg-white/5 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors`}
                   />
                   {errors.newPassword && (
                     <p className="mt-1 text-sm text-red-400">
@@ -439,8 +652,8 @@ const AdminProfile = () => {
                     className={`w-full px-3 py-2 border ${
                       errors.confirmPassword
                         ? "border-red-500"
-                        : "border-gray-600"
-                    } bg-[#333] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                        : "border-white/10"
+                    } bg-white/5 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors`}
                   />
                   {errors.confirmPassword && (
                     <p className="mt-1 text-sm text-red-400">
@@ -449,84 +662,200 @@ const AdminProfile = () => {
                   )}
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="flex justify-between mt-8">
-              <button
+            <motion.div
+              variants={itemVariants}
+              className="flex flex-col sm:flex-row justify-between mt-8 gap-4"
+            >
+              <motion.button
+                whileHover="hover"
+                whileTap="tap"
+                variants={buttonVariants}
                 type="button"
                 onClick={() => setShowDeleteConfirm(true)}
-                className="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
+                className="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors flex items-center justify-center cursor-pointer"
               >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 mr-1.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
                 Delete Account
-              </button>
+              </motion.button>
 
-              <button
+              <motion.button
+                whileHover="hover"
+                whileTap="tap"
+                variants={buttonVariants}
                 type="submit"
                 disabled={isSubmitting}
-                className="px-6 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors"
+                className="px-6 py-2 bg-gradient-to-br from-purple-500 to-indigo-600 text-white rounded-full hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 flex items-center justify-center cursor-pointer"
               >
                 {isSubmitting ? (
-                  <span className="flex items-center">
+                  <>
+                    <motion.div
+                      animate={{
+                        rotate: 360,
+                      }}
+                      transition={{
+                        duration: 1,
+                        repeat: Number.POSITIVE_INFINITY,
+                        ease: "linear",
+                      }}
+                      className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
+                    ></motion.div>
+                    Saving...
+                  </>
+                ) : (
+                  <>
                     <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
                       xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 mr-1.5"
                       fill="none"
                       viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="2"
                     >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
                       <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
-                    Saving...
-                  </span>
-                ) : (
-                  "Save Changes"
+                    Save Changes
+                  </>
                 )}
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
           </form>
-        </div>
+        </motion.div>
       </div>
 
+      {/* Success Message */}
+      <AnimatePresence>
+        {showSuccessMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="fixed top-4 left-1/2 -translate-x-1/2 bg-green-500/90 text-white px-6 py-3 rounded-full shadow-lg flex items-center z-50"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            Profile updated successfully!
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Delete Account Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#2a2a2a] border-2 border-white/20 rounded-xl shadow-lg p-6 max-w-md w-full">
-            <h2 className="text-xl font-bold text-white mb-4">
-              Delete Account
-            </h2>
-            <p className="text-gray-300 mb-6">
-              Are you sure you want to delete your admin account? This action
-              cannot be undone.
-            </p>
-            <div className="flex justify-end space-x-4">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 bg-gray-600 text-white rounded-full hover:bg-gray-700 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteAccount}
-                className="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
-              >
-                Delete Account
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <>
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              variants={overlayVariants}
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
+              onClick={() => setShowDeleteConfirm(false)}
+            ></motion.div>
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              variants={modalVariants}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#1a1a2e]/95 backdrop-blur-md border border-white/10 rounded-xl shadow-lg p-6 max-w-md w-full z-50"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center text-red-400 mr-3">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-bold text-white">Delete Account</h2>
+              </div>
+              <p className="text-gray-300 mb-6">
+                Are you sure you want to delete your admin account? This action
+                cannot be undone.
+              </p>
+              <div className="flex justify-end space-x-4">
+                <motion.button
+                  whileHover={{
+                    scale: 1.05,
+                    backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="px-4 py-2 bg-white/5 text-white rounded-full hover:bg-white/10 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </motion.button>
+                <motion.button
+                  whileHover={{
+                    scale: 1.05,
+                    backgroundColor: "rgba(239, 68, 68, 0.8)",
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleDeleteAccount}
+                  className="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors flex items-center cursor-pointer"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mr-1.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                  Delete Account
+                </motion.button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 
