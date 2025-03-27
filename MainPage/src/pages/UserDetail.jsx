@@ -1,104 +1,103 @@
-"use client";
+"use client"
 
-import { useState, useEffect, useContext } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { AuthContext } from "../App";
-import { getStadiumByName } from "../utils/stadiumUtils"; // Import the utility function
+import { useState, useEffect, useContext } from "react"
+import { useParams, useNavigate, Link } from "react-router-dom"
+import { motion } from "framer-motion"
+import { AuthContext } from "../App"
+import { getStadiumByName } from "../utils/stadiumUtils" // Import the utility function
 
 const UserDetail = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { user: currentUser } = useContext(AuthContext);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [teams, setTeams] = useState([]);
-  const [reservations, setReservations] = useState([]);
-  const [userTeams, setUserTeams] = useState([]);
-  const [userMatches, setUserMatches] = useState([]);
-  const [userReservations, setUserReservations] = useState([]);
-  const [userStadium, setUserStadium] = useState(null); // Add state for the user's stadium
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const { user: currentUser } = useContext(AuthContext)
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [teams, setTeams] = useState([])
+  const [reservations, setReservations] = useState([])
+  const [userTeams, setUserTeams] = useState([])
+  const [userMatches, setUserMatches] = useState([])
+  const [userReservations, setUserReservations] = useState([])
+  const [userStadium, setUserStadium] = useState(null) // Add state for the user's stadium
 
   useEffect(() => {
     // Load user data from localStorage
-    const storedUsers = JSON.parse(localStorage.getItem("users") || "[]");
-    const foundUser = storedUsers.find((u) => u.id === id);
+    const storedUsers = JSON.parse(localStorage.getItem("users") || "[]")
+    const foundUser = storedUsers.find((u) => u.id === id)
 
     if (!foundUser) {
-      navigate("/users");
-      return;
+      navigate("/users")
+      return
     }
 
-    setUser(foundUser);
+    setUser(foundUser)
 
     // If user is a stadium owner, get their stadium data
     if (foundUser.userType === "owner" && foundUser.stadiumName) {
       // Use the utility function to get stadium by name
-      const stadium = getStadiumByName(foundUser.stadiumName);
-      setUserStadium(stadium);
+      const stadium = getStadiumByName(foundUser.stadiumName)
+      setUserStadium(stadium)
     }
 
     // Get user's teams
-    const storedTeams = localStorage.getItem("teams");
-    const allTeams = storedTeams ? JSON.parse(storedTeams) : [];
+    const storedTeams = localStorage.getItem("teams")
+    const allTeams = storedTeams ? JSON.parse(storedTeams) : []
     const userTeams = allTeams.filter(
       (team) =>
         team.members.some((member) => {
           if (typeof member === "object") {
-            return member.id === id;
+            return member.id === id
           }
-          return member === id;
-        }) || team.creatorId === id
-    );
-    setTeams(userTeams);
-    setUserTeams(userTeams);
+          return member === id
+        }) || team.creatorId === id,
+    )
+    setTeams(userTeams)
+    setUserTeams(userTeams)
 
     // Get user's matches
-    const storedMatches = localStorage.getItem("matches");
-    const allMatches = storedMatches ? JSON.parse(storedMatches) : [];
-    // Filter matches where user's team is participating
+    const storedMatches = localStorage.getItem("matches")
+    const allMatches = storedMatches ? JSON.parse(storedMatches) : []
+
+    // Filter matches where user is creator, opponent, or participant
     const userMatches = allMatches.filter((match) => {
-      return userTeams.some(
-        (team) => team.id === match.homeTeamId || team.id === match.awayTeamId
-      );
-    });
-    setUserMatches(userMatches);
+      const isCreator = match.creatorId === id
+      const isOpponent = match.opponentId === id
+      const isParticipant = match.participants && match.participants.some((p) => p.userId === id)
+      const isInJoinRequests =
+        match.joinRequests &&
+        match.joinRequests.some((request) => request.userId === id && request.status === "accepted")
+
+      return isCreator || isOpponent || isParticipant || isInJoinRequests
+    })
+
+    setUserMatches(userMatches)
 
     // Get user's reservations
-    const storedReservations = localStorage.getItem("reservations");
-    const allReservations = storedReservations
-      ? JSON.parse(storedReservations)
-      : [];
-    const userReservations = allReservations.filter(
-      (r) => r.userId === id && !r.deleted_by_user
-    );
-    setReservations(userReservations);
-    setUserReservations(userReservations);
+    const storedReservations = localStorage.getItem("reservations")
+    const allReservations = storedReservations ? JSON.parse(storedReservations) : []
+    const userReservations = allReservations.filter((r) => r.userId === id && !r.deleted_by_user)
+    setReservations(userReservations)
+    setUserReservations(userReservations)
 
     // For stadium owners, get their stadium's reservations
     if (foundUser.userType === "owner" && foundUser.stadiumName) {
-      const storedReservations = localStorage.getItem("reservations");
-      const allReservations = storedReservations
-        ? JSON.parse(storedReservations)
-        : [];
+      const storedReservations = localStorage.getItem("reservations")
+      const allReservations = storedReservations ? JSON.parse(storedReservations) : []
       // Filter to only show public reservations for this stadium
       const stadiumReservations = allReservations
-        .filter(
-          (r) => r.stadiumName === foundUser.stadiumName && r.status === "paid"
-        )
-        .slice(0, 3);
-      setReservations(stadiumReservations);
+        .filter((r) => r.stadiumName === foundUser.stadiumName && r.status === "paid")
+        .slice(0, 3)
+      setReservations(stadiumReservations)
     }
 
     // Add a small delay to make the loading animation visible
     setTimeout(() => {
-      setLoading(false);
-    }, 800);
-  }, [id, navigate]);
+      setLoading(false)
+    }, 800)
+  }, [id, navigate])
 
   const handleSendMessage = () => {
-    navigate(`/chat/${id}`);
-  };
+    navigate(`/chat/${id}`)
+  }
 
   // Animation variants
   const containerVariants = {
@@ -109,7 +108,7 @@ const UserDetail = () => {
         staggerChildren: 0.1,
       },
     },
-  };
+  }
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -120,7 +119,7 @@ const UserDetail = () => {
         duration: 0.5,
       },
     },
-  };
+  }
 
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -138,21 +137,17 @@ const UserDetail = () => {
         duration: 0.3,
       },
     },
-  };
+  }
 
   const buttonVariants = {
     hover: { scale: 1.05 },
     tap: { scale: 0.95 },
-  };
+  }
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-[80vh]">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center"
-        >
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
           <motion.div
             animate={{
               rotate: 360,
@@ -174,16 +169,11 @@ const UserDetail = () => {
           </motion.p>
         </motion.div>
       </div>
-    );
+    )
   }
 
   return (
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-      className="container mx-auto px-4 py-8"
-    >
+    <motion.div initial="hidden" animate="visible" variants={containerVariants} className="container mx-auto px-4 py-8">
       {/* Background decorative elements */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute -top-[30%] -left-[10%] w-[70%] h-[70%] bg-[#4de840]/5 rounded-full blur-[120px]"></div>
@@ -219,12 +209,7 @@ const UserDetail = () => {
           viewBox="0 0 24 24"
           stroke="currentColor"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 19l-7-7 7-7"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
       </motion.button>
 
@@ -238,11 +223,7 @@ const UserDetail = () => {
             {/* Profile banner */}
             <div className="h-32 bg-gradient-to-r from-[#0e100f] via-[#1a1f1a] to-[#0e100f] relative overflow-hidden">
               <div className="absolute inset-0">
-                <svg
-                  viewBox="0 0 800 200"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="opacity-20"
-                >
+                <svg viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg" className="opacity-20">
                   <path
                     fill="#4de840"
                     d="M-13.5,95.7 C131.1,152.8 145.9,-73.5 275.3,41.7 C404.7,156.8 497.9,-32.1 638.1,63.5 C778.2,159.1 940.5,-14.9 1047.6,88.6 L1050,218.5 L-13.5,218.5 Z"
@@ -261,8 +242,7 @@ const UserDetail = () => {
                 <div
                   className="h-full w-full"
                   style={{
-                    backgroundImage:
-                      "radial-gradient(#4de840 1px, transparent 1px)",
+                    backgroundImage: "radial-gradient(#4de840 1px, transparent 1px)",
                     backgroundSize: "20px 20px",
                   }}
                 ></div>
@@ -383,9 +363,7 @@ const UserDetail = () => {
             >
               <div className="p-6 space-y-4">
                 <div>
-                  <div className="text-sm text-[#fffce1]/50 mb-1">
-                    Email Address:
-                  </div>
+                  <div className="text-sm text-[#fffce1]/50 mb-1">Email Address:</div>
                   <div className="font-medium text-[#fffce1] flex items-center">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -406,9 +384,7 @@ const UserDetail = () => {
                 </div>
 
                 <div>
-                  <div className="text-sm text-[#fffce1]/50 mb-1">
-                    User Type:
-                  </div>
+                  <div className="text-sm text-[#fffce1]/50 mb-1">User Type:</div>
                   <div className="font-medium text-[#fffce1] flex items-center">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -439,9 +415,7 @@ const UserDetail = () => {
 
                 {user.userType === "owner" && user.stadiumName && (
                   <div>
-                    <div className="text-sm text-[#fffce1]/50 mb-1">
-                      Stadium:
-                    </div>
+                    <div className="text-sm text-[#fffce1]/50 mb-1">Stadium:</div>
                     <div className="font-medium text-[#fffce1] flex items-center">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -526,18 +500,105 @@ const UserDetail = () => {
                                 </svg>
                               </div>
                               <div>
+                                <h3 className="text-lg font-medium text-[#fffce1]">{team.name}</h3>
+                                <p className="text-sm text-[#fffce1]/70">{team.members?.length || 0} members</p>
+                              </div>
+                            </div>
+                            <motion.div whileHover={{ x: 3 }} transition={{ duration: 0.2 }}>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5 text-[#4de840]"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                            </motion.div>
+                          </div>
+                        </Link>
+                      </motion.li>
+                    ))}
+                  </ul>
+                </motion.div>
+              </>
+            )}
+
+            {/* Matches Section */}
+            {userMatches.length > 0 && (
+              <>
+                <motion.h2
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  className="text-2xl font-bold mb-5 mt-8 text-[#fffce1] flex items-center"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6 mr-2 text-[#4de840]"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  Matches
+                </motion.h2>
+
+                <motion.div
+                  variants={cardVariants}
+                  whileHover="hover"
+                  className="bg-[#171717]/60 backdrop-blur-[10px] border-2 border-white/15 rounded-[30px] shadow-lg overflow-hidden"
+                >
+                  <ul className="divide-y divide-white/10">
+                    {userMatches.map((match, index) => (
+                      <motion.li
+                        key={match.id}
+                        custom={index}
+                        variants={cardVariants}
+                        whileHover={{
+                          backgroundColor: "rgba(255, 255, 255, 0.05)",
+                        }}
+                        className="transition-colors duration-300"
+                      >
+                        <Link to={`/matches/${match.id}`} className="block p-4">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center">
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#4de840]/20 to-[#2ca322]/20 flex items-center justify-center text-[#4de840] mr-3">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-5 w-5"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                  />
+                                </svg>
+                              </div>
+                              <div>
                                 <h3 className="text-lg font-medium text-[#fffce1]">
-                                  {team.name}
+                                  {match.title || "Football Match"}
                                 </h3>
                                 <p className="text-sm text-[#fffce1]/70">
-                                  {team.members?.length || 0} members
+                                  {match.date ? new Date(match.date).toLocaleDateString() : "Date not specified"}
+                                  {match.city ? ` • ${match.city}` : ""}
                                 </p>
                               </div>
                             </div>
-                            <motion.div
-                              whileHover={{ x: 3 }}
-                              transition={{ duration: 0.2 }}
-                            >
+                            <motion.div whileHover={{ x: 3 }} transition={{ duration: 0.2 }}>
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 className="h-5 w-5 text-[#4de840]"
@@ -598,21 +659,17 @@ const UserDetail = () => {
                     transition={{ duration: 0.5 }}
                     src={
                       userStadium?.image ||
-                      `https://source.unsplash.com/random/800x400/?football,stadium&sig=${
-                        user.id || Math.random()
-                      }`
+                      `https://source.unsplash.com/random/800x400/?football,stadium&sig=${user.id || Math.random()}`
                     }
                     alt={user.stadiumName}
                     className="h-full w-full object-cover"
                     onError={(e) => {
-                      e.target.src = `https://source.unsplash.com/random/800x400/?football,stadium&sig=${Math.random()}`;
+                      e.target.src = `https://source.unsplash.com/random/800x400/?football,stadium&sig=${Math.random()}`
                     }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                   <div className="absolute bottom-4 left-4">
-                    <h3 className="text-2xl font-bold text-white">
-                      {user.stadiumName}
-                    </h3>
+                    <h3 className="text-2xl font-bold text-white">{user.stadiumName}</h3>
                   </div>
                 </div>
 
@@ -627,9 +684,7 @@ const UserDetail = () => {
 
                   {reservations.length > 0 && (
                     <div>
-                      <div className="text-sm text-[#fffce1]/50 mb-2">
-                        Recent Reservations:
-                      </div>
+                      <div className="text-sm text-[#fffce1]/50 mb-2">Recent Reservations:</div>
                       <ul className="space-y-2">
                         {reservations.map((reservation) => (
                           <li
@@ -637,14 +692,12 @@ const UserDetail = () => {
                             className="bg-[#1a1a1a] border border-white/10 rounded-xl p-3 flex justify-between items-center"
                           >
                             <div>
-                              <div className="text-[#fffce1] font-medium">
-                                {reservation.date}
-                              </div>
+                              <div className="text-[#fffce1] font-medium">{reservation.date}</div>
                               <div className="text-[#fffce1]/60 text-sm">
                                 {reservation.timeSlots
                                   .map((slotId) => {
-                                    const [start, end] = slotId.split("-");
-                                    return `${start}:00-${end}:00`;
+                                    const [start, end] = slotId.split("-")
+                                    return `${start}:00-${end}:00`
                                   })
                                   .join(", ")}
                               </div>
@@ -658,18 +711,9 @@ const UserDetail = () => {
                     </div>
                   )}
 
-                  <motion.div
-                    whileHover="hover"
-                    whileTap="tap"
-                    variants={buttonVariants}
-                    className="mt-6"
-                  >
+                  <motion.div whileHover="hover" whileTap="tap" variants={buttonVariants} className="mt-6">
                     <Link
-                      to={
-                        userStadium
-                          ? `/stadiums/${userStadium.id}`
-                          : `/stadiums`
-                      }
+                      to={userStadium ? `/stadiums/${userStadium.id}` : `/stadiums`}
                       className="w-full text-center bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] py-2.5 rounded-full font-medium hover:shadow-lg hover:shadow-[#4de840]/20 transition-all duration-300 flex items-center justify-center"
                     >
                       <svg
@@ -734,31 +778,21 @@ const UserDetail = () => {
                 <div className="p-6">
                   <div className="grid grid-cols-3 gap-4 mb-6">
                     <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-4 text-center">
-                      <div className="text-[#4de840] text-2xl font-bold mb-1">
-                        {userTeams.length}
-                      </div>
+                      <div className="text-[#4de840] text-2xl font-bold mb-1">{userTeams.length}</div>
                       <div className="text-[#fffce1]/70 text-sm">Teams</div>
                     </div>
                     <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-4 text-center">
-                      <div className="text-[#4de840] text-2xl font-bold mb-1">
-                        {userMatches.length}
-                      </div>
+                      <div className="text-[#4de840] text-2xl font-bold mb-1">{userMatches.length}</div>
                       <div className="text-[#fffce1]/70 text-sm">Matches</div>
                     </div>
                     <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-4 text-center">
-                      <div className="text-[#4de840] text-2xl font-bold mb-1">
-                        {userReservations.length}
-                      </div>
-                      <div className="text-[#fffce1]/70 text-sm">
-                        Reservations
-                      </div>
+                      <div className="text-[#4de840] text-2xl font-bold mb-1">{userReservations.length}</div>
+                      <div className="text-[#fffce1]/70 text-sm">Reservations</div>
                     </div>
                   </div>
 
                   <div className="mb-4">
-                    <div className="text-sm text-[#fffce1]/50 mb-1">
-                      Player Bio:
-                    </div>
+                    <div className="text-sm text-[#fffce1]/50 mb-1">Player Bio:</div>
                     <p className="text-[#fffce1]/80">
                       {user.bio ||
                         `${user.firstName} is an active player on our platform. They have joined ${userTeams.length} teams and participated in ${userMatches.length} matches.`}
@@ -766,12 +800,7 @@ const UserDetail = () => {
                   </div>
 
                   {teams.length > 0 && (
-                    <motion.div
-                      whileHover="hover"
-                      whileTap="tap"
-                      variants={buttonVariants}
-                      className="mt-6"
-                    >
+                    <motion.div whileHover="hover" whileTap="tap" variants={buttonVariants} className="mt-6">
                       <Link
                         to="/teams"
                         className="w-full text-center bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] py-2.5 rounded-full font-medium hover:shadow-lg hover:shadow-[#4de840]/20 transition-all duration-300 flex items-center justify-center"
@@ -801,7 +830,8 @@ const UserDetail = () => {
         </div>
       </div>
     </motion.div>
-  );
-};
+  )
+}
 
-export default UserDetail;
+export default UserDetail
+

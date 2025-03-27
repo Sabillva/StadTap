@@ -83,6 +83,14 @@ const CreateMatch = () => {
       opponentId: null,
       opponentName: null,
       joinRequests: [], // For opponent requests
+      participants: [
+        {
+          userId: user.id,
+          name: `${user.firstName} ${user.lastName}`,
+          role: "creator",
+          joinedAt: new Date().toISOString(),
+        },
+      ], // Track all participants including creator
     };
 
     // Save to localStorage

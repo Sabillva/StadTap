@@ -57,8 +57,21 @@ const Matches = () => {
   // Filter matches based on active tab and search query
   const filteredMatches = matches.filter((match) => {
     // Filter by tab
-    if (activeTab === "my" && match.creatorId !== user.id) {
-      return false;
+    if (activeTab === "my") {
+      // Check if user is the creator OR a participant in the match
+      const isCreator = match.creatorId === user.id;
+      const isOpponent = match.opponentId === user.id;
+      const isInJoinRequests =
+        match.joinRequests &&
+        match.joinRequests.some(
+          (request) =>
+            request.userId === user.id && request.status === "accepted"
+        );
+
+      // If user is neither creator nor participant, filter out this match
+      if (!isCreator && !isOpponent && !isInJoinRequests) {
+        return false;
+      }
     }
 
     // Filter by search query

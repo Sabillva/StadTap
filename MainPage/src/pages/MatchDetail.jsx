@@ -13,6 +13,7 @@ const MatchDetail = () => {
   const [loading, setLoading] = useState(true);
   const [isCreator, setIsCreator] = useState(false);
   const [hasRequestedToJoin, setHasRequestedToJoin] = useState(false);
+  const [isParticipant, setIsParticipant] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
   const [showConfirmModal, setShowConfirmModal] = useState({
     visible: false,
@@ -36,6 +37,19 @@ const MatchDetail = () => {
 
     setMatch(foundMatch);
     setIsCreator(foundMatch.creatorId === user.id);
+
+    // Check if user is an opponent or participant
+    const isOpponent = foundMatch.opponentId === user.id;
+    const isInParticipants =
+      foundMatch.participants &&
+      foundMatch.participants.some((p) => p.userId === user.id);
+    const isAcceptedRequest =
+      foundMatch.joinRequests &&
+      foundMatch.joinRequests.some(
+        (request) => request.userId === user.id && request.status === "accepted"
+      );
+
+    setIsParticipant(isOpponent || isInParticipants || isAcceptedRequest);
 
     // Check if user has already requested to join as opponent
     setHasRequestedToJoin(
@@ -238,6 +252,69 @@ const MatchDetail = () => {
     setMatch(updatedMatches.find((m) => m.id === id));
   };
 
+  // Add the handleLeaveMatch function
+  const handleLeaveMatch = () => {
+    setShowConfirmModal({
+      visible: true,
+      type: "leaveMatch",
+      title: "Leave Match",
+      message:
+        "Are you sure you want to leave this match? You'll need to request to join again if you change your mind.",
+    });
+  };
+
+  // Add the confirmLeaveMatch function
+  const confirmLeaveMatch = () => {
+    // In a real app, this would be an API call
+    // For demo purposes, we'll use localStorage
+    const storedMatches = localStorage.getItem("matches");
+    const matches = JSON.parse(storedMatches);
+    const updatedMatches = matches.map((m) => {
+      if (m.id === id) {
+        // If user is the opponent, remove them
+        if (m.opponentId === user.id) {
+          return {
+            ...m,
+            hasOpponent: false,
+            opponentId: null,
+            opponentName: null,
+          };
+        }
+
+        // If user is in participants, remove them
+        if (m.participants) {
+          return {
+            ...m,
+            participants: m.participants.filter((p) => p.userId !== user.id),
+          };
+        }
+
+        // If user is in joinRequests, remove them
+        if (m.joinRequests) {
+          return {
+            ...m,
+            joinRequests: m.joinRequests.filter(
+              (r) => r.userId !== user.id || r.id !== user.id
+            ),
+          };
+        }
+      }
+      return m;
+    });
+
+    localStorage.setItem("matches", JSON.stringify(updatedMatches));
+    setShowConfirmModal({
+      visible: false,
+      type: "",
+      requestId: null,
+      title: "",
+      message: "",
+    });
+
+    // Navigate away after leaving
+    navigate("/matches");
+  };
+
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -419,7 +496,6 @@ const MatchDetail = () => {
         className="relative rounded-[30px] overflow-hidden mb-8 shadow-xl"
       >
         <div className="relative h-[40vh] md:h-[50vh] overflow-hidden bg-gradient-to-br from-[#171717] to-[#0e100f]">
-
           <div className="absolute inset-0 bg-gradient-to-t from-[#0e100f] via-[#0e100f]/60 to-transparent"></div>
 
           {/* Match status badge */}
@@ -571,6 +647,33 @@ const MatchDetail = () => {
                     Delete Match
                   </motion.button>
                 </>
+              )}
+
+              {/* Leave Match Button */}
+              {isParticipant && !isCreator && !isMatchPast(match.date) && (
+                <motion.button
+                  whileHover="hover"
+                  whileTap="tap"
+                  variants={buttonVariants}
+                  onClick={handleLeaveMatch}
+                  className="px-5 py-2.5 bg-rose-500/10 text-rose-400 border-2 border-rose-500/20 rounded-full hover:bg-rose-500/20 transition-all duration-300 flex items-center justify-center cursor-pointer"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                    />
+                  </svg>
+                  Leave Match
+                </motion.button>
               )}
 
               {/* Join as Opponent Button */}
@@ -1313,6 +1416,13 @@ const MatchDetail = () => {
                         strokeWidth={2}
                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                       />
+                    ) : showConfirmModal.type === "leaveMatch" ? (
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                      />
                     ) : (
                       <path
                         strokeLinecap="round"
@@ -1357,6 +1467,8 @@ const MatchDetail = () => {
                       confirmDeleteMatch();
                     } else if (showConfirmModal.type === "removeOpponent") {
                       confirmRemoveOpponent();
+                    } else if (showConfirmModal.type === "leaveMatch") {
+                      confirmLeaveMatch();
                     }
                   }}
                   className="px-4 py-2 bg-rose-500/10 text-rose-400 border-2 border-rose-500/20 rounded-full hover:bg-rose-500/20 transition-all duration-300 cursor-pointer"
