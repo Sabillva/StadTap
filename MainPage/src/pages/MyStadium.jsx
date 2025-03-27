@@ -1,48 +1,48 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useContext } from "react"
-import { useNavigate, Link } from "react-router-dom"
-import { motion, AnimatePresence } from "framer-motion"
-import { AuthContext } from "../App"
-import { getStadiumByName } from "../utils/stadiumUtils"
+import { useState, useEffect, useContext } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { AuthContext } from "../App";
+import { getStadiumByName } from "../utils/stadiumUtils";
 
 const MyStadium = () => {
-  const { user } = useContext(AuthContext)
-  const navigate = useNavigate()
-  const [stadium, setStadium] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const [stadium, setStadium] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Add a new state for the add post modal and posts
-  const [showAddPostModal, setShowAddPostModal] = useState(false)
-  const [postCaption, setPostCaption] = useState("")
-  const [selectedImage, setSelectedImage] = useState(null)
-  const [posts, setPosts] = useState([])
-  const [isSubmittingPost, setIsSubmittingPost] = useState(false)
+  const [showAddPostModal, setShowAddPostModal] = useState(false);
+  const [postCaption, setPostCaption] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [isSubmittingPost, setIsSubmittingPost] = useState(false);
 
   // Add these new states for edit functionality
-  const [showEditPostModal, setShowEditPostModal] = useState(false)
-  const [editingPost, setEditingPost] = useState(null)
-  const [editCaption, setEditCaption] = useState("")
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const [postToDelete, setPostToDelete] = useState(null)
-  const [isEditingPost, setIsEditingPost] = useState(false)
+  const [showEditPostModal, setShowEditPostModal] = useState(false);
+  const [editingPost, setEditingPost] = useState(null);
+  const [editCaption, setEditCaption] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [postToDelete, setPostToDelete] = useState(null);
+  const [isEditingPost, setIsEditingPost] = useState(false);
 
   // Add state for gallery modal
-  const [showGalleryModal, setShowGalleryModal] = useState(false)
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const [showGalleryModal, setShowGalleryModal] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   // Add state for active tab
-  const [activeTab, setActiveTab] = useState("details")
+  const [activeTab, setActiveTab] = useState("details");
 
   useEffect(() => {
     // Check if user is a stadium owner
     if (!user || user.userType !== "owner") {
-      navigate("/")
-      return
+      navigate("/");
+      return;
     }
 
     // Find the stadium owned by this user
-    const foundStadium = getStadiumByName(user.stadiumName)
+    const foundStadium = getStadiumByName(user.stadiumName);
 
     if (!foundStadium) {
       // If stadium not found, create a default one
@@ -65,59 +65,63 @@ const MyStadium = () => {
         rating: 4.0,
         reviews: 0,
         ownerId: user.id,
-      }
+      };
 
       // Save to localStorage
-      const storedStadiums = JSON.parse(localStorage.getItem("customStadiums") || "[]")
-      storedStadiums.push(newStadium)
-      localStorage.setItem("customStadiums", JSON.stringify(storedStadiums))
+      const storedStadiums = JSON.parse(
+        localStorage.getItem("customStadiums") || "[]"
+      );
+      storedStadiums.push(newStadium);
+      localStorage.setItem("customStadiums", JSON.stringify(storedStadiums));
 
-      setStadium(newStadium)
+      setStadium(newStadium);
     } else {
-      setStadium(foundStadium)
+      setStadium(foundStadium);
     }
 
     // Add a small delay to make the loading animation visible
     setTimeout(() => {
-      setLoading(false)
-    }, 800)
-  }, [user, navigate])
+      setLoading(false);
+    }, 800);
+  }, [user, navigate]);
 
   // Add this useEffect to load posts
   useEffect(() => {
     if (stadium) {
       // Load posts for this stadium
-      const allPosts = JSON.parse(localStorage.getItem("stadiumPosts") || "[]")
-      const stadiumPosts = allPosts.filter((post) => post.stadiumId === stadium.id)
-      setPosts(stadiumPosts)
+      const allPosts = JSON.parse(localStorage.getItem("stadiumPosts") || "[]");
+      const stadiumPosts = allPosts.filter(
+        (post) => post.stadiumId === stadium.id
+      );
+      setPosts(stadiumPosts);
     }
-  }, [stadium])
+  }, [stadium]);
 
   // Add these functions for handling posts
   const handleAddPost = () => {
-    setShowAddPostModal(true)
-    setPostCaption("")
-    setSelectedImage(null)
-  }
+    setShowAddPostModal(true);
+    setPostCaption("");
+    setSelectedImage(null);
+  };
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onloadend = () => {
-        setSelectedImage(reader.result)
-      }
-      reader.readAsDataURL(file)
+        setSelectedImage(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const handleSubmitPost = () => {
     if (!selectedImage) {
-      alert("Please select an image")
-      return
+      alert("Please select an image");
+      return;
     }
 
-    setIsSubmittingPost(true)
+    setIsSubmittingPost(true);
 
     // Create a new post
     const newPost = {
@@ -127,49 +131,49 @@ const MyStadium = () => {
       caption: postCaption.trim(),
       createdAt: new Date().toISOString(),
       ownerId: user.id,
-    }
+    };
 
     // Save to localStorage
-    const allPosts = JSON.parse(localStorage.getItem("stadiumPosts") || "[]")
-    allPosts.push(newPost)
-    localStorage.setItem("stadiumPosts", JSON.stringify(allPosts))
+    const allPosts = JSON.parse(localStorage.getItem("stadiumPosts") || "[]");
+    allPosts.push(newPost);
+    localStorage.setItem("stadiumPosts", JSON.stringify(allPosts));
 
     // Update local state
-    setPosts([...posts, newPost])
+    setPosts([...posts, newPost]);
 
     // Close modal and reset form
-    setShowAddPostModal(false)
-    setPostCaption("")
-    setSelectedImage(null)
-    setIsSubmittingPost(false)
-  }
+    setShowAddPostModal(false);
+    setPostCaption("");
+    setSelectedImage(null);
+    setIsSubmittingPost(false);
+  };
 
   // Add these functions for handling post editing and deletion
   const handleEditPost = (post) => {
-    setEditingPost(post)
-    setEditCaption(post.caption || "")
-    setShowEditPostModal(true)
-  }
+    setEditingPost(post);
+    setEditCaption(post.caption || "");
+    setShowEditPostModal(true);
+  };
 
   const handleUpdatePost = () => {
-    if (!editingPost) return
+    if (!editingPost) return;
 
-    setIsEditingPost(true)
+    setIsEditingPost(true);
 
     // Update the post
-    const allPosts = JSON.parse(localStorage.getItem("stadiumPosts") || "[]")
+    const allPosts = JSON.parse(localStorage.getItem("stadiumPosts") || "[]");
     const updatedPosts = allPosts.map((post) => {
       if (post.id === editingPost.id) {
         return {
           ...post,
           caption: editCaption.trim(),
           updatedAt: new Date().toISOString(),
-        }
+        };
       }
-      return post
-    })
+      return post;
+    });
 
-    localStorage.setItem("stadiumPosts", JSON.stringify(updatedPosts))
+    localStorage.setItem("stadiumPosts", JSON.stringify(updatedPosts));
 
     // Update local state
     setPosts(
@@ -179,59 +183,59 @@ const MyStadium = () => {
             ...post,
             caption: editCaption.trim(),
             updatedAt: new Date().toISOString(),
-          }
+          };
         }
-        return post
-      }),
-    )
+        return post;
+      })
+    );
     // Close modal and reset form
-    setShowEditPostModal(false)
-    setEditingPost(null)
-    setEditCaption("")
-    setIsEditingPost(false)
-  }
+    setShowEditPostModal(false);
+    setEditingPost(null);
+    setEditCaption("");
+    setIsEditingPost(false);
+  };
 
   const handleDeleteClick = (post) => {
-    setPostToDelete(post)
-    setShowDeleteConfirm(true)
-  }
+    setPostToDelete(post);
+    setShowDeleteConfirm(true);
+  };
 
   const handleDeletePost = () => {
-    if (!postToDelete) return
+    if (!postToDelete) return;
 
     // Delete the post
-    const allPosts = JSON.parse(localStorage.getItem("stadiumPosts") || "[]")
-    const updatedPosts = allPosts.filter((post) => post.id !== postToDelete.id)
-    localStorage.setItem("stadiumPosts", JSON.stringify(updatedPosts))
+    const allPosts = JSON.parse(localStorage.getItem("stadiumPosts") || "[]");
+    const updatedPosts = allPosts.filter((post) => post.id !== postToDelete.id);
+    localStorage.setItem("stadiumPosts", JSON.stringify(updatedPosts));
 
     // Update local state
-    setPosts(posts.filter((post) => post.id !== postToDelete.id))
+    setPosts(posts.filter((post) => post.id !== postToDelete.id));
 
     // Close modal
-    setShowDeleteConfirm(false)
-    setPostToDelete(null)
-  }
+    setShowDeleteConfirm(false);
+    setPostToDelete(null);
+  };
 
   // Gallery functions
   const openGallery = (index) => {
-    setSelectedImageIndex(index)
-    setShowGalleryModal(true)
+    setSelectedImageIndex(index);
+    setShowGalleryModal(true);
     // Prevent body scrolling when modal is open
-    document.body.style.overflow = "hidden"
-  }
+    document.body.style.overflow = "hidden";
+  };
 
   const closeGallery = () => {
-    setShowGalleryModal(false)
+    setShowGalleryModal(false);
     // Re-enable body scrolling
-    document.body.style.overflow = "auto"
-  }
+    document.body.style.overflow = "auto";
+  };
 
   const navigateGallery = (direction) => {
-    let newIndex = selectedImageIndex + direction
-    if (newIndex < 0) newIndex = posts.length - 1
-    if (newIndex >= posts.length) newIndex = 0
-    setSelectedImageIndex(newIndex)
-  }
+    let newIndex = selectedImageIndex + direction;
+    if (newIndex < 0) newIndex = posts.length - 1;
+    if (newIndex >= posts.length) newIndex = 0;
+    setSelectedImageIndex(newIndex);
+  };
 
   // Animation variants
   const containerVariants = {
@@ -242,7 +246,7 @@ const MyStadium = () => {
         staggerChildren: 0.1,
       },
     },
-  }
+  };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -253,7 +257,7 @@ const MyStadium = () => {
         duration: 0.5,
       },
     },
-  }
+  };
 
   const tabVariants = {
     hidden: { opacity: 0, y: 10 },
@@ -264,20 +268,21 @@ const MyStadium = () => {
         duration: 0.3,
       },
     },
-  }
+  };
 
   // Star rating animation
   const StarRating = ({ rating }) => {
-    const totalStars = 5
-    const fullStars = Math.floor(rating)
-    const hasHalfStar = rating % 1 >= 0.5
+    const totalStars = 5;
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
 
     return (
       <div className="flex">
         {[...Array(totalStars)].map((_, i) => {
-          const starValue = i + 1
-          const isFullStar = starValue <= fullStars
-          const isHalfStar = !isFullStar && hasHalfStar && starValue === fullStars + 1
+          const starValue = i + 1;
+          const isFullStar = starValue <= fullStars;
+          const isHalfStar =
+            !isFullStar && hasHalfStar && starValue === fullStars + 1;
 
           return (
             <motion.div
@@ -287,20 +292,34 @@ const MyStadium = () => {
               transition={{ delay: 0.1 * i, duration: 0.3 }}
               className="relative"
             >
+              {/* Boş Ulduz (Always Visible) */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className={`h-5 w-5 ${isFullStar || isHalfStar ? "text-yellow-400" : "text-gray-400"}`}
+                className="h-5 w-5 text-gray-400"
                 viewBox="0 0 20 20"
                 fill="currentColor"
               >
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
 
+              {/* Tam Dolu Ulduz */}
+              {isFullStar && (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="absolute inset-0 h-5 w-5 text-yellow-400"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              )}
+
+              {/* Yarım Dolu Ulduz */}
               {isHalfStar && (
                 <div className="absolute inset-0 overflow-hidden w-1/2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-gray-400"
+                    className="h-5 w-5 text-yellow-400"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                   >
@@ -309,11 +328,11 @@ const MyStadium = () => {
                 </div>
               )}
             </motion.div>
-          )
+          );
         })}
       </div>
-    )
-  }
+    );
+  };
 
   if (loading) {
     return (
@@ -348,7 +367,12 @@ const MyStadium = () => {
   }
 
   return (
-    <motion.div initial="hidden" animate="visible" variants={containerVariants} className="container mx-auto px-4 py-8">
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      className="container mx-auto px-4 py-8"
+    >
       {/* Decorative background elements */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute -top-[30%] -left-[10%] w-[70%] h-[70%] bg-[#4de840]/5 rounded-full blur-[120px]"></div>
@@ -373,18 +397,29 @@ const MyStadium = () => {
           viewBox="0 0 24 24"
           stroke="currentColor"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M15 19l-7-7 7-7"
+          />
         </svg>
       </motion.button>
 
       {/* Hero Section */}
-      <motion.div variants={itemVariants} className="relative rounded-[30px] overflow-hidden mb-8 shadow-xl">
+      <motion.div
+        variants={itemVariants}
+        className="relative rounded-[30px] overflow-hidden mb-8 shadow-xl"
+      >
         <div className="relative h-[40vh] md:h-[60vh] overflow-hidden">
           <motion.img
             initial={{ scale: 1.1 }}
             animate={{ scale: 1 }}
             transition={{ duration: 1.5 }}
-            src={stadium.image || `https://source.unsplash.com/random/1600x900/?football,stadium&sig=${stadium.id}`}
+            src={
+              stadium.image ||
+              `https://source.unsplash.com/random/1600x900/?football,stadium&sig=${stadium.id}`
+            }
             alt={stadium.name}
             className="w-full h-full object-cover"
           />
@@ -409,7 +444,9 @@ const MyStadium = () => {
             transition={{ delay: 0.3, duration: 0.5 }}
             className="absolute bottom-0 left-0 right-0 p-6 md:p-10"
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-[#fffce1] mb-4 drop-shadow-lg">{stadium.name}</h1>
+            <h1 className="text-4xl md:text-5xl font-bold text-[#fffce1] mb-4 drop-shadow-lg">
+              {stadium.name}
+            </h1>
 
             <div className="flex flex-wrap items-center gap-4 mb-6">
               <div className="flex items-center">
@@ -433,7 +470,9 @@ const MyStadium = () => {
                     d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                   />
                 </svg>
-                <span className="text-[#fffce1]">{stadium.city || "Unknown"}</span>
+                <span className="text-[#fffce1]">
+                  {stadium.city || "Unknown"}
+                </span>
               </div>
 
               <div className="flex items-center">
@@ -499,7 +538,11 @@ const MyStadium = () => {
             </div>
 
             {/* Edit button */}
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-block">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="inline-block"
+            >
               <Link
                 to="/my-stadium/edit"
                 className="px-8 py-3 bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] rounded-full text-lg font-medium hover:shadow-lg hover:shadow-[#4de840]/20 transition-all duration-300 flex items-center relative overflow-hidden group"
@@ -583,7 +626,12 @@ const MyStadium = () => {
             transition={{ duration: 0.3 }}
             className="bg-[#171717]/60 backdrop-blur-[10px] border-2 border-white/15 rounded-[30px] p-6 md:p-8 shadow-lg"
           >
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="mb-8">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="mb-8"
+            >
               <h2 className="text-2xl font-bold mb-4 text-[#fffce1] flex items-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -602,11 +650,17 @@ const MyStadium = () => {
                 About This Stadium
               </h2>
               <p className="text-[#fffce1]/80 leading-relaxed text-lg">
-                {stadium.description || "No description available for this stadium."}
+                {stadium.description ||
+                  "No description available for this stadium."}
               </p>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mb-8">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="mb-8"
+            >
               <h2 className="text-2xl font-bold mb-4 text-[#fffce1] flex items-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -632,7 +686,8 @@ const MyStadium = () => {
               </h2>
               <div className="bg-[#171717]/90 rounded-2xl p-4 border border-white/10">
                 <p className="text-[#fffce1]/80 mb-4">
-                  {stadium.address || `${stadium.city || "Unknown"}, Azerbaijan`}
+                  {stadium.address ||
+                    `${stadium.city || "Unknown"}, Azerbaijan`}
                 </p>
                 <div className="aspect-video rounded-xl overflow-hidden bg-[#171717]/20 flex items-center justify-center">
                   <div className="text-[#fffce1]/50 text-center p-6">
@@ -656,7 +711,11 @@ const MyStadium = () => {
               </div>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
               <h2 className="text-2xl font-bold mb-4 text-[#fffce1] flex items-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -678,9 +737,14 @@ const MyStadium = () => {
                 <div className="flex flex-col md:flex-row md:items-center justify-between">
                   <div className="mb-4 md:mb-0">
                     <p className="text-[#fffce1]/80 mb-1">Hourly Rate:</p>
-                    <p className="text-[#4de840] text-2xl font-bold">{stadium.hourlyRate} AZN</p>
+                    <p className="text-[#4de840] text-2xl font-bold">
+                      {stadium.hourlyRate} AZN
+                    </p>
                   </div>
-                  <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                  <motion.div
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                  >
                     <Link
                       to="/my-stadium/edit"
                       className="inline-block px-6 py-3 bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] rounded-full font-medium hover:shadow-lg hover:shadow-[#4de840]/20 transition-all duration-300"
@@ -705,7 +769,11 @@ const MyStadium = () => {
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Amenities Section */}
-              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+              >
                 <h2 className="text-2xl font-bold mb-6 text-[#fffce1] flex items-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -722,12 +790,15 @@ const MyStadium = () => {
                     />
                   </svg>
                   Amenities
-                  <span className="text-sm text-[#fffce1]/50 font-normal ml-2">(Facilities & Services)</span>
+                  <span className="text-sm text-[#fffce1]/50 font-normal ml-2">
+                    (Facilities & Services)
+                  </span>
                 </h2>
 
                 <div className="bg-[#171717]/90 rounded-2xl p-5 border border-white/10">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {stadium.amenities && Object.entries(stadium.amenities).length > 0 ? (
+                    {stadium.amenities &&
+                    Object.entries(stadium.amenities).length > 0 ? (
                       Object.entries(stadium.amenities).map(
                         ([key, value], index) =>
                           value && (
@@ -758,7 +829,7 @@ const MyStadium = () => {
                                 {key.replace(/([A-Z])/g, " $1").trim()}
                               </span>
                             </motion.div>
-                          ),
+                          )
                       )
                     ) : (
                       <p className="text-[#fffce1]/50 col-span-2 text-center py-4">
@@ -770,7 +841,11 @@ const MyStadium = () => {
               </motion.div>
 
               {/* Features Section */}
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+              >
                 <h2 className="text-2xl font-bold mb-6 text-[#fffce1] flex items-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -779,10 +854,17 @@ const MyStadium = () => {
                     viewBox="0 0 24 24"
                     stroke="currentColor"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
                   </svg>
                   Features
-                  <span className="text-sm text-[#fffce1]/50 font-normal ml-2">(Field Characteristics)</span>
+                  <span className="text-sm text-[#fffce1]/50 font-normal ml-2">
+                    (Field Characteristics)
+                  </span>
                 </h2>
 
                 <div className="bg-[#171717]/90 rounded-2xl p-5 border border-white/10">
@@ -801,13 +883,19 @@ const MyStadium = () => {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-[#fffce1]/50 text-center py-4">No features information available</p>
+                    <p className="text-[#fffce1]/50 text-center py-4">
+                      No features information available
+                    </p>
                   )}
                 </div>
 
                 {/* Update button */}
                 <div className="mt-6 text-center">
-                  <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="inline-block">
+                  <motion.div
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="inline-block"
+                  >
                     <Link
                       to="/my-stadium/edit"
                       className="px-6 py-3 bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] rounded-full font-medium hover:shadow-lg hover:shadow-[#4de840]/20 transition-all duration-300 inline-flex items-center"
@@ -911,10 +999,12 @@ const MyStadium = () => {
                     d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
-                <h3 className="text-xl font-semibold mb-2 text-[#fffce1]">No Gallery Photos</h3>
+                <h3 className="text-xl font-semibold mb-2 text-[#fffce1]">
+                  No Gallery Photos
+                </h3>
                 <p className="text-[#fffce1]/60 max-w-md mx-auto mb-6">
-                  Add photos to showcase your stadium to potential customers. High-quality images can help attract more
-                  bookings.
+                  Add photos to showcase your stadium to potential customers.
+                  High-quality images can help attract more bookings.
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -1029,11 +1119,17 @@ const MyStadium = () => {
                       </div>
                     </div>
                     <div className="p-3">
-                      <p className="text-gray-300 line-clamp-2">{post.caption || "No caption"}</p>
+                      <p className="text-gray-300 line-clamp-2">
+                        {post.caption || "No caption"}
+                      </p>
                       <p className="text-xs text-gray-500 mt-1">
                         {post.updatedAt
-                          ? `Updated: ${new Date(post.updatedAt).toLocaleDateString()}`
-                          : `Posted: ${new Date(post.createdAt).toLocaleDateString()}`}
+                          ? `Updated: ${new Date(
+                              post.updatedAt
+                            ).toLocaleDateString()}`
+                          : `Posted: ${new Date(
+                              post.createdAt
+                            ).toLocaleDateString()}`}
                       </p>
                     </div>
                   </motion.div>
@@ -1084,7 +1180,9 @@ const MyStadium = () => {
                 </h2>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-[#fffce1] mb-2">Select Image</label>
+                  <label className="block text-sm font-medium text-[#fffce1] mb-2">
+                    Select Image
+                  </label>
                   <input
                     type="file"
                     accept="image/*"
@@ -1107,7 +1205,10 @@ const MyStadium = () => {
                 </div>
 
                 <div className="mb-6">
-                  <label htmlFor="caption" className="block text-sm font-medium text-[#fffce1] mb-2">
+                  <label
+                    htmlFor="caption"
+                    className="block text-sm font-medium text-[#fffce1] mb-2"
+                  >
                     Caption (Optional)
                   </label>
                   <textarea
@@ -1135,7 +1236,9 @@ const MyStadium = () => {
                     onClick={handleSubmitPost}
                     disabled={isSubmittingPost || !selectedImage}
                     className={`px-4 py-2 bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] rounded-full font-medium hover:shadow-lg hover:shadow-[#4de840]/20 transition-all duration-300 cursor-pointer ${
-                      isSubmittingPost || !selectedImage ? "opacity-70 cursor-not-allowed" : ""
+                      isSubmittingPost || !selectedImage
+                        ? "opacity-70 cursor-not-allowed"
+                        : ""
                     }`}
                   >
                     {isSubmittingPost ? (
@@ -1223,7 +1326,10 @@ const MyStadium = () => {
                 </div>
 
                 <div className="mb-6">
-                  <label htmlFor="editCaption" className="block text-sm font-medium text-[#fffce1] mb-2">
+                  <label
+                    htmlFor="editCaption"
+                    className="block text-sm font-medium text-[#fffce1] mb-2"
+                  >
                     Caption
                   </label>
                   <textarea
@@ -1327,9 +1433,12 @@ const MyStadium = () => {
                       />
                     </svg>
                   </div>
-                  <h2 className="text-2xl font-bold text-[#fffce1] mb-2">Delete Photo</h2>
+                  <h2 className="text-2xl font-bold text-[#fffce1] mb-2">
+                    Delete Photo
+                  </h2>
                   <p className="text-[#fffce1]/70 mb-6">
-                    Are you sure you want to delete this photo? This action cannot be undone.
+                    Are you sure you want to delete this photo? This action
+                    cannot be undone.
                   </p>
                 </div>
                 <div className="flex justify-center space-x-3">
@@ -1372,8 +1481,8 @@ const MyStadium = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
               onClick={(e) => {
-                e.stopPropagation()
-                closeGallery()
+                e.stopPropagation();
+                closeGallery();
               }}
               className="absolute top-4 right-4 text-[#fffce1] hover:text-red-500/90 p-2 bg-black/30 rounded-full transition-colors z-50 cursor-pointer"
               aria-label="Close gallery"
@@ -1385,7 +1494,12 @@ const MyStadium = () => {
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </motion.button>
 
@@ -1394,8 +1508,8 @@ const MyStadium = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
               onClick={(e) => {
-                e.stopPropagation()
-                navigateGallery(-1)
+                e.stopPropagation();
+                navigateGallery(-1);
               }}
               className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#fffce1] hover:text-[#4de840] p-3 bg-black/30 rounded-full transition-colors z-50 cursor-pointer"
               aria-label="Previous image"
@@ -1407,7 +1521,12 @@ const MyStadium = () => {
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
             </motion.button>
 
@@ -1436,9 +1555,13 @@ const MyStadium = () => {
                 className="mt-4 bg-black/50 p-4 rounded-xl backdrop-blur-sm"
               >
                 {posts[selectedImageIndex].caption ? (
-                  <p className="text-[#fffce1] text-center">{posts[selectedImageIndex].caption}</p>
+                  <p className="text-[#fffce1] text-center">
+                    {posts[selectedImageIndex].caption}
+                  </p>
                 ) : (
-                  <p className="text-[#fffce1]/50 text-center italic">No caption</p>
+                  <p className="text-[#fffce1]/50 text-center italic">
+                    No caption
+                  </p>
                 )}
                 <div className="mt-3 text-center flex items-center justify-center">
                   <span className="px-3 py-1.5 bg-[#4de840]/20 border border-[#4de840]/30 rounded-full text-sm text-[#4de840]">
@@ -1453,8 +1576,8 @@ const MyStadium = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
               onClick={(e) => {
-                e.stopPropagation()
-                navigateGallery(1)
+                e.stopPropagation();
+                navigateGallery(1);
               }}
               className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#fffce1] hover:text-[#4de840] p-3 bg-black/30 rounded-full transition-colors z-50 cursor-pointer"
               aria-label="Next image"
@@ -1466,15 +1589,19 @@ const MyStadium = () => {
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             </motion.button>
           </motion.div>
         )}
       </AnimatePresence>
     </motion.div>
-  )
-}
+  );
+};
 
-export default MyStadium
-
+export default MyStadium;
