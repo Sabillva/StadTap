@@ -128,7 +128,6 @@ const Matches = () => {
       },
     }),
     hover: {
-      boxShadow: "0 1px 2px -5px rgba(77, 232, 64, 0.1)",
       transition: {
         duration: 0.3,
       },

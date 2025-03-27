@@ -108,9 +108,6 @@ const Teams = () => {
       },
     }),
     hover: {
-      boxShadow: "0 1px 2px -5px rgba(77, 232, 64, 0.1)",
-      // borderColor: "rgba(77, 232, 64, 0.3)",
-      // scale: 1.01,
       transition: {
         duration: 0.3,
       },

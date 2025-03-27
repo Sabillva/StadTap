@@ -68,9 +68,6 @@ const Chat = () => {
       },
     }),
     hover: {
-      y: -3,
-      boxShadow: "0 10px 25px -5px rgba(77, 232, 64, 0.1)",
-      borderColor: "rgba(77, 232, 64, 0.3)",
       transition: {
         duration: 0.3,
       },

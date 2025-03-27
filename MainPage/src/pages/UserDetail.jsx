@@ -4,6 +4,7 @@ import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { AuthContext } from "../App";
+import { getStadiumByName } from "../utils/stadiumUtils"; // Import the utility function
 
 const UserDetail = () => {
   const { id } = useParams();
@@ -16,6 +17,7 @@ const UserDetail = () => {
   const [userTeams, setUserTeams] = useState([]);
   const [userMatches, setUserMatches] = useState([]);
   const [userReservations, setUserReservations] = useState([]);
+  const [userStadium, setUserStadium] = useState(null); // Add state for the user's stadium
 
   useEffect(() => {
     // Load user data from localStorage
@@ -28,6 +30,13 @@ const UserDetail = () => {
     }
 
     setUser(foundUser);
+
+    // If user is a stadium owner, get their stadium data
+    if (foundUser.userType === "owner" && foundUser.stadiumName) {
+      // Use the utility function to get stadium by name
+      const stadium = getStadiumByName(foundUser.stadiumName);
+      setUserStadium(stadium);
+    }
 
     // Get user's teams
     const storedTeams = localStorage.getItem("teams");
@@ -587,9 +596,12 @@ const UserDetail = () => {
                   <motion.img
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.5 }}
-                    src={`https://source.unsplash.com/random/800x400/?football,stadium&sig=${
-                      user.id || "/placeholder.svg"
-                    }`}
+                    src={
+                      userStadium?.image ||
+                      `https://source.unsplash.com/random/800x400/?football,stadium&sig=${
+                        user.id || Math.random()
+                      }`
+                    }
                     alt={user.stadiumName}
                     className="h-full w-full object-cover"
                     onError={(e) => {
@@ -608,7 +620,7 @@ const UserDetail = () => {
                   <div className="mb-4">
                     <div className="text-sm text-[#fffce1]/50 mb-1">About:</div>
                     <p className="text-[#fffce1]/80">
-                      {user.stadiumDescription ||
+                      {userStadium?.description ||
                         `${user.stadiumName} is a modern football stadium managed by ${user.firstName} ${user.lastName}. Contact for reservations and more information.`}
                     </p>
                   </div>
@@ -653,7 +665,11 @@ const UserDetail = () => {
                     className="mt-6"
                   >
                     <Link
-                      to={`/stadiums/${user.id}`}
+                      to={
+                        userStadium
+                          ? `/stadiums/${userStadium.id}`
+                          : `/stadiums`
+                      }
                       className="w-full text-center bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] py-2.5 rounded-full font-medium hover:shadow-lg hover:shadow-[#4de840]/20 transition-all duration-300 flex items-center justify-center"
                     >
                       <svg

@@ -272,7 +272,6 @@ const MatchDetail = () => {
       },
     }),
     hover: {
-      boxShadow: "0 1px 2px -5px rgba(77, 232, 64, 0.1)",
       transition: {
         duration: 0.3,
       },
@@ -420,32 +419,6 @@ const MatchDetail = () => {
         className="relative rounded-[30px] overflow-hidden mb-8 shadow-xl"
       >
         <div className="relative h-[40vh] md:h-[50vh] overflow-hidden bg-gradient-to-br from-[#171717] to-[#0e100f]">
-          {/* Abstract background pattern */}
-          {/* <div className="absolute inset-0 opacity-20">
-            <svg
-              width="100%"
-              height="100%"
-              viewBox="0 0 100 100"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <defs>
-                <pattern
-                  id="grid"
-                  width="10"
-                  height="10"
-                  patternUnits="userSpaceOnUse"
-                >
-                  <path
-                    d="M 10 0 L 0 0 0 10"
-                    fill="none"
-                    stroke="#4de840"
-                    strokeWidth="0.5"
-                  />
-                </pattern>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#grid)" />
-            </svg>
-          </div> */}
 
           <div className="absolute inset-0 bg-gradient-to-t from-[#0e100f] via-[#0e100f]/60 to-transparent"></div>
 
@@ -464,63 +437,6 @@ const MatchDetail = () => {
               {isMatchPast(match.date) ? "Completed" : "Upcoming"}
             </motion.span>
           </div>
-
-          {/* Match logo and info overlay */}
-          {/* <div className="absolute inset-0 flex flex-col items-center justify-center"> */}
-            {/* <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="w-40 h-40 rounded-[20px] shadow-lg overflow-hidden bg-gradient-to-br from-[#4de840] to-[#2ca322] flex items-center justify-center text-[#0e100f] text-8xl font-bold mb-6"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-24 w-24"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-            </motion.div> */}
-
-            {/* {match.joinRequests &&
-              match.joinRequests.length > 0 &&
-              isCreator && (
-                <motion.div
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5, duration: 0.5 }}
-                  className="absolute top-6 left-6"
-                >
-                  <div
-                    onClick={() => setActiveTab("requests")}
-                    className="bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] px-4 py-2 rounded-full text-lg font-bold shadow-lg flex items-center cursor-pointer hover:shadow-xl transition-all duration-300"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 mr-2"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                      />
-                    </svg>
-                    {match.joinRequests.length} Requests
-                  </div>
-                </motion.div>
-              )} */}
-          {/* </div> */}
 
           {/* Match info overlay */}
           <motion.div

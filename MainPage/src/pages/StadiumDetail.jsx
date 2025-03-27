@@ -280,9 +280,7 @@ const StadiumDetail = () => {
                 </svg>
                 <span className="text-[#fffce1]">
                   {stadium.rating}{" "}
-                  {/* <span className="text-[#fffce1]/70">
-                    ({stadium.reviews} reviews)
-                  </span> */}
+                 
                 </span>
               </div>
 
