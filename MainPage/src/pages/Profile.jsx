@@ -73,34 +73,47 @@ const Profile = () => {
 
       setTeams(userTeams);
 
-      // Get user's matches - Fix the filtering logic
+      // Get user's matches - Improved filtering logic to find all matches where user participates
       const storedMatches = localStorage.getItem("matches");
       const allMatches = storedMatches ? JSON.parse(storedMatches) : [];
 
       // More comprehensive filtering for matches
-      const userMatches = allMatches
-        .filter((match) => {
-          // Check if user is the creator
-          if (match.creatorId === user.id) return true;
+      const userMatches = allMatches.filter((match) => {
+        // Check if user is the creator
+        if (match.creatorId === user.id) return true;
 
-          // Check if user's team is participating
-          if (userTeams.length > 0) {
-            return userTeams.some(
-              (team) =>
-                team.id === match.homeTeamId ||
-                team.id === match.awayTeamId ||
-                team.name === match.homeTeamName ||
-                team.name === match.awayTeamName
-            );
-          }
+        // Check if user is the opponent
+        if (match.opponentId === user.id) return true;
 
-          // Check if user is directly involved
-          return (
-            match.opponentId === user.id ||
-            match.participants?.includes(user.id)
+        // Check if user is in participants array
+        if (match.participants && Array.isArray(match.participants)) {
+          return match.participants.some(
+            (p) => p.userId === user.id || p === user.id
           );
-        })
-        .slice(0, 3); // Get only the 3 most recent
+        }
+
+        // Check if user is in joinRequests with accepted status
+        if (match.joinRequests && Array.isArray(match.joinRequests)) {
+          return match.joinRequests.some(
+            (request) =>
+              (request.userId === user.id || request.id === user.id) &&
+              request.status === "accepted"
+          );
+        }
+
+        // Check if user's team is participating
+        if (userTeams.length > 0) {
+          return userTeams.some(
+            (team) =>
+              team.id === match.homeTeamId ||
+              team.id === match.awayTeamId ||
+              team.name === match.homeTeamName ||
+              team.name === match.awayTeamName
+          );
+        }
+
+        return false;
+      });
 
       setMatches(userMatches);
     } catch (error) {
@@ -327,6 +340,25 @@ const Profile = () => {
       default:
         return null;
     }
+  };
+
+  // Helper function to format match title
+  const formatMatchTitle = (match) => {
+    if (match.title) return match.title;
+
+    if (match.homeTeamName && match.awayTeamName) {
+      return `${match.homeTeamName} vs ${match.awayTeamName}`;
+    }
+
+    if (match.creatorName && match.opponentName) {
+      return `${match.creatorName} vs ${match.opponentName}`;
+    }
+
+    if (match.creatorName) {
+      return `${match.creatorName}'s Match`;
+    }
+
+    return "Football Match";
   };
 
   if (loading) {
@@ -729,7 +761,7 @@ const Profile = () => {
                     >
                       <path
                         fillRule="evenodd"
-                        d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z 1 0 010-1.414z"
+                        d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
                         clipRule="evenodd"
                       />
                     </motion.svg>
@@ -857,13 +889,16 @@ const Profile = () => {
                             </div>
                             <div>
                               <h3 className="text-lg font-medium text-[#fffce1]">
-                                {match.homeTeamName || "Team"} vs{" "}
-                                {match.awayTeamName || "Opponent"}
+                                {formatMatchTitle(match)}
                               </h3>
                               <p className="text-sm text-[#fffce1]/70">
                                 {match.date
                                   ? new Date(match.date).toLocaleDateString()
                                   : "Upcoming match"}
+                                {match.city ? ` • ${match.city}` : ""}
+                                {match.stadiumName
+                                  ? ` • ${match.stadiumName}`
+                                  : ""}
                               </p>
                             </div>
                           </div>
