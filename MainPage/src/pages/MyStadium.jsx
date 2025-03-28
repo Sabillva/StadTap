@@ -745,7 +745,7 @@ const MyStadium = () => {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={openInGoogleMaps}
-                        className="px-4 py-2 bg-[#4de840] text-black rounded-full text-sm font-medium inline-flex items-center"
+                        className="px-4 py-2 bg-[#4de840] text-black rounded-full text-sm font-medium inline-flex items-center cursor-pointer"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"

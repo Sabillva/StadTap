@@ -1183,7 +1183,7 @@ const Reserve = () => {
                     setSearched(false);
                     setSortBy("none");
                   }}
-                  className="mt-6 px-6 py-2 bg-[#0e100f]/80 border-2 border-white/15 text-[#fffce1] rounded-full hover:border-[#4de840] transition-all duration-300"
+                  className="mt-6 px-6 py-2 bg-[#0e100f]/80 border-2 border-white/15 text-[#fffce1] rounded-full hover:border-[#4de840] transition-all duration-300 cursor-pointer"
                 >
                   Reset Filters
                 </motion.button>

@@ -346,7 +346,7 @@ const Users = () => {
                     setSearchTerm("");
                     setActiveFilter("all");
                   }}
-                  className="px-6 py-3 bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] rounded-full font-medium hover:shadow-lg hover:shadow-[#4de840]/20 transition-all duration-300 flex items-center"
+                  className="px-6 py-3 bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] rounded-full font-medium hover:shadow-lg hover:shadow-[#4de840]/20 transition-all duration-300 flex items-center cursor-pointer"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

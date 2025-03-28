@@ -958,7 +958,7 @@ const StadiumDetail = () => {
                 e.stopPropagation();
                 closeGallery();
               }}
-              className="absolute top-4 right-4 text-[#fffce1] hover:text-red-500/90 p-2 bg-black/30 rounded-full transition-colors z-50"
+              className="absolute top-4 right-4 text-[#fffce1] hover:text-red-500/90 p-2 bg-black/30 rounded-full transition-colors z-50 cursor-pointer"
               aria-label="Close gallery"
             >
               <svg
@@ -985,7 +985,7 @@ const StadiumDetail = () => {
                 e.stopPropagation();
                 navigateGallery(-1);
               }}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#fffce1] hover:text-[#4de840] p-3 bg-black/30 rounded-full transition-colors z-50"
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#fffce1] hover:text-[#4de840] p-3 bg-black/30 rounded-full transition-colors z-50 cursor-pointer"
               aria-label="Previous image"
             >
               <svg
@@ -1056,7 +1056,7 @@ const StadiumDetail = () => {
                 e.stopPropagation();
                 navigateGallery(1);
               }}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#fffce1] hover:text-[#4de840] p-3 bg-black/30 rounded-full transition-colors z-50"
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#fffce1] hover:text-[#4de840] p-3 bg-black/30 rounded-full transition-colors z-50 cursor-pointer"
               aria-label="Next image"
             >
               <svg
