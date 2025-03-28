@@ -79,7 +79,7 @@ async def create_owner_request(
     """
     db_stadium = StadiumInDB(
         **stadium_data.dict(),
-        owner_email=current_user["email"]
+        owner_id=current_user["id"]
     )
 
     JSONStorage.save_stadium(db_stadium.dict())
@@ -117,5 +117,5 @@ async def change_password(
         raise HTTPException(status_code=400, detail="Old password is incorrect")
 
     new_hashed_password = get_password_hash(password_change.new_password)
-    JSONStorage.update_user(current_user["email"], {"hashed_password": new_hashed_password})
+    JSONStorage.update_user(current_user["id"], {"hashed_password": new_hashed_password})
     return {"message": "Password updated successfully"}

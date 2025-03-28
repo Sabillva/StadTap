@@ -117,7 +117,7 @@ class StadiumBase(BaseModel):
 
 class StadiumInDB(StadiumBase):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    owner_email: str
+    owner_id: str
     status: str = "pending"
 
 class StadiumUpdate(BaseModel):

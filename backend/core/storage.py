@@ -34,10 +34,10 @@ class JSONStorage:
         cls._write_data(USERS_FILE, data)
 
     @classmethod
-    def update_user(cls, email: str, updates: Dict[str, Any]):
+    def update_user(cls, id: str, updates: Dict[str, Any]):
         data = cls._read_data(USERS_FILE)
         for user in data["users"]:
-            if user["email"] == email:
+            if user["id"] == id:
                 user.update(updates)
                 break
         cls._write_data(USERS_FILE, data)
