@@ -113,6 +113,18 @@ const StadiumDetail = () => {
     },
   };
 
+  // Function to open location in Google Maps
+  const openInGoogleMaps = () => {
+    const coordinates =
+      stadium.coordinates || getCoordinatesForCity(stadium.city);
+    console.log("Opening map with coordinates:", coordinates);
+
+    // Use stadium name for better accuracy if coordinates might be wrong
+    const query = encodeURIComponent(stadium.name + ", " + stadium.address);
+    const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
+    window.open(url, "_blank");
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-[60vh]">
@@ -278,10 +290,7 @@ const StadiumDetail = () => {
                 >
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
-                <span className="text-[#fffce1]">
-                  {stadium.rating}{" "}
-                 
-                </span>
+                <span className="text-[#fffce1]">{stadium.rating}</span>
               </div>
 
               <div className="flex items-center">
@@ -338,10 +347,7 @@ const StadiumDetail = () => {
                 </svg>
 
                 {/* Soccer ball pattern animation */}
-                <span
-                  className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNDAgNjAiPjxwYXRoIGQ9Ik0wLDYwIEwwLDAgTDI0MCwwIEwyNDAsNjAgTDAsNjAgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJub25lIi8+PHBvbHlnb24gcG9pbnRzPSIwLDAgMjAsMCAxMCwxNSIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjIwLDAgNDAsMCAzMCwxNSAxMCwxNSIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjQwLDAgNjAsMCA1MCwxNSAzMCwxNSIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjYwLDAgODAsMCA3MCwxNSA1MCwxNSIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjgwLDAgMTAwLDAgOTAsMTUgNzAsMTUiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxMDAsMCAxMjAsMCAxMTAsMTUgOTAsMTUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxMjAsMCAxNDAsMCAxMzAsMTUgMTEwLDE1IiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMTQwLDAgMTYwLDAgMTUwLDE1IDEzMCwxNSIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjE2MCwwIDE4MCwwIDE3MCwxNSAxNTAsMTUiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxODAsMCAyMDAsMCAxOTAsMTUgMTcwLDE1IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMjAwLDAgMjIwLDAgMjEwLDE1IDE5MCwxNSIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjIyMCwwIDI0MCwwIDIzMCwxNSAyMTAsMTUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxMCwxNSAzMCwxNSAyMCwzMCAwLDMwIDAsMTUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIzMCwxNSA1MCwxNSA0MCwzMCAyMCwzMCIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjUwLDE1IDcwLDE1IDYwLDMwIDQwLDMwIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iNzAsMTUgOTAsMTUgODAsMzAgNjAsMzAiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSI5MCwxNSAxMTAsMTUgMTAwLDMwIDgwLDMwIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMTEwLDE1IDEzMCwxNSAxMjAsMzAgMTAwLDMwIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMTMwLDE1IDE1MCwxNSAxNDAsMzAgMTIwLDMwIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMTUwLDE1IDE3MCwxNSAxNjAsMzAgMTQwLDMwIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMTcwLDE1IDE5MCwxNSAxODAsMzAgMTYwLDMwIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMTkwLDE1IDIxMCwxNSAyMDAsMzAgMTgwLDMwIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMjEwLDE1IDIzMCwxNSAyMjAsMzAgMjAwLDMwIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMjMwLDE1IDI0MCwxNSAyNDAsMzAgMjIwLDMwIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMCwzMCAwLDQ1IDEwLDQ1IDIwLDMwIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMjAsMzAgNDAsMzAgMzAsNDUgMTAsNDUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSI0MCwzMCA2MCwzMCA1MCw0NSAzMCw0NSIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjYwLDMwIDgwLDMwIDcwLDQ1IDUwLDQ1IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iODAsMzAgMTAwLDMwIDkwLDQ1IDcwLDQ1IiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMTAwLDMwIDEyMCwzMCAxMTAsNDUgOTAsNDUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxMjAsMzAgMTQwLDMwIDEzMCw0NSAxMTAsNDUiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxNDAsMzAgMTYwLDMwIDE1MCw0NSAxMzAsNDUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxNjAsMzAgMTgwLDMwIDE3MCw0NSAxNTAsNDUiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxODAsMzAgMjAwLDMwIDE5MCw0NSAxNzAsNDUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIyMDAsMzAgMjIwLDMwIDIxMCw0NSAxOTAsNDUiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIyMjAsMzAgMjQwLDMwIDI0MCw0NSAyMzAsNDUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxMCw0NSAzMCw0NSAyMCw2MCAwLDYwIDAuNDUsIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMzAsNDUgNTAsNDUgNDAsNjAgMjAsNjAiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSI1MCw0NSA3MCw0NSA2MCw2MCA0MCw2MCIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjcwLDQ1IDkwLDQ1IDgwLDYwIDYwLDYwIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iOTAsNDUgMTEwLDQ1IDEwMCw2MCA4MCw2MCIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjExMCw0NSAxMzAsNDUgMTIwLDYwIDEwMCw2MCIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjEzMCw0NSAxNTAsNDUgMTQwLDYwIDEyMCw2MCIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjE1MCw0NSAxNzAsNDUgMTYwLDYwIDE0MCw2MCIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjE3MCw0NSAxO
-')] bg-repeat-x bg-size-contain -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out opacity-0 group-hover:opacity-100"
-                ></span>
+                <span className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNDAgNjAiPjxwYXRoIGQ9Ik0wLDYwIEwwLDAgTDI0MCwwIEwyNDAsNjAgTDAsNjAgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJub25lIi8+PHBvbHlnb24gcG9pbnRzPSIwLDAgMjAsMCAxMCwxNSIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjIwLDAgNDAsMCAzMCwxNSAxMCwxNSIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjQwLDAgNjAsMCA1MCwxNSAzMCwxNSIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjYwLDAgODAsMCA3MCwxNSA1MCwxNSIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjgwLDAgMTAwLDAgOTAsMTUgNzAsMTUiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxMDAsMCAxMjAsMCAxMTAsMTUgOTAsMTUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxMjAsMCAxNDAsMCAxMzAsMTUgMTEwLDE1IiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMTQwLDAgMTYwLDAgMTUwLDE1IDEzMCwxNSIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjE2MCwwIDE4MCwwIDE3MCwxNSAxNTAsMTUiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxODAsMCAyMDAsMCAxOTAsMTUgMTcwLDE1IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMjAwLDAgMjIwLDAgMjEwLDE1IDE5MCwxNSIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjIyMCwwIDI0MCwwIDIzMCwxNSAyMTAsMTUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxMCwxNSAzMCwxNSAyMCwzMCAwLDMwIDAsMTUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIzMCwxNSA1MCwxNSA0MCwzMCAyMCwzMCIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjUwLDE1IDcwLDE1IDYwLDMwIDQwLDMwIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iNzAsMTUgOTAsMTUgODAsMzAgNjAsMzAiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSI5MCwxNSAxMTAsMTUgMTAwLDMwIDgwLDMwIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMTEwLDE1IDEzMCwxNSAxMjAsMzAgMTAwLDMwIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMTMwLDE1IDE1MCwxNSAxNDAsMzAgMTIwLDMwIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMTUwLDE1IDE3MCwxNSAxNjAsMzAgMTQwLDMwIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMTcwLDE1IDE5MCwxNSAxODAsMzAgMTYwLDMwIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMTkwLDE1IDIxMCwxNSAyMDAsMzAgMTgwLDMwIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMjEwLDE1IDIzMCwxNSAyMjAsMzAgMjAwLDMwIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMjMwLDE1IDI0MCwxNSAyNDAsMzAgMjIwLDMwIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMCwzMCAwLDQ1IDEwLDQ1IDIwLDMwIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMjAsMzAgNDAsMzAgMzAsNDUgMTAsNDUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSI0MCwzMCA2MCwzMCA1MCw0NSAzMCw0NSIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjYwLDMwIDgwLDMwIDcwLDQ1IDUwLDQ1IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iODAsMzAgMTAwLDMwIDkwLDQ1IDcwLDQ1IiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMTAwLDMwIDEyMCwzMCAxMTAsNDUgOTAsNDUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxMjAsMzAgMTQwLDMwIDEzMCw0NSAxMTAsNDUiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxNDAsMzAgMTYwLDMwIDE1MCw0NSAxMzAsNDUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxNjAsMzAgMTgwLDMwIDE3MCw0NSAxNTAsNDUiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxODAsMzAgMjAwLDMwIDE5MCw0NSAxNzAsNDUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIyMDAsMzAgMjIwLDMwIDIxMCw0NSAxOTAsNDUiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIyMjAsMzAgMjQwLDMwIDI0MCw0NSAyMzAsNDUiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSIxMCw0NSAzMCw0NSAyMCw2MCAwLDYwIDAuNDUsIiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iMzAsNDUgNTAsNDUgNDAsNjAgMjAsNjAiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PHBvbHlnb24gcG9pbnRzPSI1MCw0NSA3MCw0NSA2MCw2MCA0MCw2MCIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjcwLDQ1IDkwLDQ1IDgwLDYwIDYwLDYwIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwb2x5Z29uIHBvaW50cz0iOTAsNDUgMTEwLDQ1IDEwMCw2MCA4MCw2MCIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjExMCw0NSAxMzAsNDUgMTIwLDYwIDEwMCw2MCIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjEzMCw0NSAxNTAsNDUgMTQwLDMwIDEyMCwzMCIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48cG9seWdvbiBwb2ludHM9IjE1MCw0NSAxNzAsNDUgMTQwLDMwIDEyMCwzMCIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjIiLz48L3N2Zz4')] bg-repeat-x bg-size-contain -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out opacity-0 group-hover:opacity-100"></span>
               </Link>
             </motion.div>
           </motion.div>
@@ -378,7 +384,6 @@ const StadiumDetail = () => {
           >
             Amenities and Features
           </motion.button>
-
           <motion.button
             variants={tabVariants}
             whileHover={{ scale: 1.05 }}
@@ -465,26 +470,71 @@ const StadiumDetail = () => {
                 Location
               </h2>
               <div className="bg-[#171717]/90 rounded-2xl p-4 border border-white/10">
-                <p className="text-[#fffce1]/80 mb-4">
+                <p className="text-[#fffce1]/80 mb-2">
                   {stadium.address || `${stadium.city}, Azerbaijan`}
                 </p>
-                <div className="aspect-video rounded-xl overflow-hidden bg-[#171717]/20 flex items-center justify-center">
-                  <div className="text-[#fffce1]/50 text-center p-6">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-12 w-12 mx-auto mb-2"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-                      />
-                    </svg>
-                    <p>Map view is not available in this preview</p>
+                <p className="text-[#fffce1]/50 text-xs mb-4">
+                  Coordinates:{" "}
+                  {stadium.coordinates
+                    ? `${stadium.coordinates[0]}, ${stadium.coordinates[1]}`
+                    : "Not available"}
+                </p>
+                <div className="aspect-video rounded-xl overflow-hidden bg-gray-800 relative">
+                  {/* Static Map Image */}
+                  <div className="w-full h-full flex items-center justify-center bg-[#1a1a1a] relative">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-16 w-16 text-[#4de840]/30"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                    <div className="absolute bottom-0 left-0 right-0 p-4 text-center">
+                      <p className="text-[#fffce1] font-medium mb-2">
+                        {stadium.name}
+                      </p>
+                      <p className="text-[#fffce1]/70 text-sm mb-3">
+                        {stadium.address || `${stadium.city}, Azerbaijan`}
+                      </p>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={openInGoogleMaps}
+                        className="px-4 py-2 bg-[#4de840] text-black rounded-full text-sm font-medium inline-flex items-center cursor-pointer"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4 mr-1"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                          />
+                        </svg>
+                        View on Google Maps
+                      </motion.button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -548,7 +598,7 @@ const StadiumDetail = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                <h2 className="text-2xl font-bold mb-6 text-[#fffce1 flex items-center">
+                <h2 className="text-2xl font-bold mb-6 text-[#fffce1] flex items-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-6 w-6 mr-2 text-[#4de840]"
@@ -568,7 +618,6 @@ const StadiumDetail = () => {
                     (Facilities & Services)
                   </span>
                 </h2>
-
                 <div className="bg-[#171717]/90 rounded-2xl p-5 border border-white/10">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {stadium.amenities &&
@@ -1030,6 +1079,18 @@ const StadiumDetail = () => {
       </AnimatePresence>
     </motion.div>
   );
+};
+
+// Helper function to get coordinates for cities in Azerbaijan
+const getCoordinatesForCity = (city) => {
+  const cityCoordinates = {
+    Bakı: [40.3777, 49.892], // Baku
+    Sumqayıt: [40.5892, 49.6326], // Sumgayit
+    Gəncə: [40.6828, 46.3606], // Ganja
+    // Add more cities as needed
+  };
+
+  return cityCoordinates[city] || [40.3777, 49.892]; // Default to Baku if city not found
 };
 
 export default StadiumDetail;

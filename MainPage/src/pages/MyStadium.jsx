@@ -97,6 +97,20 @@ const MyStadium = () => {
     }
   }, [stadium]);
 
+  // Function to open location in Google Maps
+  const openInGoogleMaps = () => {
+    if (!stadium) return;
+
+    console.log("Opening map with coordinates:", stadium.coordinates);
+
+    // Use stadium name and address for better accuracy
+    const query = encodeURIComponent(
+      stadium.name + ", " + (stadium.address || stadium.city)
+    );
+    const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
+    window.open(url, "_blank");
+  };
+
   // Add these functions for handling posts
   const handleAddPost = () => {
     setShowAddPostModal(true);
@@ -378,7 +392,6 @@ const MyStadium = () => {
         <div className="absolute -top-[30%] -left-[10%] w-[70%] h-[70%] bg-[#4de840]/5 rounded-full blur-[120px]"></div>
         <div className="absolute -bottom-[30%] -right-[10%] w-[70%] h-[70%] bg-[#4de840]/5 rounded-full blur-[120px]"></div>
       </div>
-
       {/* Floating back button */}
       <motion.button
         initial={{ opacity: 0, x: -20 }}
@@ -567,7 +580,6 @@ const MyStadium = () => {
           </motion.div>
         </div>
       </motion.div>
-
       {/* Content Tabs */}
       <motion.div variants={itemVariants} className="mb-6">
         <div className="flex overflow-x-auto scrollbar-hide space-x-2 pb-2 pt-1 pl-1">
@@ -685,27 +697,73 @@ const MyStadium = () => {
                 Location
               </h2>
               <div className="bg-[#171717]/90 rounded-2xl p-4 border border-white/10">
-                <p className="text-[#fffce1]/80 mb-4">
+                <p className="text-[#fffce1]/80 mb-2">
                   {stadium.address ||
                     `${stadium.city || "Unknown"}, Azerbaijan`}
                 </p>
-                <div className="aspect-video rounded-xl overflow-hidden bg-[#171717]/20 flex items-center justify-center">
-                  <div className="text-[#fffce1]/50 text-center p-6">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-12 w-12 mx-auto mb-2"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-                      />
-                    </svg>
-                    <p>Map view is not available in this preview</p>
+                <p className="text-[#fffce1]/50 text-xs mb-4">
+                  Coordinates:{" "}
+                  {stadium.coordinates
+                    ? `${stadium.coordinates[0]}, ${stadium.coordinates[1]}`
+                    : "Not available"}
+                </p>
+                <div className="aspect-video rounded-xl overflow-hidden bg-gray-800 relative">
+                  {/* Static Map Image */}
+                  <div className="w-full h-full flex items-center justify-center bg-[#1a1a1a] relative">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-16 w-16 text-[#4de840]/30"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                    <div className="absolute bottom-0 left-0 right-0 p-4 text-center">
+                      <p className="text-[#fffce1] font-medium mb-2">
+                        {stadium.name}
+                      </p>
+                      <p className="text-[#fffce1]/70 text-sm mb-3">
+                        {stadium.address ||
+                          `${stadium.city || "Unknown"}, Azerbaijan`}
+                      </p>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={openInGoogleMaps}
+                        className="px-4 py-2 bg-[#4de840] text-black rounded-full text-sm font-medium inline-flex items-center"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4 mr-1"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                          />
+                        </svg>
+                        View on Google Maps
+                      </motion.button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -757,7 +815,6 @@ const MyStadium = () => {
             </motion.div>
           </motion.div>
         )}
-
         {activeTab === "amenities" && (
           <motion.div
             key="amenities"
@@ -1139,7 +1196,6 @@ const MyStadium = () => {
           </motion.div>
         )}
       </AnimatePresence>
-
       {/* Add Post Modal */}
       <AnimatePresence>
         {showAddPostModal && (

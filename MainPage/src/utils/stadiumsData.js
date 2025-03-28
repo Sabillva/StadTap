@@ -1,4 +1,4 @@
-// Stadiums data with real images
+// Stadiums data with real images and coordinates
 const stadiumsData = [
   {
     id: "1",
@@ -20,6 +20,7 @@ const stadiumsData = [
     features: ["Floodlights", "Changing Rooms", "Parking", "Spectator Seating"],
     rating: 4.8,
     reviews: 0, // Will be updated dynamically
+    coordinates: [40.4301, 49.9019], // Actual coordinates for Baku Olympic Stadium
   },
   {
     id: "2",
@@ -41,6 +42,7 @@ const stadiumsData = [
     features: ["Floodlights", "Changing Rooms", "Parking", "Spectator Seating"],
     rating: 4.5,
     reviews: 0,
+    coordinates: [40.4258, 49.8679], // Actual coordinates for Tofiq Bahramov Stadium
   },
   {
     id: "3",
@@ -62,6 +64,7 @@ const stadiumsData = [
     features: ["Floodlights", "Changing Rooms", "Parking"],
     rating: 4.3,
     reviews: 0,
+    coordinates: [40.4897, 50.1425], // Coordinates for Mardakan area
   },
   {
     id: "4",
@@ -83,6 +86,7 @@ const stadiumsData = [
     features: ["Floodlights", "Changing Rooms", "Parking"],
     rating: 4.1,
     reviews: 0,
+    coordinates: [40.5033, 50.1144], // Coordinates for Shuvalan area
   },
   {
     id: "5",
@@ -104,6 +108,7 @@ const stadiumsData = [
     features: ["Floodlights", "Changing Rooms", "Parking", "Spectator Seating"],
     rating: 4.4,
     reviews: 0,
+    coordinates: [40.5892, 49.6326], // Coordinates for Sumgayit
   },
   {
     id: "6",
@@ -125,6 +130,7 @@ const stadiumsData = [
     features: ["Floodlights", "Changing Rooms", "Parking", "Spectator Seating"],
     rating: 4.2,
     reviews: 0,
+    coordinates: [40.6828, 46.3606], // Coordinates for Ganja
   },
   {
     id: "7",
@@ -146,6 +152,7 @@ const stadiumsData = [
     features: ["Floodlights", "Changing Rooms", "Parking"],
     rating: 4.0,
     reviews: 0,
+    coordinates: [38.7546, 48.8512], // Coordinates for Lankaran
   },
   {
     id: "8",
@@ -167,6 +174,7 @@ const stadiumsData = [
     features: ["Floodlights", "Changing Rooms", "Parking", "Spectator Seating"],
     rating: 4.6,
     reviews: 0,
+    coordinates: [40.98, 47.85], // Coordinates for Gabala
   },
   {
     id: "9",
@@ -193,6 +201,7 @@ const stadiumsData = [
     ],
     rating: 4.3,
     reviews: 0,
+    coordinates: [40.34, 49.82], // Coordinates for Bayil district
   },
   {
     id: "10",
@@ -214,6 +223,7 @@ const stadiumsData = [
     features: ["Floodlights", "Changing Rooms", "Parking"],
     rating: 4.0,
     reviews: 0,
+    coordinates: [40.37, 49.95], // Coordinates for Nizami district
   },
   {
     id: "11",
@@ -235,6 +245,7 @@ const stadiumsData = [
     features: ["Floodlights", "Changing Rooms", "Parking", "Multiple Pitches"],
     rating: 4.2,
     reviews: 0,
+    coordinates: [40.47, 49.75], // Coordinates for Masazir area
   },
   {
     id: "12",
@@ -256,6 +267,7 @@ const stadiumsData = [
     features: ["Floodlights", "Changing Rooms", "Parking", "Spectator Seating"],
     rating: 4.1,
     reviews: 0,
+    coordinates: [40.58, 49.65], // Coordinates for Khazar district in Sumqayit
   },
   {
     id: "13",
@@ -277,6 +289,7 @@ const stadiumsData = [
     features: ["Floodlights", "Changing Rooms", "Parking", "Spectator Seating"],
     rating: 4.4,
     reviews: 0,
+    coordinates: [40.63, 48.64], // Coordinates for Shamakhi
   },
   {
     id: "14",
@@ -303,6 +316,7 @@ const stadiumsData = [
     ],
     rating: 4.0,
     reviews: 0,
+    coordinates: [40.09, 49.38], // Coordinates for Gobustan area
   },
   {
     id: "15",
@@ -324,6 +338,7 @@ const stadiumsData = [
     features: ["Floodlights", "Changing Rooms", "Parking", "Spectator Seating"],
     rating: 4.3,
     reviews: 0,
+    coordinates: [40.77, 47.05], // Coordinates for Mingachevir
   },
   {
     id: "16",
@@ -345,6 +360,7 @@ const stadiumsData = [
     features: ["Floodlights", "Changing Rooms", "Parking", "Spectator Seating"],
     rating: 4.5,
     reviews: 0,
+    coordinates: [41.19, 47.17], // Coordinates for Sheki
   },
 ];
 

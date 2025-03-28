@@ -105,6 +105,7 @@ export const getUpdatedStadiumData = () => {
         name: customStadium.name || stadium.name,
         hourlyRate: customStadium.hourlyRate || stadium.hourlyRate,
         description: customStadium.description || stadium.description,
+        coordinates: customStadium.coordinates || stadium.coordinates,
       };
     }
 
@@ -189,7 +190,6 @@ export const getStadiumById = (stadiumId) => {
     const nameMatch = customStadiums.find(
       (s) => s.name === originalStadium.name
     );
-
     if (nameMatch) {
       // Merge the original stadium with the custom data
       const viewCounts = JSON.parse(
@@ -204,6 +204,7 @@ export const getStadiumById = (stadiumId) => {
         name: nameMatch.name || originalStadium.name,
         hourlyRate: nameMatch.hourlyRate || originalStadium.hourlyRate,
         description: nameMatch.description || originalStadium.description,
+        coordinates: nameMatch.coordinates || originalStadium.coordinates,
         reviews,
         rating,
       };
@@ -277,6 +278,7 @@ export const getStadiumByName = (stadiumName) => {
         name: idMatch.name || originalStadium.name,
         hourlyRate: idMatch.hourlyRate || originalStadium.hourlyRate,
         description: idMatch.description || originalStadium.description,
+        coordinates: idMatch.coordinates || originalStadium.coordinates,
         reviews,
         rating,
       };
