@@ -1,8 +1,12 @@
+from sys import prefix
+
 from fastapi import FastAPI
 from auth.routes import router as auth_router
 from admin.routes import router as admin_router
 from fastapi.middleware.cors import CORSMiddleware
 from core.storage import JSONStorage
+from owner.routes import router as owner_router
+from reservations.routes  import router as reservations_router
 
 app = FastAPI()
 
@@ -18,6 +22,8 @@ app.add_middleware(
 # Include routers with your requested endpoints
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(admin_router, prefix="/admin", tags=["admin"])
+app.include_router(owner_router)
+app.include_router(reservations_router)
 
 # Stadiums endpoint
 @app.get("/stadiums", tags=["stadiums"])

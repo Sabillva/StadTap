@@ -62,7 +62,8 @@ async def signup_user(user: UserCreate):
         "username": user.username,
         "hashed_password": hashed_password,
         "role": "user",
-        "disabled": False
+        "disabled": False,
+        "owned_stadiums" : []
     }
 
     JSONStorage.save_user(db_user)
@@ -81,6 +82,8 @@ async def create_owner_request(
         **stadium_data.dict(),
         owner_id=current_user["id"]
     )
+
+    StadiumInDB.generate_available_hours(db_stadium)
 
     JSONStorage.save_stadium(db_stadium.dict())
 

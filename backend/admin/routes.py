@@ -37,10 +37,13 @@ async def approve_or_reject_request(
             # Include other updates if provided
             **(action.get("updates", {}) or {})
         }
-        JSONStorage.update_stadium(stadium_id, updates)
 
+        current_user["owned_stadiums"].append(stadium_id)
+        JSONStorage.update_stadium(stadium_id, updates)
+        JSONStorage.update_user(stadium["owner_id"], {"owned_stadiums": current_user["owned_stadiums"]})
         # Update user role to owner
         JSONStorage.update_user(stadium["owner_id"], {"role": "owner"})
+
 
         return {"message": "Stadium approved successfully"}
     elif action["action"] == "reject":
