@@ -2,11 +2,11 @@ from sys import prefix
 
 from fastapi import FastAPI
 from auth.routes import router as auth_router
-from admin.routes import router as admin_router
 from fastapi.middleware.cors import CORSMiddleware
-from core.storage import JSONStorage
-from owner.routes import router as owner_router
-from reservations.routes  import router as reservations_router
+from database import init_db
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI()
 
@@ -20,16 +20,14 @@ app.add_middleware(
 )
 
 # Include routers with your requested endpoints
-app.include_router(auth_router, prefix="/auth", tags=["auth"])
-app.include_router(admin_router, prefix="/admin", tags=["admin"])
-app.include_router(owner_router)
-app.include_router(reservations_router)
 
-# Stadiums endpoint
-@app.get("/stadiums", tags=["stadiums"])
-async def get_approved_stadiums():
-    stadiums = JSONStorage.get_stadiums()
-    return [s for s in stadiums if s["status"] == "approved"]
+@app.on_event("startup")
+async def startup():
+    init_db()
+
+
+app.include_router(auth_router, tags=["auth"])
+
 
 @app.get("/")
 def read_root():

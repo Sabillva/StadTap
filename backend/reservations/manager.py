@@ -1,7 +1,7 @@
 import json
 from typing import Dict, List, Any
 from pathlib import Path
-from core.storage import JSONStorage, RESERVATIONS_FILE, DATE_FILE
+from backend.database import JSONStorage, RESERVATIONS_FILE, DATE_FILE
 
 
 class ReservationManager:

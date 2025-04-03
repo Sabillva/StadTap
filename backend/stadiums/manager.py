@@ -1,5 +1,5 @@
 # core/stadium.py
-from core.storage import JSONStorage
+from backend.database import JSONStorage
 
 
 class StadiumManager:

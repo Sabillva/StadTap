@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from models import ReservationResponse
+from backend.schemas import ReservationResponse
 from auth.routes import get_current_user
 from reservations.manager import ReservationManager
 from typing import List
@@ -30,7 +30,7 @@ async def get_reservations(
 
     return [res for res in reservations if res["status"] == status]
 
-@router.patch("/{reservation_id}/approve")
+@router.patch("/approve")
 async def approve_reservation(
         reservation_id: str,
         user: dict = Depends(get_current_user)

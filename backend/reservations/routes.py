@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from models import ReservationCreate, ReservationResponse
+from backend.schemas import ReservationCreate, ReservationResponse
 from auth.routes import get_current_user
 from reservations.manager import ReservationManager
 

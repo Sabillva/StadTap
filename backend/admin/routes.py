@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from core.storage import JSONStorage
+from backend.database import JSONStorage
 from auth.routes import get_current_user
 from typing import List
 import uuid
