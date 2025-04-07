@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -16,9 +16,48 @@ const SignUp = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
 
-  const validateEmail = (email) => {
+  // Valid email providers
+  const validEmailProviders = [
+    "gmail.com",
+    "mail.ru",
+    "yahoo.com",
+    "outlook.com",
+    "hotmail.com",
+    "yandex.ru",
+    "protonmail.com",
+    "zoho.com",
+    "icloud.com",
+  ];
+
+  // Check if email is from a valid provider
+  const isValidEmailProvider = (email) => {
+    const domain = email.split("@")[1];
+    return validEmailProviders.includes(domain);
+  };
+
+  // Basic email format validation
+  const hasValidEmailFormat = (email) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
+  };
+
+  // Check if email is already registered
+  const isEmailAlreadyRegistered = (email) => {
+    // In a real app, this would be an API call to check the database
+    // For demo purposes, we'll use localStorage
+    const registeredEmails = JSON.parse(
+      localStorage.getItem("registeredEmails") || "[]"
+    );
+    return registeredEmails.includes(email);
+  };
+
+  // Save email as registered
+  const saveRegisteredEmail = (email) => {
+    const registeredEmails = JSON.parse(
+      localStorage.getItem("registeredEmails") || "[]"
+    );
+    registeredEmails.push(email);
+    localStorage.setItem("registeredEmails", JSON.stringify(registeredEmails));
   };
 
   const handleChange = (e) => {
@@ -36,16 +75,27 @@ const SignUp = () => {
 
     // Validate form
     const newErrors = {};
+
+    // First name validation
     if (!formData.firstName.trim()) {
       newErrors.firstName = "First name is required";
     }
+
+    // Last name validation
     if (!formData.lastName.trim()) {
       newErrors.lastName = "Last name is required";
     }
+
+    // Email validation
     if (!formData.email.trim()) {
-      newErrors.emailors.email = "Email is required";
-    } else if (!validateEmail(formData.email)) {
+      newErrors.email = "Email is required";
+    } else if (!hasValidEmailFormat(formData.email)) {
       newErrors.email = "Please enter a valid email address";
+    } else if (!isValidEmailProvider(formData.email)) {
+      newErrors.email =
+        "Please use a supported email provider (gmail.com, mail.ru, yahoo.com, etc.)";
+    } else if (isEmailAlreadyRegistered(formData.email)) {
+      newErrors.email = "This email is already registered";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -57,6 +107,9 @@ const SignUp = () => {
 
     // Simulate email verification (in a real app, this would be an API call)
     setTimeout(() => {
+      // Save the email as registered
+      saveRegisteredEmail(formData.email);
+
       // Store registration data in localStorage for step 2
       localStorage.setItem(
         "registrationData",
@@ -187,7 +240,7 @@ const SignUp = () => {
               transition={{ delay: 0.5, duration: 0.8 }}
             >
               <h2 className="text-4xl font-bold text-white mb-3">
-                Join Our Football Communityyyy
+                Join Our Football Community
               </h2>
               <p className="text-white/80 max-w-xs text-lg">
                 Create an account to find and book the best football stadiums in
