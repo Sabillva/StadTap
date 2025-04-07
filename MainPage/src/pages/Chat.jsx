@@ -319,7 +319,7 @@ const Chat = () => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.5 }}
+            transition={{ delay: 0.01, duration: 0.3 }}
             whileHover="hover"
             whileTap="tap"
             variants={buttonVariants}
@@ -327,7 +327,7 @@ const Chat = () => {
           >
             <button
               onClick={handleFindUsers}
-              className="px-6 py-3 bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] rounded-full font-medium shadow-lg shadow-[#4de840]/20 transition-all duration-300 flex items-center"
+              className="px-6 py-3 bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] rounded-full font-medium shadow-lg shadow-[#4de840]/20 transition-all duration-300 flex items-center cursor-pointer"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

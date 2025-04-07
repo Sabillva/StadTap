@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -15,6 +15,17 @@ const SignUp = () => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [verificationCode, setVerificationCode] = useState([
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+  ]);
+  const [generatedCode, setGeneratedCode] = useState("");
+  const [codeError, setCodeError] = useState("");
+  const inputRefs = useRef([]);
 
   // Valid email providers
   const validEmailProviders = [
@@ -105,11 +116,12 @@ const SignUp = () => {
 
     setIsSubmitting(true);
 
+    // Generate a random 6-digit code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedCode(code);
+
     // Simulate email verification (in a real app, this would be an API call)
     setTimeout(() => {
-      // Save the email as registered
-      saveRegisteredEmail(formData.email);
-
       // Store registration data in localStorage for step 2
       localStorage.setItem(
         "registrationData",
@@ -122,12 +134,46 @@ const SignUp = () => {
       setIsSubmitting(false);
       setEmailSent(true);
 
-      // In a real app, we would send an email with a verification link
-      // For demo purposes, we'll just show a message and provide a button to continue
+      // In a real app, we would send an email with a verification code
+      // For demo purposes, we'll just show the code
     }, 1500);
   };
 
+  const handleCodeChange = (index, value) => {
+    // Allow only numbers
+    if (value && !/^\d+$/.test(value)) return;
+
+    // Update the code array
+    const newCode = [...verificationCode];
+    newCode[index] = value;
+    setVerificationCode(newCode);
+    setCodeError("");
+
+    // Auto-focus to next input if value is entered
+    if (value && index < 5) {
+      inputRefs.current[index + 1].focus();
+    }
+  };
+
+  const handleKeyDown = (index, e) => {
+    // Handle backspace to go to previous input
+    if (e.key === "Backspace" && !verificationCode[index] && index > 0) {
+      inputRefs.current[index - 1].focus();
+    }
+  };
+
   const handleVerifyEmail = () => {
+    // Check if the entered code matches the generated code
+    const enteredCode = verificationCode.join("");
+
+    if (enteredCode !== generatedCode) {
+      setCodeError("Invalid verification code. Please try again.");
+      return;
+    }
+
+    // Save the email as registered
+    saveRegisteredEmail(formData.email);
+
     // In a real app, this would verify the token from the email
     // For demo purposes, we'll just navigate to step 2
     navigate("/signup/step2");
@@ -339,13 +385,70 @@ const SignUp = () => {
                   </div>
                 </motion.div>
 
-                {/* For demo purposes only - in a real app, the user would click a link in their email */}
+                {/* Demo verification code display */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="mb-6 p-4 bg-[#1a1a1a] rounded-xl border border-[#2a2a2a]"
+                >
+                  <p className="text-[#fffce1]/70 mb-2">
+                    Your verification code is:
+                  </p>
+                  <div className="text-[#4de840] font-mono text-xl font-bold tracking-wider">
+                    {generatedCode}
+                  </div>
+                </motion.div>
+
+                {/* Verification code input */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="mb-6"
+                >
+                  <p className="text-[#fffce1]/70 mb-3">
+                    Enter the 6-digit verification code:
+                  </p>
+                  <div className="flex justify-center space-x-2">
+                    {verificationCode.map((digit, index) => (
+                      <input
+                        key={index}
+                        ref={(el) => (inputRefs.current[index] = el)}
+                        type="text"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) =>
+                          handleCodeChange(index, e.target.value)
+                        }
+                        onKeyDown={(e) => handleKeyDown(index, e)}
+                        className="w-12 h-14 text-center text-xl font-bold bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-[#fffce1] focus:border-[#4de840] focus:outline-none transition-all duration-200"
+                      />
+                    ))}
+                  </div>
+                  {codeError && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-2 text-sm text-red-400"
+                    >
+                      {codeError}
+                    </motion.p>
+                  )}
+                </motion.div>
+
+                {/* Verify button */}
                 <motion.button
                   whileHover="hover"
                   whileTap="tap"
                   variants={buttonHover}
                   onClick={handleVerifyEmail}
-                  className="w-full flex justify-center py-3 px-4 bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] rounded-full font-medium hover:shadow-lg hover:shadow-[#4de840]/20 transition-all duration-300 cursor-pointer"
+                  disabled={verificationCode.some((digit) => digit === "")}
+                  className={`w-full flex justify-center py-3 px-4 rounded-full font-medium transition-all duration-300 cursor-pointer ${
+                    verificationCode.some((digit) => digit === "")
+                      ? "bg-[#2a2a2a] text-[#fffce1]/50 cursor-not-allowed"
+                      : "bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] hover:shadow-lg hover:shadow-[#4de840]/20"
+                  }`}
                 >
                   <span className="flex items-center justify-center">
                     <svg
@@ -362,7 +465,7 @@ const SignUp = () => {
                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
                     </svg>
-                    Verify Email (Demo)
+                    Verify Email
                   </span>
                 </motion.button>
               </motion.div>
