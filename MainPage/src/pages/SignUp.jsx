@@ -187,7 +187,7 @@ const SignUp = () => {
               transition={{ delay: 0.5, duration: 0.8 }}
             >
               <h2 className="text-4xl font-bold text-white mb-3">
-                Join Our Football Community
+                Join Our Football Communityyyy
               </h2>
               <p className="text-white/80 max-w-xs text-lg">
                 Create an account to find and book the best football stadiums in
