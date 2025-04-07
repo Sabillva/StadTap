@@ -1,0 +1,37 @@
+body {
+  color: #fffce1;
+}
+
+.words-section {
+  padding: 96px 0;
+}
+
+.words-h2 {
+  font-size: 54px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.words-span-1 {
+  white-space: nowrap;
+  color: #fffce1;
+}
+
+.words-span-2 {
+  white-space: nowrap;
+  align-self: end;
+  color: rgb(200, 102, 33);
+}
+
+@media (min-width: 768px) and (max-width: 1224px) {
+  .words-h2 {
+    font-size: 72px;
+  }
+}
+
+@media (min-width: 1224px) {
+  .words-h2 {
+    font-size: 96px;
+  }
+}
