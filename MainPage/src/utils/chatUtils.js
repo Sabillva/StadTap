@@ -52,7 +52,9 @@ export const getUserConversations = (userId) => {
           partnerId,
           partnerName: `${partner.firstName} ${partner.lastName}`,
           partnerUsername: partner.username,
-          lastMessage: lastMessage.content,
+          lastMessage: isFileMessage(lastMessage)
+            ? "📎 Attachment"
+            : lastMessage.content,
           timestamp: lastMessage.timestamp,
           unread: conversationPartners[partnerId].unread,
           online: isUserOnline(partner),
@@ -121,39 +123,18 @@ export const sendMessage = (senderId, recipientId, content) => {
   }
 };
 
-// Mark messages as read
-// export const markMessagesAsRead = (userId, partnerId) => {
-//   try {
-//     const storedMessages = localStorage.getItem("messages")
-//     const messages = JSON.parse(storedMessages)
-
-//     // Find unread messages sent to the current user from the partner
-//     const updatedMessages = messages.map((message) => {
-//       if (message.senderId === partnerId && message.recipientId === userId && !message.read) {
-//         return { ...message, read: true }
-//       }
-//       return message
-//     })
-
-//     // Update localStorage
-//     localStorage.setItem("messages", JSON.stringify(updatedMessages))
-//   } catch (error) {
-//     console.error("Error marking messages as read:", error)
-//   }
-// }
-
-// Mesajı silmək üçün funksiya əlavə edək
+// Delete a message
 export const deleteMessage = (messageId) => {
   try {
     const storedMessages = localStorage.getItem("messages");
     const messages = storedMessages ? JSON.parse(storedMessages) : [];
 
-    // Mesajı silmək
+    // Filter out the message to delete
     const updatedMessages = messages.filter(
       (message) => message.id !== messageId
     );
 
-    // LocalStorage-i yeniləmək
+    // Update localStorage
     localStorage.setItem("messages", JSON.stringify(updatedMessages));
 
     return true;
@@ -163,13 +144,38 @@ export const deleteMessage = (messageId) => {
   }
 };
 
-// Mesajı redaktə etmək üçün funksiya
+// Delete an entire conversation
+export const deleteConversation = (userId, partnerId) => {
+  try {
+    const storedMessages = localStorage.getItem("messages");
+    const messages = storedMessages ? JSON.parse(storedMessages) : [];
+
+    // Filter out all messages between these two users
+    const updatedMessages = messages.filter(
+      (message) =>
+        !(
+          (message.senderId === userId && message.recipientId === partnerId) ||
+          (message.senderId === partnerId && message.recipientId === userId)
+        )
+    );
+
+    // Update localStorage
+    localStorage.setItem("messages", JSON.stringify(updatedMessages));
+
+    return true;
+  } catch (error) {
+    console.error("Error deleting conversation:", error);
+    return false;
+  }
+};
+
+// Edit a message
 export const editMessage = (messageId, newContent) => {
   try {
     const storedMessages = localStorage.getItem("messages");
     const messages = storedMessages ? JSON.parse(storedMessages) : [];
 
-    // Mesajı tapmaq və yeniləmək
+    // Find and update the message
     const updatedMessages = messages.map((message) => {
       if (message.id === messageId) {
         return {
@@ -182,7 +188,7 @@ export const editMessage = (messageId, newContent) => {
       return message;
     });
 
-    // LocalStorage-i yeniləmək
+    // Update localStorage
     localStorage.setItem("messages", JSON.stringify(updatedMessages));
 
     return updatedMessages.find((m) => m.id === messageId);
@@ -192,16 +198,16 @@ export const editMessage = (messageId, newContent) => {
   }
 };
 
-// Mesajın 1 saat içində olub-olmadığını yoxlamaq üçün funksiya
+// Check if a message is within the last hour
 export const isMessageWithinHour = (timestamp) => {
   const messageTime = new Date(timestamp);
   const now = new Date();
-  const hourInMs = 60 * 60 * 1000; // 1 saat millisekundla
+  const hourInMs = 60 * 60 * 1000; // 1 hour in milliseconds
 
   return now - messageTime < hourInMs;
 };
 
-// Mesajın oxunma statusunu yeniləmək üçün funksiya
+// Update message read status
 export const updateMessageReadStatus = (messageId, isRead) => {
   try {
     const storedMessages = localStorage.getItem("messages");
@@ -222,7 +228,7 @@ export const updateMessageReadStatus = (messageId, isRead) => {
   }
 };
 
-// Bütün mesajların oxunma statusunu yeniləmək üçün funksiya
+// Mark all messages from a partner as read
 export const markMessagesAsRead = (userId, partnerId) => {
   try {
     const storedMessages = localStorage.getItem("messages");
@@ -283,7 +289,7 @@ export const formatMessageTime = (timestamp) => {
 export const isUserOnline = (user) => {
   // In a real app, this would check against an online status service
   // For now, we'll simulate by checking if the user has been active in the last 5 minutes
-  if (!user.lastActive) return false;
+  if (!user || !user.lastActive) return false;
 
   const lastActive = new Date(user.lastActive);
   const now = new Date();
@@ -391,9 +397,9 @@ export const sendFileMessage = async (senderId, recipientId, file) => {
       fileId: fileData.id,
       fileName: fileData.name,
       fileType: fileData.type,
+      fileSize: fileData.size,
       fileUrl: fileData.url,
     });
-
     return sendMessage(senderId, recipientId, content);
   } catch (error) {
     console.error("Error sending file message:", error);
@@ -450,6 +456,34 @@ export const isPartnerTyping = (userId, partnerId) => {
     return now - typingTime < 5000;
   } catch (error) {
     console.error("Error checking typing status:", error);
+    return false;
+  }
+};
+
+// Add the deleteConversation function to your chatUtils.js file
+
+export const deleteConversation2 = (userId, partnerId) => {
+  try {
+    // Get all conversations from localStorage
+    const storedConversations = JSON.parse(
+      localStorage.getItem("conversations") || "[]"
+    );
+
+    // Filter out the conversation between these two users
+    const updatedConversations = storedConversations.filter(
+      (conv) =>
+        !(
+          (conv.user1Id === userId && conv.user2Id === partnerId) ||
+          (conv.user1Id === partnerId && conv.user2Id === userId)
+        )
+    );
+
+    // Save the updated conversations back to localStorage
+    localStorage.setItem("conversations", JSON.stringify(updatedConversations));
+
+    return true;
+  } catch (error) {
+    console.error("Error deleting conversation:", error);
     return false;
   }
 };

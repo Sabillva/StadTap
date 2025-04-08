@@ -17,6 +17,10 @@ import {
   sendFileMessage,
   isFileMessage,
   getFileFromMessage,
+  deleteMessage,
+  editMessage,
+  isMessageWithinHour,
+  deleteConversation,
 } from "../utils/chatUtils";
 
 const ChatDetail = () => {
@@ -27,19 +31,24 @@ const ChatDetail = () => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
-  const [showMobileInfo, setShowMobileInfo] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [fileUploading, setFileUploading] = useState(false);
+  const [editingMessage, setEditingMessage] = useState(null);
+  const [showMessageOptions, setShowMessageOptions] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [showDeleteChatConfirm, setShowDeleteChatConfirm] = useState(false);
+  const [autoScroll, setAutoScroll] = useState(true);
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
   const emojiPickerRef = useRef(null);
   const attachMenuRef = useRef(null);
   const fileInputRef = useRef(null);
+  const messageOptionsRef = useRef(null);
 
-  // Sample emojis for the emoji picker
+  // Popular emojis for the emoji picker
   const emojis = [
     "😊",
     "😂",
@@ -56,56 +65,109 @@ const ChatDetail = () => {
     "👋",
     "⚽",
     "🏆",
+    "👌",
+    "🥰",
+    "😁",
+    "🤣",
+    "😉",
+    "🤩",
+    "🤗",
+    "🙄",
+    "😴",
+    "🤑",
+    "🤯",
+    "🥳",
+    "😇",
+    "🤝",
+    "👀",
   ];
 
-  // Sample attachment options
+  // Attachment options
   const attachOptions = [
     { icon: "📷", label: "Photo", type: "image/*" },
-    { icon: "📁", label: "File", type: "application/pdf,text/plain" },
+    {
+      icon: "📁",
+      label: "Document",
+      type: "application/pdf,text/plain,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    },
+    {
+      icon: "📊",
+      label: "Spreadsheet",
+      type: "application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    },
   ];
 
   // Update user's last active timestamp
   useEffect(() => {
     updateUserLastActive(currentUser.id);
+
+    // Set up interval to update last active status
+    const interval = setInterval(() => {
+      updateUserLastActive(currentUser.id);
+    }, 60000); // Update every minute
+
+    return () => clearInterval(interval);
   }, [currentUser.id]);
 
   // Load recipient data and messages
   useEffect(() => {
     const loadData = () => {
-      // Load recipient data
-      const storedUsers = JSON.parse(localStorage.getItem("users") || "[]");
-      const foundRecipient = storedUsers.find((u) => u.id === recipientId);
+      try {
+        // Load recipient data
+        const storedUsers = JSON.parse(localStorage.getItem("users") || "[]");
+        const foundRecipient = storedUsers.find((u) => u.id === recipientId);
 
-      if (!foundRecipient) {
+        if (!foundRecipient) {
+          navigate("/chat");
+          return;
+        }
+
+        setRecipient(foundRecipient);
+
+        // Load messages
+        const conversationMessages = getConversationMessages(
+          currentUser.id,
+          recipientId
+        );
+
+        // Only update messages if there are new ones to prevent scroll jumping
+        if (JSON.stringify(conversationMessages) !== JSON.stringify(messages)) {
+          setMessages(conversationMessages);
+
+          // Only auto scroll if we're already at the bottom or there's a new message from the partner
+          const isAtBottom = isScrolledToBottom();
+          const hasNewPartnerMessage =
+            conversationMessages.length > messages.length &&
+            conversationMessages[conversationMessages.length - 1]?.senderId ===
+              recipientId;
+
+          setAutoScroll(isAtBottom || hasNewPartnerMessage);
+        }
+
+        // Mark messages as read
+        markMessagesAsRead(currentUser.id, recipientId);
+
+        // Check if partner is typing
+        const partnerTypingStatus = isPartnerTyping(
+          currentUser.id,
+          recipientId
+        );
+        setIsTyping(partnerTypingStatus);
+
+        // Add a small delay to make the loading animation visible
+        if (loading) {
+          setTimeout(() => {
+            setLoading(false);
+            // Focus the input field after loading
+            if (inputRef.current && !editingMessage) {
+              inputRef.current.focus();
+            }
+          }, 800);
+        }
+      } catch (error) {
+        console.error("Error loading conversation:", error);
+        setLoading(false);
         navigate("/chat");
-        return;
-      }
-
-      setRecipient(foundRecipient);
-
-      // Load messages
-      const conversationMessages = getConversationMessages(
-        currentUser.id,
-        recipientId
-      );
-      setMessages(conversationMessages);
-
-      // Mark messages as read
-      markMessagesAsRead(currentUser.id, recipientId);
-
-      // Check if partner is typing
-      const partnerTypingStatus = isPartnerTyping(currentUser.id, recipientId);
-      setIsTyping(partnerTypingStatus);
-
-      // Add a small delay to make the loading animation visible
-      if (loading) {
-        setTimeout(() => {
-          setLoading(false);
-          // Focus the input field after loading
-          if (inputRef.current) {
-            inputRef.current.focus();
-          }
-        }, 800);
       }
     };
 
@@ -117,14 +179,28 @@ const ChatDetail = () => {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [currentUser.id, recipientId, navigate, loading]);
+  }, [currentUser.id, recipientId, navigate, loading, messages]);
 
-  // Scroll to bottom when messages change
+  // Check if scrolled to bottom
+  const isScrolledToBottom = () => {
+    if (!messagesContainerRef.current) return true;
+
+    const { scrollTop, scrollHeight, clientHeight } =
+      messagesContainerRef.current;
+    return Math.abs(scrollHeight - clientHeight - scrollTop) < 50;
+  };
+
+  // Handle scroll events
+  const handleScroll = () => {
+    setAutoScroll(isScrolledToBottom());
+  };
+
+  // Scroll to bottom when messages change and autoScroll is true
   useEffect(() => {
-    if (messagesEndRef.current) {
+    if (autoScroll && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+  }, [messages, autoScroll]);
 
   // Close emoji picker and attach menu when clicking outside
   useEffect(() => {
@@ -143,6 +219,15 @@ const ChatDetail = () => {
         !event.target.closest(".attach-button")
       ) {
         setShowAttachMenu(false);
+      }
+
+      // Only close message options if clicking outside both the options menu and the options button
+      if (
+        messageOptionsRef.current &&
+        !messageOptionsRef.current.contains(event.target) &&
+        !event.target.closest(".message-options-button")
+      ) {
+        setShowMessageOptions(null);
       }
     };
 
@@ -166,8 +251,14 @@ const ChatDetail = () => {
     };
   }, [newMessage, currentUser.id, recipientId]);
 
+  // Handle message sending
   const handleSendMessage = (e) => {
     e.preventDefault();
+
+    if (editingMessage) {
+      handleUpdateMessage();
+      return;
+    }
 
     if (!newMessage.trim()) return;
 
@@ -177,6 +268,7 @@ const ChatDetail = () => {
     // Update local state
     if (message) {
       setMessages([...messages, message]);
+      setAutoScroll(true);
     }
 
     // Clear input
@@ -188,6 +280,94 @@ const ChatDetail = () => {
     }
   };
 
+  // Handle message editing
+  const handleStartEditing = (message) => {
+    if (message.senderId !== currentUser.id) return;
+
+    // Only allow editing messages sent within the last hour
+    if (!isMessageWithinHour(message.timestamp)) {
+      // Show toast or notification that message is too old to edit
+      return;
+    }
+
+    setEditingMessage(message);
+
+    // If it's a file message, we can't edit it
+    if (!isFileMessage(message)) {
+      setNewMessage(message.content);
+    }
+
+    // Close message options
+    setShowMessageOptions(null);
+
+    // Focus the input field
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
+  // Handle message update
+  const handleUpdateMessage = () => {
+    if (!editingMessage || !newMessage.trim()) {
+      setEditingMessage(null);
+      setNewMessage("");
+      return;
+    }
+
+    // Update message
+    const updatedMessage = editMessage(editingMessage.id, newMessage.trim());
+
+    // Update local state
+    if (updatedMessage) {
+      setMessages(
+        messages.map((msg) =>
+          msg.id === updatedMessage.id ? updatedMessage : msg
+        )
+      );
+    }
+
+    // Clear editing state
+    setEditingMessage(null);
+    setNewMessage("");
+
+    // Focus the input field again
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
+  // Handle message deletion
+  const handleDeleteMessage = (messageId) => {
+    // Delete message
+    const success = deleteMessage(messageId);
+
+    // Update local state
+    if (success) {
+      setMessages(messages.filter((msg) => msg.id !== messageId));
+    }
+
+    // Close delete confirmation
+    setShowDeleteConfirm(null);
+
+    // Close message options
+    setShowMessageOptions(null);
+  };
+
+  // Handle conversation deletion
+  const handleDeleteConversation = () => {
+    // Delete conversation
+    const success = deleteConversation(currentUser.id, recipientId);
+
+    // Navigate back to chat list
+    if (success) {
+      navigate("/chat");
+    }
+
+    // Close delete confirmation
+    setShowDeleteChatConfirm(false);
+  };
+
+  // Handle emoji selection
   const handleEmojiClick = (emoji) => {
     setNewMessage((prev) => prev + emoji);
     setShowEmojiPicker(false);
@@ -198,6 +378,7 @@ const ChatDetail = () => {
     }
   };
 
+  // Handle attachment selection
   const handleAttachmentClick = (option) => {
     setShowAttachMenu(false);
 
@@ -208,6 +389,7 @@ const ChatDetail = () => {
     }
   };
 
+  // Handle file upload
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -221,6 +403,7 @@ const ChatDetail = () => {
       // Update local state
       if (message) {
         setMessages([...messages, message]);
+        setAutoScroll(true);
       }
 
       // Reset file input
@@ -232,6 +415,26 @@ const ChatDetail = () => {
       alert("Failed to upload file. Please try again.");
     } finally {
       setFileUploading(false);
+    }
+  };
+
+  // Cancel editing
+  const handleCancelEdit = () => {
+    setEditingMessage(null);
+    setNewMessage("");
+
+    // Focus the input field again
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
+  // Handle toggle message options
+  const toggleMessageOptions = (messageId) => {
+    if (showMessageOptions === messageId) {
+      setShowMessageOptions(null);
+    } else {
+      setShowMessageOptions(messageId);
     }
   };
 
@@ -352,26 +555,6 @@ const ChatDetail = () => {
     tap: { scale: 0.95 },
   };
 
-  const slideInVariants = {
-    hidden: { x: "-100%", opacity: 0 },
-    visible: {
-      x: 0,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 300,
-        damping: 30,
-      },
-    },
-    exit: {
-      x: "-100%",
-      opacity: 0,
-      transition: {
-        duration: 0.3,
-      },
-    },
-  };
-
   const popupVariants = {
     hidden: { opacity: 0, scale: 0.8, y: 10 },
     visible: {
@@ -403,7 +586,25 @@ const ChatDetail = () => {
     },
   };
 
-  if (loading) {
+  const optionsVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.2,
+      },
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.8,
+      transition: {
+        duration: 0.2,
+      },
+    },
+  };
+
+  if (loading || !recipient) {
     return (
       <div className="h-[calc(100vh-80px)] flex justify-center items-center">
         <div className="text-center">
@@ -423,7 +624,7 @@ const ChatDetail = () => {
                 repeat: Number.POSITIVE_INFINITY,
                 ease: "easeInOut",
               }}
-              className="absolute inset-0 rounded-full bg-[#4de840]/20 blur-md"
+              className="absolute inset-0 rounded-full blur-md"
             />
             <motion.div
               animate={{ rotate: 360 }}
@@ -500,134 +701,16 @@ const ChatDetail = () => {
         initial="hidden"
         animate="visible"
         variants={containerVariants}
-        className="w-full max-w-6xl h-[85vh] bg-[#171717]/60 backdrop-blur-[10px] border-2 border-white/15 rounded-[30px] shadow-lg overflow-hidden"
+        className="w-full max-w-4xl h-[85vh] bg-[#171717]/60 backdrop-blur-[10px] border-2 border-white/15 rounded-[30px] shadow-lg overflow-hidden"
       >
-        <div className="flex h-full">
-          {/* Mobile Info Panel */}
-          <AnimatePresence>
-            {showMobileInfo && (
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                variants={slideInVariants}
-                className="absolute inset-0 z-20 bg-[#171717]/95 backdrop-blur-md md:hidden"
-              >
-                <div className="p-4 h-full flex flex-col">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-[#fffce1]">
-                      Profile
-                    </h2>
-                    <button
-                      onClick={() => setShowMobileInfo(false)}
-                      className="p-2 bg-[#1a1a1a] border border-white/10 text-[#fffce1] rounded-full hover:bg-[#2a2a2a] transition-all duration-300"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                      </svg>
-                    </button>
-                  </div>
-
-                  <div className="flex flex-col items-center mb-8">
-                    <div className="relative">
-                      <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#4de840] to-[#2ca322] flex items-center justify-center text-[#0e100f] font-bold text-4xl mb-4 shadow-lg">
-                        {recipient.firstName.charAt(0)}
-                      </div>
-                      {isUserOnline(recipient) && (
-                        <div className="absolute bottom-4 right-0 w-5 h-5 bg-[#4de840] border-2 border-[#171717] rounded-full"></div>
-                      )}
-                    </div>
-                    <h3 className="text-2xl font-bold text-[#fffce1]">
-                      {recipient.firstName} {recipient.lastName}
-                    </h3>
-                    <p className="text-[#fffce1]/50">@{recipient.username}</p>
-                    <div className="mt-2 px-3 py-1 bg-[#4de840]/10 text-[#4de840] rounded-full text-xs">
-                      {isUserOnline(recipient) ? "Online" : "Offline"}
-                    </div>
-                  </div>
-
-                  <div className="space-y-4 mb-8">
-                    <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-4">
-                      <h4 className="text-sm text-[#fffce1]/50 mb-1">Email</h4>
-                      <p className="text-[#fffce1]">{recipient.email}</p>
-                    </div>
-
-                    <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-4">
-                      <h4 className="text-sm text-[#fffce1]/50 mb-1">
-                        User Type
-                      </h4>
-                      <p className="text-[#fffce1] capitalize">
-                        {recipient.userType}
-                      </p>
-                    </div>
-
-                    <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-4">
-                      <h4 className="text-sm text-[#fffce1]/50 mb-1">
-                        Last Active
-                      </h4>
-                      <p className="text-[#fffce1]">
-                        {isUserOnline(recipient)
-                          ? "Currently active"
-                          : formatLastActive(recipient.lastActive)}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-auto">
-                    <motion.div
-                      whileHover="hover"
-                      whileTap="tap"
-                      variants={buttonVariants}
-                    >
-                      <Link
-                        to={`/users/${recipient.id}`}
-                        className="block w-full text-center px-4 py-3 bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] rounded-full font-medium shadow-lg shadow-[#4de840]/20 transition-all duration-300"
-                      >
-                        <div className="flex items-center justify-center">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5 mr-2"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                            />
-                          </svg>
-                          View Full Profile
-                        </div>
-                      </Link>
-                    </motion.div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Sidebar - User Info (hidden on mobile) */}
-          <motion.div
-            variants={itemVariants}
-            className="hidden md:block w-1/4 border-r border-white/10 overflow-hidden"
-          >
-            <div className="h-full flex flex-col">
-              <div className="p-4 border-b border-white/10 flex justify-between items-center">
+        <div className="flex flex-col h-full">
+          {/* Chat Header */}
+          <div className="p-4 border-b border-white/10 flex justify-between items-center">
+            <div className="flex items-center">
+              <div className="mr-2">
                 <Link
                   to="/chat"
-                  className="p-2 bg-[#1a1a1a] border border-white/10 text-[#fffce1] rounded-full hover:bg-[#2a2a2a] transition-all duration-300"
+                  className="p-2 bg-[#1a1a1a] border border-white/10 text-[#fffce1] rounded-full hover:bg-[#2a2a2a] transition-all duration-300 inline-flex"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -642,174 +725,95 @@ const ChatDetail = () => {
                     <path d="M19 12H5M12 19l-7-7 7-7" />
                   </svg>
                 </Link>
-                <h2 className="text-lg font-bold text-[#fffce1]">Profile</h2>
-                <div className="w-5"></div> {/* Spacer for alignment */}
               </div>
-
-              <div className="p-6 flex flex-col items-center">
+              <div className="flex items-center">
                 <div className="relative">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#4de840] to-[#2ca322] flex items-center justify-center text-[#0e100f] font-bold text-2xl mb-4 shadow-lg">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#4de840] to-[#2ca322] flex items-center justify-center text-[#0e100f] font-bold mr-3 shadow-lg">
                     {recipient.firstName.charAt(0)}
                   </div>
                   {isUserOnline(recipient) && (
-                    <div className="absolute bottom-4 right-0 w-4 h-4 bg-[#4de840] border-2 border-[#171717] rounded-full"></div>
+                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-[#4de840] border-2 border-[#0e100f] rounded-full"></div>
                   )}
                 </div>
-                <h3 className="text-xl font-bold text-[#fffce1]">
-                  {recipient.firstName} {recipient.lastName}
-                </h3>
-                <p className="text-[#fffce1]/50 mb-2">@{recipient.username}</p>
-                <div className="px-3 py-1 bg-[#4de840]/10 text-[#4de840] rounded-full text-xs mb-6">
-                  {isUserOnline(recipient) ? "Online" : "Offline"}
+                <div>
+                  <h3 className="font-medium text-[#fffce1]">
+                    {recipient.firstName} {recipient.lastName}
+                  </h3>
+                  <p className="text-xs text-[#fffce1]/50">
+                    {isTyping ? (
+                      <span className="text-[#4de840] flex items-center">
+                        <motion.span
+                          animate={{
+                            opacity: [0.5, 1, 0.5],
+                          }}
+                          transition={{
+                            duration: 1.5,
+                            repeat: Number.POSITIVE_INFINITY,
+                            ease: "easeInOut",
+                          }}
+                          className="mr-1"
+                        >
+                          typing
+                        </motion.span>
+                        <motion.span
+                          animate={{
+                            opacity: [0.3, 1, 0.3],
+                          }}
+                          transition={{
+                            duration: 1.5,
+                            repeat: Number.POSITIVE_INFINITY,
+                            ease: "easeInOut",
+                            delay: 0.2,
+                          }}
+                        >
+                          •••
+                        </motion.span>
+                      </span>
+                    ) : isUserOnline(recipient) ? (
+                      "Online"
+                    ) : (
+                      `Last active ${formatLastActive(recipient.lastActive)}`
+                    )}
+                  </p>
                 </div>
-
-                <div className="w-full space-y-4 mb-6">
-                  <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-3">
-                    <h4 className="text-xs text-[#fffce1]/50 mb-1">Email</h4>
-                    <p className="text-sm text-[#fffce1]">{recipient.email}</p>
-                  </div>
-
-                  <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-3">
-                    <h4 className="text-xs text-[#fffce1]/50 mb-1">
-                      User Type
-                    </h4>
-                    <p className="text-sm text-[#fffce1] capitalize">
-                      {recipient.userType}
-                    </p>
-                  </div>
-
-                  <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-3">
-                    <h4 className="text-xs text-[#fffce1]/50 mb-1">
-                      Last Active
-                    </h4>
-                    <p className="text-sm text-[#fffce1]">
-                      {isUserOnline(recipient)
-                        ? "Currently active"
-                        : formatLastActive(recipient.lastActive)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-auto p-4 border-t border-white/10">
-                <motion.div
-                  whileHover="hover"
-                  whileTap="tap"
-                  variants={buttonVariants}
-                >
-                  <Link
-                    to={`/users/${recipient.id}`}
-                    className="block w-full text-center px-4 py-2.5 bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] rounded-full font-medium shadow-lg shadow-[#4de840]/20 transition-all duration-300"
-                  >
-                    <div className="flex items-center justify-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 mr-2"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
-                      View Full Profile
-                    </div>
-                  </Link>
-                </motion.div>
               </div>
             </div>
-          </motion.div>
-
-          {/* Main Content - Chat */}
-          <motion.div
-            variants={itemVariants}
-            className="flex-1 flex flex-col bg-[#0e100f]/70"
-          >
-            {/* Chat Header */}
-            <div className="p-4 border-b border-white/10 flex justify-between items-center">
-              <div className="flex items-center">
-                <div className="md:hidden mr-2">
-                  <Link
-                    to="/chat"
-                    className="p-2 bg-[#1a1a1a] border border-white/10 text-[#fffce1] rounded-full hover:bg-[#2a2a2a] transition-all duration-300 inline-flex"
+            <div className="flex items-center gap-2">
+              <motion.div
+                whileHover="hover"
+                whileTap="tap"
+                variants={buttonVariants}
+              >
+                <Link
+                  to={`/users/${recipient.id}`}
+                  className="w-10 h-10 flex items-center justify-center text-[#fffce1] bg-[#1a1a1a] border border-white/10 rounded-full hover:bg-[#2a2a2a] transition-all duration-300"
+                  aria-label="View profile"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
+                    <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                    >
-                      <path d="M19 12H5M12 19l-7-7 7-7" />
-                    </svg>
-                  </Link>
-                </div>
-                <div
-                  className="flex items-center"
-                  onClick={() => setShowMobileInfo(true)}
-                >
-                  <div className="relative cursor-pointer md:cursor-default">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#4de840] to-[#2ca322] flex items-center justify-center text-[#0e100f] font-bold mr-3 shadow-lg">
-                      {recipient.firstName.charAt(0)}
-                    </div>
-                    {isUserOnline(recipient) && (
-                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-[#4de840] border-2 border-[#0e100f] rounded-full"></div>
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-[#fffce1]">
-                      {recipient.firstName} {recipient.lastName}
-                    </h3>
-                    <p className="text-xs text-[#fffce1]/50">
-                      {isTyping ? (
-                        <span className="text-[#4de840] flex items-center">
-                          <motion.span
-                            animate={{
-                              opacity: [0.5, 1, 0.5],
-                            }}
-                            transition={{
-                              duration: 1.5,
-                              repeat: Number.POSITIVE_INFINITY,
-                              ease: "easeInOut",
-                            }}
-                            className="mr-1"
-                          >
-                            typing
-                          </motion.span>
-                          <motion.span
-                            animate={{
-                              opacity: [0.3, 1, 0.3],
-                            }}
-                            transition={{
-                              duration: 1.5,
-                              repeat: Number.POSITIVE_INFINITY,
-                              ease: "easeInOut",
-                              delay: 0.2,
-                            }}
-                          >
-                            •••
-                          </motion.span>
-                        </span>
-                      ) : isUserOnline(recipient) ? (
-                        "Online"
-                      ) : (
-                        `Last active ${formatLastActive(recipient.lastActive)}`
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center">
+                      strokeWidth={2}
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                </Link>
+              </motion.div>
+              <motion.div
+                whileHover="hover"
+                whileTap="tap"
+                variants={buttonVariants}
+              >
                 <button
-                  onClick={() => setShowMobileInfo(true)}
-                  className="p-2 bg-[#1a1a1a] border border-white/10 text-[#fffce1] rounded-full hover:bg-[#2a2a2a] transition-all duration-300 md:hidden"
+                  onClick={() => setShowDeleteChatConfirm(true)}
+                  className="w-10 h-10 flex items-center justify-center bg-[#1a1a1a] border border-white/10 text-red-400 rounded-full hover:bg-[#2a2a2a] transition-all duration-300 cursor-pointer"
+                  aria-label="Delete conversation"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -821,129 +825,162 @@ const ChatDetail = () => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
-                    <circle cx="12" cy="12" r="1"></circle>
-                    <circle cx="19" cy="12" r="1"></circle>
-                    <circle cx="5" cy="12" r="1"></circle>
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
                   </svg>
                 </button>
-              </div>
+              </motion.div>
             </div>
+          </div>
 
-            {/* Messages */}
-            <div
-              ref={messagesContainerRef}
-              className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-[#4de840]/20 scrollbar-track-transparent"
-              style={{
-                backgroundImage:
-                  "radial-gradient(rgba(77, 232, 64, 0.03) 1px, transparent 1px)",
-                backgroundSize: "20px 20px",
-              }}
-            >
-              {messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center">
+          {/* Messages */}
+          <div
+            ref={messagesContainerRef}
+            onScroll={handleScroll}
+            className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-[#4de840]/20 scrollbar-track-transparent"
+            style={{
+              backgroundImage:
+                "radial-gradient(rgba(77, 232, 64, 0.03) 1px, transparent 1px)",
+              backgroundSize: "20px 20px",
+            }}
+          >
+            {messages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.3, duration: 0.5 }}
+                  className="w-20 h-20 bg-gradient-to-br from-[#4de840]/20 to-[#2ca322]/20 rounded-full flex items-center justify-center mb-4 relative"
+                >
                   <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.3, duration: 0.5 }}
-                    className="w-20 h-20 bg-gradient-to-br from-[#4de840]/20 to-[#2ca322]/20 rounded-full flex items-center justify-center mb-4 relative"
+                    animate={{
+                      scale: [1, 1.1, 1],
+                      opacity: [0.5, 0.8, 0.5],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Number.POSITIVE_INFINITY,
+                      ease: "easeInOut",
+                    }}
+                    className="absolute inset-0 rounded-full bg-[#4de840]/10 blur-md"
+                  />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-10 w-10 text-[#4de840] relative z-10"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
                   >
-                    <motion.div
-                      animate={{
-                        scale: [1, 1.1, 1],
-                        opacity: [0.5, 0.8, 0.5],
-                      }}
-                      transition={{
-                        duration: 3,
-                        repeat: Number.POSITIVE_INFINITY,
-                        ease: "easeInOut",
-                      }}
-                      className="absolute inset-0 rounded-full bg-[#4de840]/10 blur-md"
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                     />
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-10 w-10 text-[#4de840] relative z-10"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                      />
-                    </svg>
-                  </motion.div>
-                  <motion.p
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4, duration: 0.5 }}
-                    className="text-[#fffce1] text-lg font-medium"
-                  >
-                    Start a conversation
-                  </motion.p>
-                  <motion.p
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5, duration: 0.5 }}
-                    className="text-[#fffce1]/50 text-sm mt-2 max-w-xs"
-                  >
-                    Send a message to {recipient.firstName} to start chatting
-                  </motion.p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {messages.map((message, index) => {
-                    const isCurrentUser = message.senderId === currentUser.id;
-                    const showTimestamp =
-                      index === 0 ||
-                      new Date(message.timestamp).toDateString() !==
-                        new Date(messages[index - 1].timestamp).toDateString();
+                  </svg>
+                </motion.div>
+                <motion.p
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1, duration: 0.4 }}
+                  className="text-[#fffce1] text-lg font-medium"
+                >
+                  Start a conversation
+                </motion.p>
+                <motion.p
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5, duration: 0.5 }}
+                  className="text-[#fffce1]/50 text-sm mt-2 max-w-xs"
+                >
+                  Send a message to {recipient.firstName} to start chatting
+                </motion.p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {messages.map((message, index) => {
+                  const isCurrentUser = message.senderId === currentUser.id;
+                  const showTimestamp =
+                    index === 0 ||
+                    new Date(message.timestamp).toDateString() !==
+                      new Date(messages[index - 1].timestamp).toDateString();
 
-                    return (
-                      <div key={message.id}>
-                        {showTimestamp && (
-                          <div className="text-center my-4">
-                            <span className="px-3 py-1 bg-[#1a1a1a]/70 text-[#fffce1]/50 text-xs rounded-full">
-                              {new Date(message.timestamp).toLocaleDateString()}
-                            </span>
+                  return (
+                    <div key={message.id}>
+                      {showTimestamp && (
+                        <div className="text-center my-4">
+                          <span className="px-3 py-1 bg-[#1a1a1a]/70 text-[#fffce1]/50 text-xs rounded-full">
+                            {new Date(message.timestamp).toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
+                      <motion.div
+                        initial="hidden"
+                        animate="visible"
+                        variants={messageVariants}
+                        className={`flex ${
+                          isCurrentUser ? "justify-end" : "justify-start"
+                        } group relative`}
+                      >
+                        {!isCurrentUser && (
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#4de840] to-[#2ca322] flex items-center justify-center text-[#0e100f] font-bold mr-2 self-end">
+                            {recipient.firstName.charAt(0)}
                           </div>
                         )}
-                        <motion.div
-                          initial="hidden"
-                          animate="visible"
-                          variants={messageVariants}
-                          className={`flex ${
-                            isCurrentUser ? "justify-end" : "justify-start"
+                        <div
+                          className={`max-w-[75%] px-4 py-3 rounded-2xl ${
+                            isCurrentUser
+                              ? "bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] rounded-br-none"
+                              : "bg-[#1a1a1a] text-[#fffce1] rounded-bl-none"
                           }`}
                         >
-                          {!isCurrentUser && (
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#4de840] to-[#2ca322] flex items-center justify-center text-[#0e100f] font-bold mr-2 self-end">
-                              {recipient.firstName.charAt(0)}
-                            </div>
-                          )}
+                          <div className="break-words">
+                            {renderMessageContent(message)}
+                          </div>
                           <div
-                            className={`max-w-[75%] px-4 py-3 rounded-2xl ${
+                            className={`text-xs mt-1 flex items-center ${
                               isCurrentUser
-                                ? "bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] rounded-br-none"
-                                : "bg-[#1a1a1a] text-[#fffce1] rounded-bl-none"
+                                ? "text-[#0e100f]/70 justify-end"
+                                : "text-[#fffce1]/50"
                             }`}
                           >
-                            <div className="break-words">
-                              {renderMessageContent(message)}
-                            </div>
-                            <div
-                              className={`text-xs mt-1 flex items-center ${
-                                isCurrentUser
-                                  ? "text-[#0e100f]/70 justify-end"
-                                  : "text-[#fffce1]/50"
-                              }`}
-                            >
-                              {formatMessageTime(message.timestamp)}
-                              {isCurrentUser && (
+                            {formatMessageTime(message.timestamp)}
+                            {isCurrentUser && (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-3 w-3 ml-1"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M20 6L9 17l-5-5"></path>
+                              </svg>
+                            )}
+                            {message.edited && (
+                              <span className="ml-1">(edited)</span>
+                            )}
+                          </div>
+                        </div>
+                        {isCurrentUser && (
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#4de840] to-[#2ca322] flex items-center justify-center text-[#0e100f] font-bold ml-2 self-end">
+                            {currentUser.firstName.charAt(0)}
+                          </div>
+                        )}
+
+                        {/* Message options button (only visible on hover for current user's messages) */}
+                        {isCurrentUser &&
+                          isMessageWithinHour(message.timestamp) && (
+                            <div className="absolute top-0 right-12 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                onClick={() => toggleMessageOptions(message.id)}
+                                className="p-1.5 bg-[#1a1a1a] border border-white/10 text-[#fffce1] rounded-full hover:bg-[#2a2a2a] transition-all duration-300 message-options-button cursor-pointer"
+                              >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
-                                  className="h-3 w-3 ml-1"
+                                  className="h-4 w-4"
                                   viewBox="0 0 24 24"
                                   fill="none"
                                   stroke="currentColor"
@@ -951,150 +988,254 @@ const ChatDetail = () => {
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
                                 >
-                                  <path d="M20 6L9 17l-5-5"></path>
+                                  <circle cx="12" cy="12" r="1"></circle>
+                                  <circle cx="19" cy="12" r="1"></circle>
+                                  <circle cx="5" cy="12" r="1"></circle>
                                 </svg>
-                              )}
-                            </div>
-                          </div>
-                          {isCurrentUser && (
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#4de840] to-[#2ca322] flex items-center justify-center text-[#0e100f] font-bold ml-2 self-end">
-                              {currentUser.firstName.charAt(0)}
+                              </button>
+
+                              {/* Message options dropdown - always visible when opened */}
+                              <AnimatePresence>
+                                {showMessageOptions === message.id && (
+                                  <motion.div
+                                    ref={messageOptionsRef}
+                                    initial="hidden"
+                                    animate="visible"
+                                    exit="exit"
+                                    variants={optionsVariants}
+                                    className="absolute top-0 right-8 mt-8 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-lg z-10 overflow-hidden"
+                                  >
+                                    <div className="py-1">
+                                      {!isFileMessage(message) && (
+                                        <button
+                                          onClick={() =>
+                                            handleStartEditing(message)
+                                          }
+                                          className="w-full text-left px-4 py-2 text-sm text-[#fffce1] hover:bg-[#4de840]/10 transition-colors flex items-center cursor-pointer"
+                                        >
+                                          <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="h-4 w-4 mr-2"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                          >
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                          </svg>
+                                          Edit
+                                        </button>
+                                      )}
+                                      <button
+                                        onClick={() =>
+                                          setShowDeleteConfirm(message.id)
+                                        }
+                                        className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors flex items-center cursor-pointer"
+                                      >
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          className="h-4 w-4 mr-2"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                        >
+                                          <polyline points="3 6 5 6 21 6"></polyline>
+                                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        </svg>
+                                        Delete
+                                      </button>
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
                             </div>
                           )}
-                        </motion.div>
-                      </div>
-                    );
-                  })}
+                      </motion.div>
+                    </div>
+                  );
+                })}
 
-                  {/* Typing indicator */}
-                  {isTyping && (
-                    <motion.div
-                      initial="hidden"
-                      animate="visible"
-                      variants={messageVariants}
-                      className="flex justify-start"
-                    >
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#4de840] to-[#2ca322] flex items-center justify-center text-[#0e100f] font-bold mr-2 self-end">
-                        {recipient.firstName.charAt(0)}
+                {/* Typing indicator */}
+                {isTyping && (
+                  <motion.div
+                    initial="hidden"
+                    animate="visible"
+                    variants={messageVariants}
+                    className="flex justify-start"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#4de840] to-[#2ca322] flex items-center justify-center text-[#0e100f] font-bold mr-2 self-end">
+                      {recipient.firstName.charAt(0)}
+                    </div>
+                    <div className="px-4 py-3 bg-[#1a1a1a] rounded-2xl rounded-bl-none">
+                      <div className="flex space-x-1">
+                        <motion.div
+                          animate={{
+                            y: [0, -5, 0],
+                          }}
+                          transition={{
+                            duration: 1,
+                            repeat: Number.POSITIVE_INFINITY,
+                            ease: "easeInOut",
+                          }}
+                          className="w-2 h-2 bg-[#fffce1]/50 rounded-full"
+                        ></motion.div>
+                        <motion.div
+                          animate={{
+                            y: [0, -5, 0],
+                          }}
+                          transition={{
+                            duration: 1,
+                            repeat: Number.POSITIVE_INFINITY,
+                            ease: "easeInOut",
+                            delay: 0.2,
+                          }}
+                          className="w-2 h-2 bg-[#fffce1]/50 rounded-full"
+                        ></motion.div>
+                        <motion.div
+                          animate={{
+                            y: [0, -5, 0],
+                          }}
+                          transition={{
+                            duration: 1,
+                            repeat: Number.POSITIVE_INFINITY,
+                            ease: "easeInOut",
+                            delay: 0.4,
+                          }}
+                          className="w-2 h-2 bg-[#fffce1]/50 rounded-full"
+                        ></motion.div>
                       </div>
-                      <div className="px-4 py-3 bg-[#1a1a1a] rounded-2xl rounded-bl-none">
-                        <div className="flex space-x-1">
-                          <motion.div
-                            animate={{
-                              y: [0, -5, 0],
-                            }}
-                            transition={{
-                              duration: 1,
-                              repeat: Number.POSITIVE_INFINITY,
-                              ease: "easeInOut",
-                            }}
-                            className="w-2 h-2 bg-[#fffce1]/50 rounded-full"
-                          ></motion.div>
-                          <motion.div
-                            animate={{
-                              y: [0, -5, 0],
-                            }}
-                            transition={{
-                              duration: 1,
-                              repeat: Number.POSITIVE_INFINITY,
-                              ease: "easeInOut",
-                              delay: 0.2,
-                            }}
-                            className="w-2 h-2 bg-[#fffce1]/50 rounded-full"
-                          ></motion.div>
-                          <motion.div
-                            animate={{
-                              y: [0, -5, 0],
-                            }}
-                            transition={{
-                              duration: 1,
-                              repeat: Number.POSITIVE_INFINITY,
-                              ease: "easeInOut",
-                              delay: 0.4,
-                            }}
-                            className="w-2 h-2 bg-[#fffce1]/50 rounded-full"
-                          ></motion.div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
+                    </div>
+                  </motion.div>
+                )}
 
-                  <div ref={messagesEndRef} />
+                <div ref={messagesEndRef} />
+              </div>
+            )}
+          </div>
+
+          {/* Message Input */}
+          <div className="p-4 border-t border-white/10">
+            {editingMessage && (
+              <div className="mb-3 px-4 py-2.5 bg-[#1a1a1a]/80 backdrop-blur-sm border border-[#4de840]/30 rounded-full flex justify-between items-center">
+                <div className="text-sm text-[#fffce1]/70 flex items-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mr-1.5 text-[#4de840]"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                  <span className="text-[#4de840] font-medium">
+                    Editing message
+                  </span>
                 </div>
-              )}
-            </div>
+                <button
+                  onClick={handleCancelEdit}
+                  className="text-[#fffce1]/50 hover:text-[#fffce1] transition-colors p-1 rounded-full hover:bg-white/5 cursor-pointer"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+            )}
 
-            {/* Message Input */}
-            <div className="p-4 border-t border-white/10">
-              <form onSubmit={handleSendMessage} className="relative">
-                <div className="flex">
-                  <div className="flex-1 relative">
-                    <input
-                      ref={inputRef}
-                      type="text"
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder="Type a message..."
-                      className="w-full px-4 py-3 pl-11 pr-11 bg-[#1a1a1a] border border-white/10 rounded-l-full text-[#fffce1] placeholder-[#fffce1]/30 focus:outline-none focus:ring-2 focus:ring-[#4de840]/50 transition-all"
+            <form onSubmit={handleSendMessage} className="relative">
+              <div className="flex items-center bg-[#1a1a1a]/80 backdrop-blur-sm rounded-full border-2 border-white/10 overflow-hidden shadow-lg">
+                <div className="flex-1 relative">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder={
+                      editingMessage
+                        ? "Edit your message..."
+                        : "Type a message..."
+                    }
+                    className="w-full px-4 py-4 pl-12 pr-12 bg-transparent text-[#fffce1] placeholder-[#fffce1]/30 focus:outline-none focus:ring-0 border-0 transition-all"
+                    disabled={fileUploading}
+                  />
+                  <div className="absolute left-0 top-0 bottom-0 flex items-center justify-center w-12">
+                    <button
+                      type="button"
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      className="text-[#fffce1]/50 hover:text-[#4de840] transition-colors emoji-button p-2 rounded-full hover:bg-white/5 cursor-pointer"
                       disabled={fileUploading}
-                    />
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                      <button
-                        type="button"
-                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                        className="text-[#fffce1]/50 hover:text-[#4de840] transition-colors emoji-button"
-                        disabled={fileUploading}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <circle cx="12" cy="12" r="10"></circle>
-                          <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
-                          <line x1="9" y1="9" x2="9.01" y2="9"></line>
-                          <line x1="15" y1="9" x2="15.01" y2="9"></line>
-                        </svg>
-                      </button>
-                    </div>
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <button
-                        type="button"
-                        onClick={() => setShowAttachMenu(!showAttachMenu)}
-                        className="text-[#fffce1]/50 hover:text-[#4de840] transition-colors attach-button"
-                        disabled={fileUploading}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
-                        </svg>
-                      </button>
-                    </div>
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                        <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                        <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                      </svg>
+                    </button>
                   </div>
+                  <div className="absolute right-0 top-0 bottom-0 flex items-center justify-center w-12">
+                    <button
+                      type="button"
+                      onClick={() => setShowAttachMenu(!showAttachMenu)}
+                      className="text-[#fffce1]/50 hover:text-[#4de840] transition-colors attach-button p-2 rounded-full hover:bg-white/5 cursor-pointer"
+                      disabled={fileUploading || editingMessage}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <div className="pr-2">
                   <motion.button
                     whileHover="hover"
                     whileTap="tap"
                     variants={buttonVariants}
                     type="submit"
                     disabled={!newMessage.trim() || fileUploading}
-                    className={`px-4 py-3 rounded-r-full ${
+                    className={`p-3 rounded-3xl ${
                       !newMessage.trim() || fileUploading
-                        ? "bg-[#1a1a1a] text-[#fffce1]/30 cursor-not-allowed"
+                        ? "bg-[#2a2a2a]/50 text-[#fffce1]/30 cursor-not-allowed"
                         : "bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] shadow-lg shadow-[#4de840]/20"
-                    } transition-all duration-300`}
+                    } transition-all duration-300 flex items-center justify-center cursor-pointer`}
                   >
                     {fileUploading ? (
                       <motion.div
@@ -1106,6 +1247,21 @@ const ChatDetail = () => {
                         }}
                         className="w-5 h-5 border-2 border-[#fffce1]/30 border-t-[#fffce1]/80 rounded-full"
                       />
+                    ) : editingMessage ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                      </svg>
                     ) : (
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -1123,78 +1279,160 @@ const ChatDetail = () => {
                     )}
                   </motion.button>
                 </div>
+              </div>
 
-                {/* Hidden file input */}
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  onChange={handleFileChange}
-                  disabled={fileUploading}
-                />
+              {/* Hidden file input */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                onChange={handleFileChange}
+                disabled={fileUploading}
+              />
 
-                {/* Emoji Picker */}
-                <AnimatePresence>
-                  {showEmojiPicker && (
-                    <motion.div
-                      ref={emojiPickerRef}
-                      initial="hidden"
-                      animate="visible"
-                      exit="exit"
-                      variants={popupVariants}
-                      className="absolute bottom-full left-0 mb-2 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-lg p-2 z-10"
-                    >
-                      <div className="grid grid-cols-5 gap-2">
-                        {emojis.map((emoji, index) => (
-                          <button
-                            key={index}
-                            type="button"
-                            onClick={() => handleEmojiClick(emoji)}
-                            className="w-8 h-8 flex items-center justify-center text-xl hover:bg-white/5 rounded-lg transition-colors"
-                          >
-                            {emoji}
-                          </button>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+              {/* Emoji Picker */}
+              <AnimatePresence>
+                {showEmojiPicker && (
+                  <motion.div
+                    ref={emojiPickerRef}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    variants={popupVariants}
+                    className="absolute bottom-full left-0 mb-2 bg-[#1a1a1a] border border-white/10 rounded-3xl shadow-lg p-2 z-10"
+                  >
+                    <div className="grid grid-cols-6 gap-2">
+                      {emojis.map((emoji, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => handleEmojiClick(emoji)}
+                          className="w-8 h-8 flex items-center justify-center text-xl hover:bg-white/5 rounded-xl transition-colors cursor-pointer"
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-                {/* Attachment Menu */}
-                <AnimatePresence>
-                  {showAttachMenu && (
-                    <motion.div
-                      ref={attachMenuRef}
-                      initial="hidden"
-                      animate="visible"
-                      exit="exit"
-                      variants={popupVariants}
-                      className="absolute bottom-full right-0 mb-2 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-lg p-2 z-10"
-                    >
-                      <div className="grid grid-cols-2 gap-2">
-                        {attachOptions.map((option, index) => (
-                          <button
-                            key={index}
-                            type="button"
-                            onClick={() => handleAttachmentClick(option)}
-                            className="flex flex-col items-center justify-center p-3 hover:bg-white/5 rounded-lg transition-colors"
-                            disabled={fileUploading}
-                          >
-                            <span className="text-xl mb-1">{option.icon}</span>
-                            <span className="text-xs text-[#fffce1]/70">
-                              {option.label}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </form>
-            </div>
-          </motion.div>
+              {/* Attachment Menu */}
+              <AnimatePresence>
+                {showAttachMenu && (
+                  <motion.div
+                    ref={attachMenuRef}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    variants={popupVariants}
+                    className="absolute bottom-full right-0 mb-2 bg-[#1a1a1a] border border-white/10 rounded-3xl shadow-lg p-2 z-10"
+                  >
+                    <div className="grid grid-cols-3 gap-2">
+                      {attachOptions.map((option, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => handleAttachmentClick(option)}
+                          className="flex flex-col items-center justify-center p-2 hover:bg-white/5 rounded-2xl transition-colors cursor-pointer"
+                          disabled={fileUploading}
+                        >
+                          <span className="text-xl mb-1">{option.icon}</span>
+                          <span className="text-xs text-[#fffce1]/70">
+                            {option.label}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </form>
+          </div>
         </div>
       </motion.div>
+
+      {/* Delete Message Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            variants={popupVariants}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <motion.div
+              onClick={(e) => e.stopPropagation()}
+              className="bg-[#1a1a1a] border border-white/10 rounded-xl p-6 max-w-sm mx-4"
+            >
+              <h3 className="text-lg font-bold text-[#fffce1] mb-2">
+                Delete Message
+              </h3>
+              <p className="text-[#fffce1]/70 mb-6">
+                Are you sure you want to delete this message? This action cannot
+                be undone.
+              </p>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowDeleteConfirm(null)}
+                  className="px-4 py-2 bg-[#2a2a2a] text-[#fffce1] rounded-lg hover:bg-[#3a3a3a] transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleDeleteMessage(showDeleteConfirm)}
+                  className="px-4 py-2 bg-red-500/80 text-white rounded-lg hover:bg-red-500 transition-colors cursor-pointer"
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Chat Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteChatConfirm && (
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            variants={popupVariants}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <motion.div
+              onClick={(e) => e.stopPropagation()}
+              className="bg-[#1a1a1a] border border-white/10 rounded-xl p-6 max-w-sm mx-4"
+            >
+              <h3 className="text-lg font-bold text-[#fffce1] mb-2">
+                Delete Conversation
+              </h3>
+              <p className="text-[#fffce1]/70 mb-6">
+                Are you sure you want to delete this entire conversation with{" "}
+                {recipient.firstName}? This action cannot be undone.
+              </p>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowDeleteChatConfirm(false)}
+                  className="px-4 py-2 bg-[#2a2a2a] text-[#fffce1] rounded-lg hover:bg-[#3a3a3a] transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteConversation}
+                  className="px-4 py-2 bg-red-500/80 text-white rounded-lg hover:bg-red-500 transition-colors cursor-pointer"
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -20,12 +20,20 @@ const Chat = () => {
   const [searchMode, setSearchMode] = useState("all"); // "all", "users", "messages"
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [showSearchOptions, setShowSearchOptions] = useState(false);
+  const [totalUnread, setTotalUnread] = useState(0);
   const searchRef = useRef(null);
   const searchOptionsRef = useRef(null);
 
   // Update user's last active timestamp
   useEffect(() => {
     updateUserLastActive(user.id);
+
+    // Set up interval to update last active status
+    const interval = setInterval(() => {
+      updateUserLastActive(user.id);
+    }, 60000); // Update every minute
+
+    return () => clearInterval(interval);
   }, [user.id]);
 
   // Load conversations
@@ -36,6 +44,14 @@ const Chat = () => {
         const userConversations = getUserConversations(user.id);
         setConversations(userConversations);
         setFilteredConversations(userConversations);
+
+        // Calculate total unread messages
+        let unreadCount = 0;
+        userConversations.forEach((conv) => {
+          unreadCount += conv.unread || 0;
+        });
+        setTotalUnread(unreadCount);
+
         setLoading(false);
       } catch (error) {
         console.error("Error loading conversations:", error);
@@ -319,7 +335,7 @@ const Chat = () => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.01, duration: 0.3 }}
+            transition={{ delay: 0.1, duration: 0.3 }}
             whileHover="hover"
             whileTap="tap"
             variants={buttonVariants}
@@ -432,6 +448,16 @@ const Chat = () => {
                 </svg>
               </motion.div>
               Messages
+              {totalUnread > 0 && (
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                  className="ml-2 bg-[#4de840] text-[#0e100f] text-xs font-bold px-2 py-1 rounded-full"
+                >
+                  {totalUnread}
+                </motion.span>
+              )}
             </h2>
             <motion.div
               whileHover="hover"
@@ -440,7 +466,7 @@ const Chat = () => {
             >
               <button
                 onClick={handleFindUsers}
-                className="px-4 py-2.5 bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] rounded-full font-medium shadow-md hover:shadow-lg hover:shadow-[#4de840]/20 transition-all duration-300 flex items-center"
+                className="px-4 py-2.5 bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] rounded-full font-medium shadow-md hover:shadow-lg hover:shadow-[#4de840]/20 transition-all duration-300 flex items-center cursor-pointer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -473,7 +499,7 @@ const Chat = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search conversations..."
-                    className="w-full px-4 py-3 pl-11 bg-[#1a1a1a] border border-white/10 rounded-full text-[#fffce1] placeholder-[#fffce1]/30 focus:outline-none focus:border-[#4de840]/50 focus:ring-2 focus:ring-[#4de840]/20 transition-all"
+                    className="w-full px-4 py-3 pl-11 bg-[#1a1a1a] border-2 border-white/10 rounded-full text-[#fffce1] placeholder-[#fffce1]/30 focus:outline-none focus:border-[#4de840]/50 focus:ring-2 focus:ring-[#4de840]/20 transition-all"
                   />
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#fffce1]/50">
                     <svg
@@ -494,7 +520,7 @@ const Chat = () => {
                   <div className="absolute right-4 top-1/2 -translate-y-1/2">
                     <button
                       onClick={() => setShowSearchOptions(!showSearchOptions)}
-                      className="text-[#fffce1]/50 hover:text-[#4de840] transition-colors search-options-button"
+                      className="text-[#fffce1]/50 hover:text-[#4de840] transition-colors cursor-pointer search-options-button"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -520,7 +546,7 @@ const Chat = () => {
                         animate="visible"
                         exit="exit"
                         variants={searchOptionVariants}
-                        className="absolute top-full left-0 right-0 mt-2 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-lg z-10 overflow-hidden"
+                        className="absolute top-full left-0 right-0 mt-2 bg-[#1a1a1a] border-2 border-white/10 rounded-3xl shadow-lg z-10 overflow-hidden"
                       >
                         <div className="p-2">
                           <button
@@ -528,7 +554,7 @@ const Chat = () => {
                               setSearchMode("all");
                               setShowSearchOptions(false);
                             }}
-                            className={`w-full text-left px-3 py-2 rounded-lg mb-1 transition-colors ${
+                            className={`w-full text-left px-3 py-2 rounded-3xl mb-1 transition-colors cursor-pointer ${
                               searchMode === "all"
                                 ? "bg-[#4de840]/20 text-[#4de840]"
                                 : "text-[#fffce1] hover:bg-white/5"
@@ -561,7 +587,7 @@ const Chat = () => {
                               setSearchMode("users");
                               setShowSearchOptions(false);
                             }}
-                            className={`w-full text-left px-3 py-2 rounded-lg mb-1 transition-colors ${
+                            className={`w-full text-left px-3 py-2 rounded-3xl mb-1 transition-colors cursor-pointer ${
                               searchMode === "users"
                                 ? "bg-[#4de840]/20 text-[#4de840]"
                                 : "text-[#fffce1] hover:bg-white/5"
@@ -589,7 +615,7 @@ const Chat = () => {
                               setSearchMode("messages");
                               setShowSearchOptions(false);
                             }}
-                            className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                            className={`w-full text-left px-3 py-2 rounded-3xl transition-colors cursor-pointer ${
                               searchMode === "messages"
                                 ? "bg-[#4de840]/20 text-[#4de840]"
                                 : "text-[#fffce1] hover:bg-white/5"
@@ -778,14 +804,14 @@ const Chat = () => {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.5 }}
+                transition={{ delay: 0.1, duration: 0.3 }}
                 whileHover="hover"
                 whileTap="tap"
                 variants={buttonVariants}
               >
                 <button
                   onClick={handleFindUsers}
-                  className="px-6 py-3 bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] rounded-full font-medium shadow-lg shadow-[#4de840]/20 transition-all duration-300 flex items-center"
+                  className="px-6 py-3 bg-gradient-to-br from-[#4de840] to-[#2ca322] text-[#0e100f] rounded-full font-medium shadow-lg shadow-[#4de840]/20 transition-all duration-300 flex items-center cursor-pointer"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
