@@ -116,10 +116,6 @@ const SignUp = () => {
 
     setIsSubmitting(true);
 
-    // Generate a random 6-digit code
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedCode(code);
-
     // Simulate email verification (in a real app, this would be an API call)
     setTimeout(() => {
       // Store registration data in localStorage for step 2
@@ -132,7 +128,25 @@ const SignUp = () => {
       );
 
       setIsSubmitting(false);
+
+      fetch("http://localhost:5000/send-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: formData.email }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("OTP sent:", data);
+        })
+        .catch((error) => {
+          console.error("Error sending OTP:", error);
+        });
+
       setEmailSent(true);
+
+      navigate("/signup/verify-otp");
 
       // In a real app, we would send an email with a verification code
       // For demo purposes, we'll just show the code
@@ -162,20 +176,37 @@ const SignUp = () => {
     }
   };
 
-  const handleVerifyEmail = () => {
-    // Check if the entered code matches the generated code
-    const enteredCode = verificationCode.join("");
-
-    if (enteredCode !== generatedCode) {
-      setCodeError("Invalid verification code. Please try again.");
+  const handleVerifyEmail = async () => {
+    setCodeError("");
+    // Check for empty digits first
+    if (verificationCode.some((digit) => digit === "")) {
+      setCodeError("Please enter all 6 digits");
       return;
     }
 
-    // Save the email as registered
-    saveRegisteredEmail(formData.email);
+    const enteredOtp = verificationCode.join(""); // combine 6 digits
+    const email = formData.email;
 
-    // In a real app, this would verify the token from the email
-    // For demo purposes, we'll just navigate to step 2
+    try {
+      const res = await fetch("http://localhost:5000/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp: enteredOtp }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setCodeError(data.message || "Verification failed");
+        return;
+      }
+
+      // If verified, go to next step (use your own route here)
+    } catch (error) {
+      console.error("OTP verify error:", error);
+      setCodeError("Something went wrong. Please try again.");
+    }
+
     navigate("/signup/step2");
   };
 
@@ -386,19 +417,7 @@ const SignUp = () => {
                 </motion.div>
 
                 {/* Demo verification code display */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="mb-6 p-4 bg-[#1a1a1a] rounded-xl border border-[#2a2a2a]"
-                >
-                  <p className="text-[#fffce1]/70 mb-2">
-                    Your verification code is:
-                  </p>
-                  <div className="text-[#4de840] font-mono text-xl font-bold tracking-wider">
-                    {generatedCode}
-                  </div>
-                </motion.div>
+ 
 
                 {/* Verification code input */}
                 <motion.div

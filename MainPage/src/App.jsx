@@ -102,6 +102,7 @@ function App() {
       <Routes>
         {/* Auth Routes */}
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/signup/verify-otp" element={<SignUp />} />
         <Route path="/signup/step2" element={<SignUpStep2 />} />
         <Route path="/login" element={<Login />} />
 
