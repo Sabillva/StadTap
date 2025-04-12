@@ -24,7 +24,7 @@ const stadiumsData = [
     features: ["Floodlights", "Changing Rooms", "Parking", "Spectator Seating"],
     rating: 4.8,
     reviews: 0, // Will be updated dynamically
-    coordinates: [40.4301, 49.9019], // Actual coordinates for Baku Olympic Stadium
+    coordinates: [40.430278, 49.901667], // Corrected coordinates for Baku Olympic Stadium
   },
   {
     id: "10",

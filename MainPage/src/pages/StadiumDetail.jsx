@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import stadiumsData from "../utils/stadiumsData";
@@ -15,6 +15,8 @@ const StadiumDetail = () => {
   const [showGalleryModal, setShowGalleryModal] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState("details");
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const mapRef = useRef(null);
 
   useEffect(() => {
     try {
@@ -53,6 +55,110 @@ const StadiumDetail = () => {
       setLoading(false);
     }
   }, [id, navigate]);
+
+  // Initialize map when stadium data is loaded
+  useEffect(() => {
+    if (stadium && !mapLoaded && activeTab === "details") {
+      // Load Leaflet CSS
+      if (!document.getElementById("leaflet-css")) {
+        const link = document.createElement("link");
+        link.id = "leaflet-css";
+        link.rel = "stylesheet";
+        link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+        link.integrity = "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=";
+        link.crossOrigin = "";
+        document.head.appendChild(link);
+      }
+
+      // Load Leaflet JS
+      if (!document.getElementById("leaflet-js")) {
+        const script = document.createElement("script");
+        script.id = "leaflet-js";
+        script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+        script.integrity =
+          "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=";
+        script.crossOrigin = "";
+        script.onload = () => {
+          initializeMap();
+        };
+        document.head.appendChild(script);
+      } else {
+        // If script is already loaded, initialize map directly
+        initializeMap();
+      }
+    }
+  }, [stadium, activeTab, mapLoaded]);
+
+  const initializeMap = () => {
+    if (!stadium || mapLoaded || !window.L) return;
+
+    // Get coordinates - ensure we're using the correct coordinates from the stadium data
+    const coordinates =
+      stadium.coordinates || getCoordinatesForCity(stadium.city);
+    console.log("Stadium:", stadium.name);
+    console.log("Using coordinates for map:", coordinates);
+
+    // Create map
+    const mapContainer = document.getElementById("stadium-map");
+    if (!mapContainer) return;
+
+    // Clear any existing map instance
+    mapContainer.innerHTML = "";
+
+    if (mapRef.current) {
+      mapRef.current.remove();
+    }
+
+    // Initialize the map with the correct coordinates
+    const map = window.L.map("stadium-map").setView(coordinates, 16);
+    mapRef.current = map;
+
+    // Add OpenStreetMap tiles
+    window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19,
+    }).addTo(map);
+
+    // Add marker for the stadium with a popup
+    const marker = window.L.marker(coordinates).addTo(map);
+    marker
+      .bindPopup(`<b>${stadium.name}</b><br>${stadium.address || stadium.city}`)
+      .openPopup();
+
+    // Add a circle to highlight the area
+    window.L.circle(coordinates, {
+      color: "#4de840",
+      fillColor: "#4de840",
+      fillOpacity: 0.2,
+      radius: 200,
+    }).addTo(map);
+
+    // Force map to update its size and view
+    setTimeout(() => {
+      map.invalidateSize();
+      map.setView(coordinates, 16);
+    }, 100);
+
+    setMapLoaded(true);
+  };
+
+  // Reset map loaded state when changing tabs
+  useEffect(() => {
+    if (activeTab !== "details") {
+      setMapLoaded(false);
+    }
+  }, [activeTab]);
+
+  // Cleanup map when component unmounts
+  useEffect(() => {
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, []);
 
   // Gallery functions
   const openGallery = (index) => {
@@ -476,77 +582,46 @@ const StadiumDetail = () => {
                     ? `${stadium.coordinates[0]}, ${stadium.coordinates[1]}`
                     : "Not available"}
                 </p>
-                <div className="aspect-video rounded-xl overflow-hidden bg-gray-800 relative">
-                  {/* Google Maps Embed */}
-                  {stadium.mapEmbed ? (
-                    <iframe
-                      src={stadium.mapEmbed}
-                      width="100%"
-                      height="100%"
-                      style={{ border: 0 }}
-                      allowFullScreen=""
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                      title={`Map of ${stadium.name}`}
-                      className="absolute inset-0"
-                    ></iframe>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-[#1a1a1a] relative">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-16 w-16 text-[#4de840]/30"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                          />
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent pointer-events-none"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-4 text-center">
-                    <p className="text-[#fffce1] font-medium mb-2">
-                      {stadium.name}
-                    </p>
-                    <p className="text-[#fffce1]/70 text-sm mb-3">
-                      {stadium.address || `${stadium.city}, Azerbaijan`}
-                    </p>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={openInGoogleMaps}
-                      className="px-4 py-2 bg-[#4de840] text-black rounded-full text-sm font-medium inline-flex items-center cursor-pointer"
+
+                {/* OpenStreetMap with Leaflet */}
+                <div className="rounded-xl overflow-hidden bg-gray-800 relative mb-4">
+                  <div
+                    id="stadium-map"
+                    className="w-full h-[350px]"
+                    style={{ zIndex: 1 }}
+                  ></div>
+                </div>
+
+                {/* Stadium info and button */}
+                <div className="bg-[#171717] p-4 rounded-xl border border-white/10 text-center">
+                  <p className="text-[#fffce1] font-medium mb-2">
+                    {stadium.name}
+                  </p>
+                  <p className="text-[#fffce1]/70 text-sm mb-3">
+                    {stadium.address || `${stadium.city}, Azerbaijan`}
+                  </p>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={openInGoogleMaps}
+                    className="px-4 py-2 bg-[#4de840] text-black rounded-full text-sm font-medium inline-flex items-center cursor-pointer"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 mr-1"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 mr-1"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                        />
-                      </svg>
-                      View on Google Maps
-                    </motion.button>
-                  </div>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                      />
+                    </svg>
+                    View on Google Maps
+                  </motion.button>
                 </div>
               </div>
             </motion.div>
