@@ -10,6 +10,10 @@ const stadiumsData = [
     hourlyRate: 150,
     image:
       "https://images.unsplash.com/photo-1577223625816-7546f13df25d?q=80&w=1000&auto=format&fit=crop",
+    mapEmbed:
+      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3037.047007387643!2d49.919602!3d40.429958000000006!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4030627c47e21ca3%3A0x97d2c86651bfc5b!2sBak%C4%B1%20Olimpiya%20Stadionu!5e0!3m2!1str!2saz!4v1744461983629!5m2!1str!2saz",
+    mapUrl:
+      "https://maps.google.com/maps?q=Bakı+Olimpiya+Stadionu&t=&z=15&ie=UTF8&iwloc=&output=embed",
     amenities: {
       recording: true,
       buffet: true,
@@ -23,187 +27,6 @@ const stadiumsData = [
     coordinates: [40.4301, 49.9019], // Actual coordinates for Baku Olympic Stadium
   },
   {
-    id: "2",
-    name: "Tofiq Bahramov Stadium",
-    city: "Bakı",
-    address: "Ahmad Rajabli Street, Baku",
-    description:
-      "Historic stadium named after the famous Azerbaijani linesman. Home to several local clubs and has a capacity of 31,200 spectators.",
-    hourlyRate: 120,
-    image:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Tofik_Bakhramov_Stadium.jpg/1200px-Tofik_Bakhramov_Stadium.jpg",
-    amenities: {
-      recording: true,
-      buffet: false,
-      parking: true,
-      shower: true,
-      lockerRoom: true,
-    },
-    features: ["Floodlights", "Changing Rooms", "Parking", "Spectator Seating"],
-    rating: 4.5,
-    reviews: 0,
-    coordinates: [40.4258, 49.8679], // Actual coordinates for Tofiq Bahramov Stadium
-  },
-  {
-    id: "3",
-    name: "Dalga Arena",
-    city: "Bakı",
-    address: "Mardakan, Baku",
-    description:
-      "Modern stadium with a capacity of 6,500 spectators. Used for training and smaller matches.",
-    hourlyRate: 100,
-    image:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Dalga_Arena.jpg/1200px-Dalga_Arena.jpg",
-    amenities: {
-      recording: false,
-      buffet: true,
-      parking: true,
-      shower: false,
-      lockerRoom: true,
-    },
-    features: ["Floodlights", "Changing Rooms", "Parking"],
-    rating: 4.3,
-    reviews: 0,
-    coordinates: [40.4897, 50.1425], // Coordinates for Mardakan area
-  },
-  {
-    id: "4",
-    name: "Azal Arena",
-    city: "Bakı",
-    address: "Shuvalan, Baku",
-    description:
-      "Compact stadium with a capacity of 3,200 spectators. Home to AZAL PFK.",
-    hourlyRate: 90,
-    image:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/AZAL_Arena.jpg/1200px-AZAL_Arena.jpg",
-    amenities: {
-      recording: false,
-      buffet: false,
-      parking: true,
-      shower: true,
-      lockerRoom: true,
-    },
-    features: ["Floodlights", "Changing Rooms", "Parking"],
-    rating: 4.1,
-    reviews: 0,
-    coordinates: [40.5033, 50.1144], // Coordinates for Shuvalan area
-  },
-  {
-    id: "5",
-    name: "Sumgayit City Stadium",
-    city: "Sumqayıt",
-    address: "Sumgayit",
-    description:
-      "Main stadium in Sumgayit with a capacity of 15,350 spectators. Home to Sumgayit FK.",
-    hourlyRate: 110,
-    image:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Sumgayit_City_Stadium.jpg/1200px-Sumgayit_City_Stadium.jpg",
-    amenities: {
-      recording: true,
-      buffet: true,
-      parking: true,
-      shower: true,
-      lockerRoom: false,
-    },
-    features: ["Floodlights", "Changing Rooms", "Parking", "Spectator Seating"],
-    rating: 4.4,
-    reviews: 0,
-    coordinates: [40.5892, 49.6326], // Coordinates for Sumgayit
-  },
-  {
-    id: "6",
-    name: "Ganja City Stadium",
-    city: "Gəncə",
-    address: "Ganja",
-    description:
-      "Main stadium in Ganja with a capacity of 26,120 spectators. Home to Kapaz PFK.",
-    hourlyRate: 100,
-    image:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Ganja_City_Stadium.jpg/1200px-Ganja_City_Stadium.jpg",
-    amenities: {
-      recording: true,
-      buffet: false,
-      parking: true,
-      shower: false,
-      lockerRoom: true,
-    },
-    features: ["Floodlights", "Changing Rooms", "Parking", "Spectator Seating"],
-    rating: 4.2,
-    reviews: 0,
-    coordinates: [40.6828, 46.3606], // Coordinates for Ganja
-  },
-  {
-    id: "7",
-    name: "Lankaran City Stadium",
-    city: "Gəncə",
-    address: "Lankaran",
-    description:
-      "Stadium in Lankaran with a capacity of 15,000 spectators. Home to Lankaran FK.",
-    hourlyRate: 95,
-    image:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Lankaran_City_Stadium.jpg/1200px-Lankaran_City_Stadium.jpg",
-    amenities: {
-      recording: false,
-      buffet: true,
-      parking: true,
-      shower: true,
-      lockerRoom: true,
-    },
-    features: ["Floodlights", "Changing Rooms", "Parking"],
-    rating: 4.0,
-    reviews: 0,
-    coordinates: [38.7546, 48.8512], // Coordinates for Lankaran
-  },
-  {
-    id: "8",
-    name: "Gabala City Stadium",
-    city: "Gəncə",
-    address: "Gabala",
-    description:
-      "Modern stadium in Gabala with a capacity of 4,500 spectators. Home to Gabala FK.",
-    hourlyRate: 105,
-    image:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Gabala_City_Stadium.jpg/1200px-Gabala_City_Stadium.jpg",
-    amenities: {
-      recording: true,
-      buffet: true,
-      parking: true,
-      shower: true,
-      lockerRoom: true,
-    },
-    features: ["Floodlights", "Changing Rooms", "Parking", "Spectator Seating"],
-    rating: 4.6,
-    reviews: 0,
-    coordinates: [40.98, 47.85], // Coordinates for Gabala
-  },
-  {
-    id: "9",
-    name: "Bayil Arena",
-    city: "Bakı",
-    address: "Bayil, Baku",
-    description:
-      "Modern football stadium located in the Bayil district of Baku with excellent facilities for training and matches.",
-    hourlyRate: 110,
-    image:
-      "https://images.unsplash.com/photo-1521731299294-9c42659f6878?q=80&w=1000&auto=format&fit=crop",
-    amenities: {
-      recording: true,
-      buffet: true,
-      parking: true,
-      shower: true,
-      lockerRoom: true,
-    },
-    features: [
-      "Floodlights",
-      "Changing Rooms",
-      "Parking",
-      "Training Facilities",
-    ],
-    rating: 4.3,
-    reviews: 0,
-    coordinates: [40.34, 49.82], // Coordinates for Bayil district
-  },
-  {
     id: "10",
     name: "Shafa Stadium",
     city: "Bakı",
@@ -213,6 +36,10 @@ const stadiumsData = [
     hourlyRate: 85,
     image:
       "https://images.unsplash.com/photo-1518604666860-9ed391f76460?q=80&w=1000&auto=format&fit=crop",
+    mapEmbed:
+      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12440.476840616338!2d49.88637423434274!3d40.406837964467705!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x403062b925a4172f%3A0x2f12045b9d07b467!2s%C5%9Eefa%20Stadyumu!5e0!3m2!1str!2saz!4v1744462355585!5m2!1str!2saz",
+    mapUrl:
+      "https://maps.google.com/maps?q=Şefa+Stadyumu&t=&z=15&ie=UTF8&iwloc=&output=embed",
     amenities: {
       recording: false,
       buffet: true,
@@ -361,6 +188,186 @@ const stadiumsData = [
     rating: 4.5,
     reviews: 0,
     coordinates: [41.19, 47.17], // Coordinates for Sheki
+  },
+  {
+    id: "2",
+    name: "Tofiq Bahramov Stadium",
+    city: "Bakı",
+    address: "Ahmad Rajabli Street, Baku",
+    description:
+      "Historic stadium named after the famous Azerbaijani linesman. Home to several local clubs and has a capacity of 31,200 spectators.",
+    hourlyRate: 120,
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Tofik_Bakhramov_Stadium.jpg/1200px-Tofik_Bakhramov_Stadium.jpg",
+    amenities: {
+      recording: true,
+      buffet: false,
+      parking: true,
+      shower: true,
+      lockerRoom: true,
+    },
+    features: ["Floodlights", "Changing Rooms", "Parking", "Spectator Seating"],
+    rating: 4.5,
+    reviews: 0,
+    coordinates: [40.4258, 49.8679], // Actual coordinates for Tofiq Bahramov Stadium
+  },
+  {
+    id: "3",
+    name: "Dalga Arena",
+    city: "Bakı",
+    address: "Mardakan, Baku",
+    description:
+      "Modern stadium with a capacity of 6,500 spectators. Used for training and smaller matches.",
+    hourlyRate: 100,
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/c/c6/Dalga_Arena.jpg",
+    amenities: {
+      recording: false,
+      buffet: true,
+      parking: true,
+      shower: false,
+      lockerRoom: true,
+    },
+    features: ["Floodlights", "Changing Rooms", "Parking"],
+    rating: 4.3,
+    reviews: 0,
+    coordinates: [40.4897, 50.1425], // Coordinates for Mardakan area
+  },
+  {
+    id: "4",
+    name: "Azal Arena",
+    city: "Bakı",
+    address: "Shuvalan, Baku",
+    description:
+      "Compact stadium with a capacity of 3,200 spectators. Home to AZAL PFK.",
+    hourlyRate: 90,
+    image: "https://upload.wikimedia.org/wikipedia/commons/9/9a/AZAL_Arena.jpg",
+    amenities: {
+      recording: false,
+      buffet: false,
+      parking: true,
+      shower: true,
+      lockerRoom: true,
+    },
+    features: ["Floodlights", "Changing Rooms", "Parking"],
+    rating: 4.1,
+    reviews: 0,
+    coordinates: [40.5033, 50.1144], // Coordinates for Shuvalan area
+  },
+  {
+    id: "5",
+    name: "Sumgayit City Stadium",
+    city: "Sumqayıt",
+    address: "Sumgayit",
+    description:
+      "Main stadium in Sumgayit with a capacity of 15,350 spectators. Home to Sumgayit FK.",
+    hourlyRate: 110,
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/b/b7/Sumgayit_City_Stadium.jpg",
+    amenities: {
+      recording: true,
+      buffet: true,
+      parking: true,
+      shower: true,
+      lockerRoom: false,
+    },
+    features: ["Floodlights", "Changing Rooms", "Parking", "Spectator Seating"],
+    rating: 4.4,
+    reviews: 0,
+    coordinates: [40.5892, 49.6326], // Coordinates for Sumgayit
+  },
+  {
+    id: "6",
+    name: "Ganja City Stadium",
+    city: "Gəncə",
+    address: "Ganja",
+    description:
+      "Main stadium in Ganja with a capacity of 26,120 spectators. Home to Kapaz PFK.",
+    hourlyRate: 100,
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/5/51/Ganja_City_Stadium.jpg",
+    amenities: {
+      recording: true,
+      buffet: false,
+      parking: true,
+      shower: false,
+      lockerRoom: true,
+    },
+    features: ["Floodlights", "Changing Rooms", "Parking", "Spectator Seating"],
+    rating: 4.2,
+    reviews: 0,
+    coordinates: [40.6828, 46.3606], // Coordinates for Ganja
+  },
+  {
+    id: "7",
+    name: "Lankaran City Stadium",
+    city: "Gəncə",
+    address: "Lankaran",
+    description:
+      "Stadium in Lankaran with a capacity of 15,000 spectators. Home to Lankaran FK.",
+    hourlyRate: 95,
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/9/9e/Lankaran_City_Stadium.jpg",
+    amenities: {
+      recording: false,
+      buffet: true,
+      parking: true,
+      shower: true,
+      lockerRoom: true,
+    },
+    features: ["Floodlights", "Changing Rooms", "Parking"],
+    rating: 4.0,
+    reviews: 0,
+    coordinates: [38.7546, 48.8512], // Coordinates for Lankaran
+  },
+  {
+    id: "8",
+    name: "Gabala City Stadium",
+    city: "Gəncə",
+    address: "Gabala",
+    description:
+      "Modern stadium in Gabala with a capacity of 4,500 spectators. Home to Gabala FK.",
+    hourlyRate: 105,
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/e/e8/Gabala_City_Stadium.jpg",
+    amenities: {
+      recording: true,
+      buffet: true,
+      parking: true,
+      shower: true,
+      lockerRoom: true,
+    },
+    features: ["Floodlights", "Changing Rooms", "Parking", "Spectator Seating"],
+    rating: 4.6,
+    reviews: 0,
+    coordinates: [40.98, 47.85], // Coordinates for Gabala
+  },
+  {
+    id: "9",
+    name: "Bayil Arena",
+    city: "Bakı",
+    address: "Bayil, Baku",
+    description:
+      "Modern football stadium located in the Bayil district of Baku with excellent facilities for training and matches.",
+    hourlyRate: 110,
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Bayil_Arena.jpg/1200px-Bayil_Arena.jpg",
+    amenities: {
+      recording: true,
+      buffet: true,
+      parking: true,
+      shower: true,
+      lockerRoom: true,
+    },
+    features: [
+      "Floodlights",
+      "Changing Rooms",
+      "Parking",
+      "Training Facilities",
+    ],
+    rating: 4.3,
+    reviews: 0,
+    coordinates: [40.34, 49.82], // Coordinates for Bayil district
   },
 ];
 

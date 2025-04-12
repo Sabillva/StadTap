@@ -477,47 +477,25 @@ const StadiumDetail = () => {
                     : "Not available"}
                 </p>
                 <div className="aspect-video rounded-xl overflow-hidden bg-gray-800 relative">
-                  {/* Static Map Image */}
-                  <div className="w-full h-full flex items-center justify-center bg-[#1a1a1a] relative">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-16 w-16 text-[#4de840]/30"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                      </svg>
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-                    <div className="absolute bottom-0 left-0 right-0 p-4 text-center">
-                      <p className="text-[#fffce1] font-medium mb-2">
-                        {stadium.name}
-                      </p>
-                      <p className="text-[#fffce1]/70 text-sm mb-3">
-                        {stadium.address || `${stadium.city}, Azerbaijan`}
-                      </p>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={openInGoogleMaps}
-                        className="px-4 py-2 bg-[#4de840] text-black rounded-full text-sm font-medium inline-flex items-center cursor-pointer"
-                      >
+                  {/* Google Maps Embed */}
+                  {stadium.mapEmbed ? (
+                    <iframe
+                      src={stadium.mapEmbed}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      allowFullScreen=""
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      title={`Map of ${stadium.name}`}
+                      className="absolute inset-0"
+                    ></iframe>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-[#1a1a1a] relative">
+                      <div className="absolute inset-0 flex items-center justify-center">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 mr-1"
+                          className="h-16 w-16 text-[#4de840]/30"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -526,12 +504,48 @@ const StadiumDetail = () => {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             strokeWidth={2}
-                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                           />
                         </svg>
-                        View on Google Maps
-                      </motion.button>
+                      </div>
                     </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent pointer-events-none"></div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4 text-center">
+                    <p className="text-[#fffce1] font-medium mb-2">
+                      {stadium.name}
+                    </p>
+                    <p className="text-[#fffce1]/70 text-sm mb-3">
+                      {stadium.address || `${stadium.city}, Azerbaijan`}
+                    </p>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={openInGoogleMaps}
+                      className="px-4 py-2 bg-[#4de840] text-black rounded-full text-sm font-medium inline-flex items-center cursor-pointer"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 mr-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                        />
+                      </svg>
+                      View on Google Maps
+                    </motion.button>
                   </div>
                 </div>
               </div>
