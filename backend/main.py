@@ -11,6 +11,9 @@ from backend.models.models import AppUser
 from controllers.auth_controller import router as auth_router
 from controllers.reservation_controller import router as reservation_router
 from controllers.payment_controller import router as payment_router
+from controllers.like_controller import router as like_router
+from controllers.post_controller import router as post_router
+from controllers.comment_controller import router as comment_router
 from backend.database import Base_Model, engine
 
 Base_Model.metadata.create_all(bind=engine)
@@ -32,6 +35,9 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(reservation_router)
 app.include_router(payment_router)
+app.include_router(post_router)
+app.include_router(comment_router)
+app.include_router(like_router)
 
 
 @app.get("/")

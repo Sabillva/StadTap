@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 from jose import jwt
 from passlib.context import CryptContext
 
-
 load_dotenv()
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

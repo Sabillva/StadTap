@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Boolean, Text, Float, JSON, Enum, ForeignKey, Date, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, Text, Float, JSON, Enum, ForeignKey, Date, DateTime, \
+    LargeBinary
 from sqlalchemy.orm import relationship
 
 from backend.database import Base_Model
@@ -13,8 +14,11 @@ class AppUser(Base_Model):
     hashed_password = Column(String(255))
     role = Column(String(50), default="user")
 
-    stadiums = relationship("Stadium", back_populates="owner")
-    reservations = relationship("Reservation", back_populates="user")
+    stadiums = relationship("Stadium", back_populates="owner", cascade="all, delete")
+    posts = relationship("Post", back_populates="user", cascade="all, delete")
+    comments = relationship("Comment", back_populates="user", cascade="all, delete")
+    likes = relationship("Like", back_populates="user", cascade="all, delete")
+    reservations = relationship("Reservation", back_populates="user", cascade="all, delete")
 
 
 class Applicant(Base_Model):
@@ -84,6 +88,7 @@ class Stadium(Base_Model):
 
     owner = relationship("AppUser", back_populates="stadiums")
     reservations = relationship("Reservation", back_populates="stadium")
+    posts = relationship("Post", back_populates="stadium", cascade="all, delete")
 
 
 class Reservation(Base_Model):
@@ -114,3 +119,47 @@ class ReservationCode(Base_Model):
 
     # Relationship to Reservation
     reservation = relationship("Reservation", back_populates="reservation_code")
+
+class Post(Base_Model):
+    __tablename__ = "posts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    caption = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    image_data = Column(LargeBinary)  # For storing binary data
+    image_format = Column(String(10))     # e.g., 'jpg', 'png'
+    stadium_id = Column(Integer, ForeignKey("stadiums.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    # Relationships
+    stadium = relationship("Stadium", back_populates="posts")
+    user = relationship("AppUser", back_populates="posts")
+    comments = relationship("Comment", back_populates="post", cascade="all, delete")
+    likes = relationship("Like", back_populates="post", cascade="all, delete")
+
+
+class Comment(Base_Model):
+    __tablename__ = "comments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    message = Column(Text, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
+
+    # Relationships
+    user = relationship("AppUser", back_populates="comments")
+    post = relationship("Post", back_populates="comments")
+
+
+class Like(Base_Model):
+    __tablename__ = "likes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    # Relationships
+    user = relationship("AppUser", back_populates="likes")
+    post = relationship("Post", back_populates="likes")
+
+

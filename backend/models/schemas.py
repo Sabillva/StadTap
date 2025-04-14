@@ -3,6 +3,8 @@ from typing import Optional, List
 
 from pydantic import BaseModel, EmailStr
 
+from backend.models.models import Stadium
+
 
 # --- User Schemas ---
 class UserBase(BaseModel):
@@ -100,3 +102,68 @@ class PaymentIntentRequest(BaseModel):
     currency: str = "usd"
     time_slot: str  # Add time_slot (required for reservation)
     date: str       # Add date (required for reservation)
+
+# --- Post Schemas ---
+class PostBase(BaseModel):
+    caption: str
+    description: Optional[str] = None
+    stadium_id: int  # Single stadium ID (one-to-many relationship)
+
+
+class PostCreate(PostBase):
+    pass
+
+
+class PostUpdate(BaseModel):
+    caption: Optional[str] = None
+    description: Optional[str] = None
+    stadium_id: Optional[int] = None  # Allow updating the stadium ID
+
+
+class PostResponse(PostBase):
+    id: int
+    user_id: int
+    image_format: str  # Changed from image_url to image_format
+    stadium: Stadium  # Include full stadium details
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# --- Comment Schemas ---
+class CommentCreate(BaseModel):
+    message: str
+    post_id: int
+
+
+class CommentUpdate(BaseModel):
+    message: Optional[str] = None
+
+
+class CommentResponse(BaseModel):
+    id: int
+    message: str
+    user_id: int
+    post_id: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# --- Like Schemas ---
+class LikeResponse(BaseModel):
+    id: int
+    post_id: int
+    user_id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class LikeStatus(BaseModel):
+    liked: bool

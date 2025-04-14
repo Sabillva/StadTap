@@ -1,7 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Security
+from fastapi import APIRouter, Depends, HTTPException, status, Security, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-
 
 from backend.auth.dependencies import get_current_user
 from backend.database import get_db
@@ -12,14 +11,13 @@ from backend.services.auth_service import AuthService
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
-
 @router.post("/register", response_model=UserResponse)
 def register(user: UserCreate, db: Session = Depends(get_db)):
     return AuthService.create_user(db, user)
 
 
-@router.post("/login", response_model=Token)
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+@router.post("/login")
+def login(response: Response, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = AuthService.authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -27,21 +25,37 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    token = AuthService.create_token(user)
 
-    return AuthService.create_token(user)
+    response.set_cookie(
+        key="access_token",
+        value=f"Bearer {token.access_token}",
+        httponly=True,  # Prevent client-side script access to the cookie
+        max_age=1800,  # Cookie expiration time in seconds (30 minutes)
+        samesite="lax",  # Helps prevent CSRF attacks
+        secure=False,  # after implementing https make it true
+    )
+
+    return {"message": "Login successful"}
+
+
+@router.post("/logout")
+def logout(response: Response):
+    response.delete_cookie(key="access_token")
+    return {"message": "Logged out successfully"}
 
 
 @router.post("/apply-owner")
 def apply_for_owner(
-    applicant: OwnerApplicationCreate,
-    db: Session = Depends(get_db),
+        applicant: OwnerApplicationCreate,
+        db: Session = Depends(get_db),
 ):
     existing_application = db.query(Applicant).filter(Applicant.email == applicant.email).first()
     if existing_application:
         raise HTTPException(status_code=400, detail="Application already submitted")
 
     new_applicant = Applicant(
-        email=applicant.email,
+        email=str(applicant.email),
         stadium_name=applicant.stadium_name,
         location=applicant.location,
         latitude=applicant.latitude,
@@ -71,10 +85,10 @@ def apply_for_owner(
     return {"message": "Your application is under review"}
 
 
-@router.get("/pending-owners")
+@router.get("/pending-owners", dependencies=[Depends(get_current_user)])
 def get_pending_owners(
-    current_user: AppUser = Security(get_current_user, scopes=["admin"]),
-    db: Session = Depends(get_db)
+        current_user: AppUser = Security(get_current_user, scopes=["admin"]),
+        db: Session = Depends(get_db)
 ):
     pending_applicants = db.query(Applicant).filter(Applicant.status == "pending").all()
     return pending_applicants
@@ -82,14 +96,13 @@ def get_pending_owners(
 
 @router.post("/approve-owner/{email}")
 def approve_owner(
-    email: str,
-    current_user: AppUser = Security(get_current_user, scopes=["admin"]),
-    db: Session = Depends(get_db),
+        email: str,
+        current_user: AppUser = Security(get_current_user, scopes=["admin"]),
+        db: Session = Depends(get_db),
 ):
     applicant = db.query(Applicant).filter(Applicant.email == email, Applicant.status == "pending").first()
     if not applicant:
         raise HTTPException(status_code=404, detail="Application not found or already processed")
-
 
     user = db.query(AppUser).filter(AppUser.email == email).first()
     if user:
@@ -132,12 +145,11 @@ def approve_owner(
     return {"message": "User approved as stadium owner"}
 
 
-
 @router.post("/reject-owner/{email}")
 def reject_owner(
-    email: str,
-    current_user: AppUser = Security(get_current_user, scopes=["admin"]),
-    db: Session = Depends(get_db),
+        email: str,
+        current_user: AppUser = Security(get_current_user, scopes=["admin"]),
+        db: Session = Depends(get_db),
 ):
     applicant = db.query(Applicant).filter(Applicant.email == email).first()
     if not applicant:
