@@ -2,6 +2,7 @@
 
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect, createContext } from "react";
+import AnimatedCursor from "./pages/AnimatedCursor";
 
 // Auth Pages
 import SignUp from "./pages/SignUp";
@@ -99,6 +100,9 @@ function App() {
   };
   return (
     <AuthContext.Provider value={{ user, setUser }}>
+      {/* AnimatedCursor komponentini burada saxlayırıq */}
+      <AnimatedCursor />
+
       <Routes>
         {/* Auth Routes */}
         <Route path="/signup" element={<SignUp />} />

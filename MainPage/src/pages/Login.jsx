@@ -1,5 +1,7 @@
 "use client";
 
+// import Ball from "../assets/ball.png";
+
 import { useState, useContext, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -603,6 +605,9 @@ const Login = () => {
               </motion.p>
             </div>
           </motion.form>
+          {/* <div>
+            <img src={Ball} alt="ball" />
+          </div> */}
 
           {/* Football decoration */}
           <motion.div
