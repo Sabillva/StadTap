@@ -1,136 +1,120 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  MessageCircle,
-  X,
-  Phone,
-  Mail,
-  CreditCard,
-  DollarSign,
-  Landmark,
-} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { MessageCircle, X, Phone, Mail, ChevronUp } from "lucide-react";
 
-const FloatingButton = () => {
+const FloatingButton = ({ theme }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showButton, setShowButton] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 300) {
-        setShowButton(true);
+        setShowScrollTop(true);
       } else {
-        setShowButton(false);
+        setShowScrollTop(false);
       }
     };
 
     window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const quickLinks = [
+  const toggleOpen = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  const contactOptions = [
+    { icon: <Phone size={16} />, label: "Zəng et", action: "tel:+994196" },
     {
-      icon: <CreditCard size={16} />,
-      text: "Kart sifariş et",
-      color: "bg-green-500",
-    },
-    {
-      icon: <DollarSign size={16} />,
-      text: "Kredit əldə et",
-      color: "bg-emerald-500",
-    },
-    {
-      icon: <Landmark size={16} />,
-      text: "Depozit yerləşdir",
-      color: "bg-green-600",
+      icon: <Mail size={16} />,
+      label: "E-poçt",
+      action: "mailto:info@aivincibank.az",
     },
   ];
 
   return (
-    <div
-      className={`fixed bottom-6 right-6 z-50 transition-all duration-500 ${
-        showButton ? "translate-y-0 opacity-100" : "translate-y-20 opacity-0"
-      }`}
-    >
-      {isOpen && (
-        <div className="absolute bottom-16 right-0 bg-white rounded-2xl shadow-luxury p-6 w-72 mb-2 border border-gray-100 animate-in fade-in slide-in-from-bottom-5">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-gray-800 text-lg">Bizimlə əlaqə</h3>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="text-gray-500 hover:text-gray-700 bg-gray-100 p-2 rounded-full"
-            >
-              <X size={16} />
-            </button>
-          </div>
-
-          <div className="space-y-4 mb-6">
-            <a
-              href="tel:196"
-              className="flex items-center p-3 rounded-xl hover:bg-green-50 text-gray-700 transition"
-            >
-              <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3">
-                <Phone size={18} className="text-green-600" />
-              </div>
-              <div>
-                <span className="font-medium block">196</span>
-                <span className="text-xs text-gray-500">
-                  Müştəri xidmətləri
-                </span>
-              </div>
-            </a>
-            <a
-              href="mailto:info@aivinci.az"
-              className="flex items-center p-3 rounded-xl hover:bg-green-50 text-gray-700 transition"
-            >
-              <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3">
-                <Mail size={18} className="text-green-600" />
-              </div>
-              <div>
-                <span className="font-medium block">info@aivinci.az</span>
-                <span className="text-xs text-gray-500">E-poçt ünvanımız</span>
-              </div>
-            </a>
-          </div>
-
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-gray-700 mb-2">
-              Sürətli keçidlər
-            </p>
-            {quickLinks.map((link, index) => (
-              <a
-                key={index}
-                href="#"
-                className="flex items-center p-3 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-700 transition"
-              >
-                <div
-                  className={`w-8 h-8 rounded-full ${link.color} flex items-center justify-center mr-3 text-white`}
-                >
-                  {link.icon}
-                </div>
-                <span className="font-medium">{link.text}</span>
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`rounded-full p-4 shadow-luxury flex items-center justify-center transition-all duration-300 ${
-          isOpen
-            ? "bg-red-500 rotate-90"
-            : "bg-gradient-luxury from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
-        }`}
-      >
-        {isOpen ? (
-          <X size={24} className="text-white" />
-        ) : (
-          <MessageCircle size={24} className="text-white" />
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end space-y-4">
+      {/* Scroll to top button */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            onClick={scrollToTop}
+            className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg ${
+              theme === "dark"
+                ? "bg-neutral-800 text-neutral-200 hover:bg-neutral-700"
+                : "bg-white text-neutral-700 hover:bg-neutral-100"
+            } transition-colors`}
+            data-cursor="button"
+          >
+            <ChevronUp size={24} />
+          </motion.button>
         )}
-      </button>
+      </AnimatePresence>
+
+      {/* Contact options */}
+      <div className="relative">
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.8 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.8 }}
+              transition={{ duration: 0.2 }}
+              className="absolute bottom-16 right-0 mb-2 flex flex-col space-y-2"
+            >
+              {contactOptions.map((option, index) => (
+                <motion.a
+                  key={index}
+                  href={option.action}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className={`flex items-center space-x-2 px-5 py-2 w-30 rounded-lg shadow-lg ${
+                    theme === "dark"
+                      ? "bg-neutral-800 text-neutral-200 hover:bg-neutral-700"
+                      : "bg-white text-neutral-700 hover:bg-neutral-100"
+                  } transition-colors`}
+                  data-cursor="link"
+                >
+                  <span>{option.icon}</span>
+                  <span>{option.label}</span>
+                </motion.a>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Main button */}
+        <motion.button
+          onClick={toggleOpen}
+          className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg ${
+            isOpen
+              ? theme === "dark"
+                ? "bg-neutral-700 text-neutral-200"
+                : "bg-neutral-200 text-neutral-700"
+              : theme === "dark"
+              ? "bg-emerald-600 text-white"
+              : "bg-emerald-500 text-white"
+          } transition-colors`}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          data-cursor="button"
+        >
+          {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
+        </motion.button>
+      </div>
     </div>
   );
 };

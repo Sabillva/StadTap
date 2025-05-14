@@ -1,33 +1,46 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion, useScroll, useSpring } from "framer-motion";
 
-const ScrollProgress = () => {
-  const [scrollProgress, setScrollProgress] = useState(0);
+const ScrollProgress = ({ theme }) => {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001,
+  });
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      const totalScroll =
-        document.documentElement.scrollHeight -
-        document.documentElement.clientHeight;
-      const currentScroll = window.scrollY;
-      const progress = (currentScroll / totalScroll) * 100;
-      setScrollProgress(progress);
+      if (window.scrollY > 100) {
+        setIsVisible(true);
+      } else {
+        setIsVisible(false);
+      }
     };
 
     window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
-    <div className="fixed top-0 left-0 w-full h-1 z-50">
+    <motion.div
+      className={`fixed top-0 left-0 right-0 h-1 z-[60] ${
+        theme === "dark" ? "bg-neutral-800" : "bg-neutral-200"
+      } origin-left`}
+      style={{ scaleX, opacity: isVisible ? 1 : 0 }}
+      transition={{ opacity: { duration: 0.3 } }}
+    >
       <div
-        className="h-full bg-gradient-to-r from-green-400 via-green-500 to-emerald-500"
-        style={{ width: `${scrollProgress}%` }}
+        className={`h-full ${
+          theme === "dark"
+            ? "bg-gradient-to-r from-emerald-500 to-teal-500"
+            : "bg-gradient-to-r from-emerald-500 to-teal-500"
+        }`}
       ></div>
-    </div>
+    </motion.div>
   );
 };
 

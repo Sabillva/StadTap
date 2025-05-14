@@ -4,13 +4,12 @@ import { useRef, useEffect, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { ArrowRight, CreditCard, Shield, Zap, Star } from "lucide-react";
 
-const CardOrder = ({ theme }) => {
+const CardShowcase = ({ theme }) => {
   const cardRef = useRef(null);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.2 });
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -28,25 +27,18 @@ const CardOrder = ({ theme }) => {
     const handleMouseLeave = () => {
       if (!cardRef.current) return;
       setRotation({ x: 0, y: 0 });
-      setIsHovered(false);
-    };
-
-    const handleMouseEnter = () => {
-      setIsHovered(true);
     };
 
     const card = cardRef.current;
     if (card) {
       card.addEventListener("mousemove", handleMouseMove);
       card.addEventListener("mouseleave", handleMouseLeave);
-      card.addEventListener("mouseenter", handleMouseEnter);
     }
 
     return () => {
       if (card) {
         card.removeEventListener("mousemove", handleMouseMove);
         card.removeEventListener("mouseleave", handleMouseLeave);
-        card.removeEventListener("mouseenter", handleMouseEnter);
       }
     };
   }, []);
@@ -60,14 +52,14 @@ const CardOrder = ({ theme }) => {
   return (
     <section
       className={`py-24 ${
-        theme === "dark" ? "bg-neutral-900" : "bg-neutral-100"
+        theme === "dark" ? "bg-[#0F0F0F]" : "bg-[#F0F0F0]"
       } transition-colors duration-500`}
       ref={ref}
     >
       <div
         className={`rounded-3xl overflow-hidden relative shadow-2xl ${
           theme === "dark"
-            ? "bg-gradient-to-br from-emerald-800 to-teal-900"
+            ? "bg-gradient-to-br from-[#0A2A1F] to-[#0A3A3A]"
             : "bg-gradient-to-br from-emerald-600 to-teal-700"
         }`}
       >
@@ -76,18 +68,6 @@ const CardOrder = ({ theme }) => {
           <div className="absolute top-10 left-10 w-40 h-40 bg-white opacity-10 rounded-full"></div>
           <div className="absolute bottom-20 right-20 w-60 h-60 bg-white opacity-5 rounded-full"></div>
           <div className="absolute top-40 right-40 w-20 h-20 bg-white opacity-10 rounded-full"></div>
-
-          {/* Animated circles */}
-          <div
-            className={`absolute top-1/2 left-1/4 w-32 h-32 rounded-full border border-white/20 ${
-              isHovered ? "animate-ping" : ""
-            } opacity-30`}
-          ></div>
-          <div
-            className={`absolute bottom-1/3 right-1/3 w-48 h-48 rounded-full border border-white/10 ${
-              isHovered ? "animate-ping" : ""
-            } opacity-20 delay-300`}
-          ></div>
         </div>
 
         <div className="container mx-auto px-4 py-16 md:py-20 relative z-10">
@@ -179,7 +159,6 @@ const CardOrder = ({ theme }) => {
                     transformStyle: "preserve-3d",
                     transform: `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
                   }}
-                  data-cursor="button"
                 >
                   <div className="flex justify-between items-start mb-12">
                     <div>
@@ -244,4 +223,4 @@ const CardOrder = ({ theme }) => {
   );
 };
 
-export default CardOrder;
+export default CardShowcase;
