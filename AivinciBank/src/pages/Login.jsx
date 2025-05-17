@@ -62,17 +62,12 @@ const Login = () => {
       <div className="creative-shape creative-shape-1 floating"></div>
       <div className="creative-shape creative-shape-2 floating-delay-1"></div>
 
-      <div className="w-full max-w-md relative z-10">
-        <div className="bg-surface rounded-md p-8 shadow-lg border border-surface-hover">
+      <div className="w-full max-w-md mt-38 relative z-10">
+        <div className=" rounded-md p-8 shadow-lg border border-surface-hover">
           <div className="text-center mb-10">
             <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 rounded-md bg-primary flex items-center justify-center floating">
-                <span className="text-white text-2xl font-bold display-font">
-                  A
-                </span>
-              </div>
             </div>
-            <h1 className="text-2xl font-bold mb-3 display-font gradient-text">
+            <h1 className="text-2xl font-bold mb-3 display-font ">
               Aivinci Bank-a xoş gəlmisiniz
             </h1>
             <p className="text-muted">Hesabınıza daxil olun</p>
@@ -154,7 +149,7 @@ const Login = () => {
                   <div
                     className={`w-5 h-5 rounded-md border ${
                       rememberMe
-                        ? "bg-primary border-primary"
+                        ? "bg-lime-500 border-primary"
                         : "border-muted bg-surface-hover"
                     } flex items-center justify-center transition-all cursor-pointer`}
                     onClick={() => setRememberMe(!rememberMe)}
@@ -183,14 +178,14 @@ const Login = () => {
                 </label>
               </div>
 
-              <a href="#" className="text-sm text-primary hover:underline">
+              <a href="#" className="text-sm text-lime-500 hover:underline">
                 Şifrəni unutmusunuz?
               </a>
             </div>
 
             <button
               type="submit"
-              className="w-full py-3 px-6 rounded-md flex items-center justify-center transition-all bg-primary text-white hover-lift"
+              className="w-full py-3 px-6 rounded-2xl flex items-center justify-center transition-all bg-lime-500 text-white hover-lift"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -230,7 +225,7 @@ const Login = () => {
                 Hesabınız yoxdur?{" "}
                 <Link
                   to="/register"
-                  className="text-primary hover:underline font-medium"
+                  className="text-lime-500 hover:underline font-medium"
                 >
                   Qeydiyyatdan keçin
                 </Link>

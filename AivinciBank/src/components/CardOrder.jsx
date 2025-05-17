@@ -389,7 +389,7 @@ const CardOrder = () => {
                     {/* Card background with modern gradient and pattern */}
                     <div className="absolute inset-0 rounded-2xl overflow-hidden">
                       <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-secondary/80 to-accent/70"></div>
-                      <div className="absolute inset-0 opacity-10">
+                      <div className="absolute inset-0 opacity-20">
                         <svg
                           width="100%"
                           height="100%"

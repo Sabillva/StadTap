@@ -164,9 +164,9 @@ const Register = () => {
       case 2:
         return "bg-yellow-500";
       case 3:
-        return "bg-primary";
+        return "bg-lime-500";
       case 4:
-        return "bg-primary";
+        return "bg-lime-500";
       default:
         return "";
     }
@@ -180,17 +180,12 @@ const Register = () => {
       <div className="creative-shape creative-shape-1 floating"></div>
       <div className="creative-shape creative-shape-2 floating-delay-1"></div>
 
-      <div className="w-full max-w-2xl relative z-10">
-        <div className="bg-surface rounded-md p-8 shadow-lg border border-surface-hover">
+      <div className="w-full max-w-2xl mt-38 relative z-10">
+        <div className="rounded-md p-8 shadow-lg border border-surface-hover">
           <div className="text-center mb-10">
             <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 rounded-md bg-primary flex items-center justify-center floating">
-                <span className="text-white text-2xl font-bold display-font">
-                  A
-                </span>
-              </div>
             </div>
-            <h1 className="text-2xl font-bold mb-3 display-font gradient-text">
+            <h1 className="text-2xl font-bold mb-3 display-font">
               Aivinci Bank-da hesab yaradın
             </h1>
             <p className="text-muted">
@@ -202,7 +197,7 @@ const Register = () => {
           <div className="flex justify-between mb-10 relative">
             <div className="w-full absolute top-1/2 h-1 -translate-y-1/2">
               <div
-                className="h-full bg-primary transition-all duration-500"
+                className="h-full bg-lime-500 transition-all duration-500"
                 style={{ width: currentStep === 1 ? "50%" : "100%" }}
               ></div>
             </div>
@@ -211,7 +206,7 @@ const Register = () => {
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
                   currentStep >= 1
-                    ? "bg-primary text-white"
+                    ? "bg-lime-500 text-white"
                     : "bg-surface-hover text-muted"
                 }`}
               >
@@ -224,7 +219,7 @@ const Register = () => {
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
                   currentStep >= 2
-                    ? "bg-primary text-white"
+                    ? "bg-lime-500 text-white"
                     : "bg-surface-hover text-muted"
                 }`}
               >
@@ -492,7 +487,7 @@ const Register = () => {
                       <div
                         className={`w-5 h-5 rounded-md border ${
                           agreeTerms
-                            ? "bg-primary border-primary"
+                            ? "bg-lime-500 border-primary"
                             : "border-muted bg-surface-hover"
                         } flex items-center justify-center transition-all cursor-pointer`}
                         onClick={() => setAgreeTerms(!agreeTerms)}
@@ -519,11 +514,11 @@ const Register = () => {
                         className={errors.agreeTerms ? "text-red-500" : ""}
                       >
                         Mən{" "}
-                        <a href="#" className="text-primary hover:underline">
+                        <a href="#" className="text-lime-500 hover:underline">
                           İstifadə şərtləri
                         </a>{" "}
                         və{" "}
-                        <a href="#" className="text-primary hover:underline">
+                        <a href="#" className="text-lime-500 hover:underline">
                           Məxfilik siyasəti
                         </a>{" "}
                         ilə razıyam
@@ -554,7 +549,7 @@ const Register = () => {
               <button
                 type={currentStep === 1 ? "button" : "submit"}
                 onClick={currentStep === 1 ? nextStep : undefined}
-                className={`py-3 px-6 rounded-md flex items-center justify-center transition-all bg-primary text-white hover-lift ${
+                className={`py-3 px-6 rounded-xl flex items-center justify-center transition-all bg-lime-500 text-white hover-lift ${
                   currentStep === 1 ? "ml-auto" : "ml-auto"
                 }`}
                 disabled={isLoading}
@@ -600,7 +595,7 @@ const Register = () => {
                   Artıq hesabınız var?{" "}
                   <Link
                     to="/login"
-                    className="text-primary hover:underline font-medium"
+                    className="text-lime-500 hover:underline font-medium"
                   >
                     Daxil olun
                   </Link>

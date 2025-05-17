@@ -403,7 +403,7 @@ html {
   background: linear-gradient(
     to bottom right,
     transparent,
-    hsl(97, 100%, 50%),
+    hsl(var(--primary), 0.05),
     transparent
   );
   transform: rotate(30deg);
