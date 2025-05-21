@@ -281,31 +281,35 @@ const Hero = () => {
   }, [currentSlide, isAnimating, isHovering]);
 
   // Parallax effect for slide content
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!slideRef.current) return;
-      const { clientX, clientY } = e;
-      const { width, height, left, top } =
-        slideRef.current.getBoundingClientRect();
+  // useEffect(() => {
+  //   const handleMouseMove = (e) => {
+  //     if (!slideRef.current) return;
+  //     const { clientX, clientY } = e;
+  //     const { width, height, left, top } =
+  //       slideRef.current.getBoundingClientRect();
 
-      const x = (clientX - left) / width - 0.5;
-      const y = (clientY - top) / height - 0.5;
+  //     const x = (clientX - left) / width - 0.5;
+  //     const y = (clientY - top) / height - 0.5;
 
-      const contentEl = slideRef.current.querySelector(".slide-content");
-      const imageEl = slideRef.current.querySelector(".slide-image");
+  //     const contentEl = slideRef.current.querySelector(".slide-content");
+  //     const imageEl = slideRef.current.querySelector(".slide-image");
 
-      if (contentEl) {
-        contentEl.style.transform = `translate(${x * -20}px, ${y * -20}px)`;
-      }
+  //     if (contentEl) {
+  //       contentEl.style.transform = `translate(${x * -20}px, ${y * -20}px)`;
+  //     }
 
-      if (imageEl) {
-        imageEl.style.transform = `translate(${x * 30}px, ${y * 30}px)`;
-      }
-    };
+  //     if (imageEl) {
+  //       imageEl.style.transform = `translate(${x * 30}px, ${y * 30}px)`;
+  //     }
+  //   };
 
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  //   window.addEventListener("mousemove", handleMouseMove);
+  //   return () => window.removeEventListener("mousemove", handleMouseMove);
+  // }, []);
+
+
+
+
 
   // Ultra-modern banking illustrations for each slide
   const renderModernBankingIllustration = (slideId) => {
@@ -313,7 +317,7 @@ const Hero = () => {
       case 1: // Ultra-modern Credit Card
         return (
           <div
-            className="relative w-full h-full flex items-center justify-center"
+            className="pt-10 relative w-full h-full flex items-center justify-center"
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
           >
@@ -500,7 +504,7 @@ const Hero = () => {
       case 2: // Ultra-modern Cash Loan
         return (
           <div
-            className="relative w-full h-full flex items-center justify-center"
+            className="pt-20 relative w-full h-full flex items-center justify-center"
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
           >
@@ -666,7 +670,7 @@ const Hero = () => {
       case 3: // Ultra-modern Deposit
         return (
           <div
-            className="relative w-full h-full flex items-center justify-center"
+            className="pt-20 relative w-full h-full flex items-center justify-center"
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
           >
@@ -859,7 +863,7 @@ const Hero = () => {
             <div className="absolute bottom-1/3 right-1/3 w-96 h-96 rounded-full bg-secondary/10 mix-blend-overlay blur-3xl"></div>
           </div>
 
-          <div className="container mx-auto px-4 z-10 flex flex-col md:flex-row items-center">
+          <div className="mt-80 md:mt-0 container mx-auto px-4 z-10 flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-8 md:mb-0 md:pr-8 slide-content transition-transform duration-200 ease-out">
               <h1 className="text-4xl md:text-6xl font-bold mb-6 display-font">
                 {slide.title}
