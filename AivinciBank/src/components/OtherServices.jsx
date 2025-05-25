@@ -1,8 +1,12 @@
 "use client";
 
+import { useTheme } from "./ThemeContext";
+
 import { useRef, useEffect } from "react";
 
 const OtherServices = () => {
+  const { darkMode } = useTheme();
+
   const sectionRef = useRef(null);
 
   useEffect(() => {
@@ -156,13 +160,35 @@ const OtherServices = () => {
   return (
     <section ref={sectionRef} className="py-20 relative overflow-hidden">
       {/* Background elements */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent"></div>
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: darkMode
+            ? "linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.05), transparent)"
+            : "linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.05), transparent)",
+        }}
+      ></div>
 
       {/* Decorative elements */}
-      <div className="absolute top-20 right-0 w-96 h-96 bg-primary/10 rounded-full filter blur-3xl opacity-30"></div>
-      <div className="absolute bottom-20 left-0 w-96 h-96 bg-secondary/10 rounded-full filter blur-3xl opacity-30"></div>
+      <div
+        className="absolute top-20 right-0 w-96 h-96 rounded-full filter blur-3xl opacity-30"
+        style={{
+          backgroundColor: darkMode
+            ? "rgba(255, 255, 255, 0.1)"
+            : "rgba(0, 0, 0, 0.05)",
+        }}
+      ></div>
 
-      <div className="container mx-auto px-4 relative z-10">
+      <div
+        className="absolute bottom-20 left-0 w-96 h-96 rounded-full filter blur-3xl opacity-30"
+        style={{
+          backgroundColor: darkMode
+            ? "rgba(255, 255, 255, 0.1)"
+            : "rgba(0, 0, 0, 0.05)",
+        }}
+      ></div>
+
+      <div className="container mx-auto px-16 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, index) => (
             <div
@@ -191,7 +217,7 @@ const OtherServices = () => {
                         <path
                           d="M 10 0 L 0 0 0 10"
                           fill="none"
-                          stroke="white"
+                          stroke={darkMode ? "white" : "black"}
                           strokeWidth="0.5"
                         />
                       </pattern>
@@ -204,19 +230,37 @@ const OtherServices = () => {
                   </svg>
                 </div>
 
-                <div className="relative z-10 text-white">
+                <div
+                  className="relative z-10"
+                  style={{ color: darkMode ? "#ffffff" : "#111827" }} // text color for heading
+                >
                   <h3 className="text-2xl font-bold mt-4 mb-2">
                     {service.title}
                   </h3>
-                  <p className="text-white/80">{service.description}</p>
+                  <p
+                    style={{
+                      color: darkMode
+                        ? "rgba(255, 255, 255, 0.8)"
+                        : "rgba(17, 24, 39, 0.8)", // paragraph color
+                    }}
+                  >
+                    {service.description}
+                  </p>
                 </div>
 
                 {/* Decorative circle */}
-                <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 rounded-full"></div>
+                <div
+                  className="absolute -bottom-10 -right-10 w-40 h-40 rounded-full"
+                  style={{
+                    backgroundColor: darkMode
+                      ? "rgba(255, 255, 255, 0.1)"
+                      : "rgba(0, 0, 0, 0.05)",
+                  }}
+                ></div>
               </div>
 
               <div className="p-6 flex justify-center">
-                <button className="btn bg-lime-500 group relative overflow-hidden flex">
+                <button className="btn bg-lime-500 group relative overflow-hidden flex text-white">
                   <span className="relative z-10">{service.buttonText}</span>
                   <span className="ml-2 relative z-10 transform transition-transform duration-300 group-hover:translate-x-1">
                     {icons.arrow}

@@ -1,8 +1,12 @@
 "use client";
 
+import { useTheme } from "./ThemeContext";
+
 import { useRef, useEffect } from "react";
 
 const Footer = () => {
+  const { darkMode } = useTheme();
+
   const footerRef = useRef(null);
 
   useEffect(() => {
@@ -255,14 +259,11 @@ const Footer = () => {
       <div className="creative-shape creative-shape-2"></div>
 
       {/* Main footer content */}
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="container mx-auto px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-16">
           <div className="modern-card footer-animate opacity-0 transform translate-y-8">
             <div className="p-6 h-full flex flex-col">
               <div className="flex items-center mb-6">
-                {/* <div className="w-10 h-10 rounded-md bg-lime-500 flex items-center justify-center mr-3">
-                  <span className="text-white font-bold">A</span>
-                </div> */}
                 <div className="text-2xl font-bold display-font">
                   Aivinci Bank
                 </div>
@@ -275,9 +276,13 @@ const Footer = () => {
               </p>
 
               <div className="flex items-center mb-6 group p-4 bg-surface/50 rounded-xl">
-                <div className="w-10 h-10 flex items-center justify-center mr-3 hover-scale text-white">
+                <div
+                  className="w-10 h-10 flex items-center justify-center mr-3 hover-scale"
+                  style={{ color: darkMode ? "#FFFFFF" : "#000000" }}
+                >
                   {icons.phone}
                 </div>
+
                 <div>
                   <p className="text-xs text-foreground/70">
                     Müştəri xidmətləri
@@ -289,21 +294,24 @@ const Footer = () => {
               <div className="flex space-x-4 mt-auto">
                 <a
                   href="#"
-                  className="w-10 h-10 rounded-full flex items-center justify-center hover-scale text-white"
+                  className="w-10 h-10 rounded-full flex items-center justify-center hover-scale"
+                  style={{ color: darkMode ? "#FFFFFF" : "#000000" }}
                   aria-label="Facebook"
                 >
                   {icons.facebook}
                 </a>
                 <a
                   href="#"
-                  className="w-10 h-10 rounded-full flex items-center justify-center hover-scale text-white"
+                  className="w-10 h-10 rounded-full flex items-center justify-center hover-scale"
+                  style={{ color: darkMode ? "#FFFFFF" : "#000000" }}
                   aria-label="Instagram"
                 >
                   {icons.instagram}
                 </a>
                 <a
                   href="#"
-                  className="w-10 h-10 rounded-full flex items-center justify-center hover-scale text-white"
+                  className="w-10 h-10 rounded-full flex items-center justify-center hover-scale"
+                  style={{ color: darkMode ? "#FFFFFF" : "#000000" }}
                   aria-label="Youtube"
                 >
                   {icons.youtube}
@@ -353,7 +361,7 @@ const Footer = () => {
 
                 <div className="flex items-start p-3 bg-surface/50 rounded-lg hover:bg-surface/70 transition-colors">
                   <span className="mt-1 mr-3">{icons.mail}</span>
-                  <p>info@aivincibank.az</p>
+                  <p>info@aivinci.az</p>
                 </div>
 
                 <div className="flex items-start p-3 bg-surface/50 rounded-lg hover:bg-surface/70 transition-colors">

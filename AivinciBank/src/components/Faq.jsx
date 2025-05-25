@@ -1,39 +1,54 @@
-"use client"
+"use client";
+import { useTheme } from "./ThemeContext";
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect } from "react";
 
 const Faq = () => {
-  const [openIndex, setOpenIndex] = useState(0)
-  const sectionRef = useRef(null)
+  const { darkMode } = useTheme();
+
+  const [openIndex, setOpenIndex] = useState(0);
+  const sectionRef = useRef(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add("animate-in")
+            entry.target.classList.add("animate-in");
           }
-        })
+        });
       },
-      { threshold: 0.1 },
-    )
+      { threshold: 0.1 }
+    );
 
-    const items = document.querySelectorAll(".faq-animate")
-    items.forEach((item) => observer.observe(item))
+    const items = document.querySelectorAll(".faq-animate");
+    items.forEach((item) => observer.observe(item));
 
     return () => {
-      items.forEach((item) => observer.unobserve(item))
-    }
-  }, [])
+      items.forEach((item) => observer.unobserve(item));
+    };
+  }, []);
 
   // Custom SVG icons
   const icons = {
     chevronDown: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M6 9L12 15L18 9"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     ),
-  }
+  };
 
   const faqItems = [
     {
@@ -61,26 +76,53 @@ const Faq = () => {
       answer:
         "Depozit yerləşdirmək üçün minimum məbləğ 500 AZN və ya 300 USD təşkil edir. Depozit məbləği və müddətindən asılı olaraq faiz dərəcələri dəyişir.",
     },
-  ]
+  ];
 
   const toggleFaq = (index) => {
-    setOpenIndex(openIndex === index ? -1 : index)
-  }
+    setOpenIndex(openIndex === index ? -1 : index);
+  };
 
   return (
     <section ref={sectionRef} className="py-20 relative overflow-hidden">
       {/* Background elements */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent"></div>
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: darkMode
+            ? "linear-gradient(to bottom, rgba(255, 255, 255, 0.05), transparent)"
+            : "linear-gradient(to bottom, rgba(0, 0, 0, 0.05), transparent)",
+        }}
+      ></div>
 
       {/* Decorative elements */}
-      <div className="absolute top-20 right-0 w-96 h-96 bg-primary/10 rounded-full filter blur-3xl opacity-30"></div>
-      <div className="absolute bottom-20 left-0 w-96 h-96 bg-secondary/10 rounded-full filter blur-3xl opacity-30"></div>
+      <div
+        className="absolute top-20 right-0 w-96 h-96 rounded-full filter blur-3xl opacity-30"
+        style={{
+          backgroundColor: darkMode
+            ? "rgba(255, 255, 255, 0.1)"
+            : "rgba(0, 0, 0, 0.05)",
+        }}
+      ></div>
+
+      <div
+        className="absolute bottom-20 left-0 w-96 h-96 rounded-full filter blur-3xl opacity-30"
+        style={{
+          backgroundColor: darkMode
+            ? "rgba(255, 255, 255, 0.1)"
+            : "rgba(0, 0, 0, 0.05)",
+        }}
+      ></div>
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12 faq-animate opacity-0 transform translate-y-8">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 display-font">Tez-tez verilən suallar</h2>
-            <p className="text-lg">Ən çox verilən sualların cavablarını sənin üçün bir araya gətirdik.</p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 display-font">
+              Tez-tez verilən suallar
+            </h2>
+            <p className="text-lg">
+              Ən çox verilən sualların cavablarını sənin üçün bir araya
+              gətirdik.
+            </p>
           </div>
 
           <div className="space-y-4">
@@ -125,7 +167,7 @@ const Faq = () => {
         }
       `}</style>
     </section>
-  )
-}
+  );
+};
 
-export default Faq
+export default Faq;

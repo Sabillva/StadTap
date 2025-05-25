@@ -1,8 +1,11 @@
 "use client";
 
+import { useTheme } from "./ThemeContext";
 import { useState, useRef, useEffect } from "react";
 
 const Calculator = () => {
+  const { darkMode } = useTheme();
+
   const [activeTab, setActiveTab] = useState("credit");
   const [creditAmount, setCreditAmount] = useState(15000);
   const [creditRate, setCreditRate] = useState(15);
@@ -164,11 +167,33 @@ const Calculator = () => {
   return (
     <section ref={sectionRef} className="py-20 relative overflow-hidden">
       {/* Background elements */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent"></div>
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: darkMode
+            ? "linear-gradient(to bottom, rgba(255, 255, 255, 0.05), transparent)"
+            : "linear-gradient(to bottom, rgba(0, 0, 0, 0.05), transparent)",
+        }}
+      ></div>
 
       {/* Decorative elements */}
-      <div className="absolute top-20 right-0 w-96 h-96 bg-primary/10 rounded-full filter blur-3xl opacity-30"></div>
-      <div className="absolute bottom-20 left-0 w-96 h-96 bg-secondary/10 rounded-full filter blur-3xl opacity-30"></div>
+      <div
+        className="absolute top-20 right-0 w-96 h-96 rounded-full filter blur-3xl opacity-30"
+        style={{
+          backgroundColor: darkMode
+            ? "rgba(255, 255, 255, 0.1)"
+            : "rgba(0, 0, 0, 0.05)",
+        }}
+      ></div>
+
+      <div
+        className="absolute bottom-20 left-0 w-96 h-96 rounded-full filter blur-3xl opacity-30"
+        style={{
+          backgroundColor: darkMode
+            ? "rgba(255, 255, 255, 0.1)"
+            : "rgba(0, 0, 0, 0.05)",
+        }}
+      ></div>
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto">
@@ -221,9 +246,7 @@ const Calculator = () => {
                 }`}
                 onClick={() => setActiveTab("deposit")}
               >
-                <div className="flex items-center justify-center">
-                  Depozit
-                </div>
+                <div className="flex items-center justify-center">Depozit</div>
               </button>
             </div>
 
@@ -292,7 +315,13 @@ const Calculator = () => {
                     </div>
                   </div>
 
-                  <div className="glass p-6 rounded-2xl mb-8 border border-primary/10">
+                  <div
+                    className={`p-6 rounded-2xl mb-8 backdrop-blur-md border ${
+                      darkMode
+                        ? "bg-[rgba(0,0,0,0.2)] border-white/5"
+                        : "bg-[rgba(255,255,255,0.4)] border-black/5"
+                    }`}
+                  >
                     <div className="flex justify-between mb-3">
                       <span className="font-medium">Aylıq ödəniş:</span>
                       <span className="font-bold">
@@ -307,7 +336,7 @@ const Calculator = () => {
                     </div>
                   </div>
 
-                  <button className="btn bg-lime-500 w-full group relative overflow-hidden">
+                  <button className="btn bg-lime-500 w-full group relative overflow-hidden text-white">
                     <span className="relative z-10">Nağd krediti hesabla</span>
                     <span className="absolute inset-0 bg-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
                   </button>
@@ -322,17 +351,22 @@ const Calculator = () => {
                         className={`flex-1 py-3 px-4 rounded-2xl transition-all ${
                           cardType === "cash"
                             ? "bg-lime-500 text-white"
-                            : "bg-white/1 hover:bg-white/2 dark:bg-white/1 dark:hover:bg-white/2"
+                            : darkMode
+                            ? "bg-white/10 hover:bg-white/20 text-white/80"
+                            : "bg-black/5 hover:bg-black/10 text-black/80"
                         }`}
                         onClick={() => setCardType("cash")}
                       >
                         Nağdlaşdırma
                       </button>
+
                       <button
                         className={`flex-1 py-3 px-4 rounded-2xl transition-all ${
                           cardType === "installment"
                             ? "bg-lime-500 text-white"
-                            : "bg-white/1 hover:bg-white/2 dark:bg-white/1 dark:hover:bg-white/2"
+                            : darkMode
+                            ? "bg-white/10 hover:bg-white/20 text-white/80"
+                            : "bg-black/5 hover:bg-black/10 text-black/80"
                         }`}
                         onClick={() => setCardType("installment")}
                       >
@@ -379,7 +413,13 @@ const Calculator = () => {
                     </div>
                   </div>
 
-                  <div className="glass p-6 rounded-2xl mb-8 border border-primary/10">
+                  <div
+                    className={`p-6 rounded-2xl mb-8 backdrop-blur-md border ${
+                      darkMode
+                        ? "bg-[rgba(0,0,0,0.2)] border-white/5"
+                        : "bg-[rgba(255,255,255,0.4)] border-black/5"
+                    }`}
+                  >
                     <div className="flex justify-between mb-3">
                       <span className="font-medium">Aylıq ödəniş:</span>
                       <span className="font-bold">
@@ -394,7 +434,7 @@ const Calculator = () => {
                     </div>
                   </div>
 
-                  <button className="btn bg-lime-500 w-full group relative overflow-hidden">
+                  <button className="btn bg-lime-500 w-full group relative overflow-hidden text-white">
                     <span className="relative z-10">Aivinci kartı hesabla</span>
                     <span className="absolute inset-0 bg-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
                   </button>
@@ -412,7 +452,9 @@ const Calculator = () => {
                         className={`flex-1 py-3 px-4 rounded-2xl transition-all ${
                           depositCurrency === "AZN"
                             ? "bg-lime-500 text-white"
-                            : "bg-white/1 hover:bg-white/2 dark:bg-white/1 dark:hover:bg-white/2"
+                            : darkMode
+                            ? "bg-white/10 hover:bg-white/20 text-white/80"
+                            : "bg-black/5 hover:bg-black/10 text-black/80"
                         }`}
                         onClick={() => setDepositCurrency("AZN")}
                       >
@@ -422,7 +464,9 @@ const Calculator = () => {
                         className={`flex-1 py-3 px-4 rounded-2xl transition-all ${
                           depositCurrency === "USD"
                             ? "bg-lime-500 text-white"
-                            : "bg-white/1 hover:bg-white/2 dark:bg-white/1 dark:hover:bg-white/2"
+                            : darkMode
+                            ? "bg-white/10 hover:bg-white/20 text-white/80"
+                            : "bg-black/5 hover:bg-black/10 text-black/80"
                         }`}
                         onClick={() => setDepositCurrency("USD")}
                       >
@@ -440,7 +484,9 @@ const Calculator = () => {
                         className={`flex-1 py-3 px-4 rounded-2xl transition-all ${
                           depositInterestType === "monthly"
                             ? "bg-lime-500 text-white"
-                            : "bg-white/1 hover:bg-white/2 dark:bg-white/1 dark:hover:bg-white/2"
+                            : darkMode
+                            ? "bg-white/10 hover:bg-white/20 text-white/80"
+                            : "bg-black/5 hover:bg-black/10 text-black/80"
                         }`}
                         onClick={() => setDepositInterestType("monthly")}
                       >
@@ -450,7 +496,9 @@ const Calculator = () => {
                         className={`flex-1 py-3 px-4 rounded-2xl transition-all ${
                           depositInterestType === "end"
                             ? "bg-lime-500 text-white"
-                            : "bg-white/1 hover:bg-white/2 dark:bg-white/1 dark:hover:bg-white/2"
+                            : darkMode
+                            ? "bg-white/10 hover:bg-white/20 text-white/80"
+                            : "bg-black/5 hover:bg-black/10 text-black/80"
                         }`}
                         onClick={() => setDepositInterestType("end")}
                       >
@@ -501,7 +549,13 @@ const Calculator = () => {
                     </div>
                   </div>
 
-                  <div className="glass p-6 rounded-2xl mb-8 border border-primary/10">
+                  <div
+                    className={`p-6 rounded-2xl mb-8 backdrop-blur-md border ${
+                      darkMode
+                        ? "bg-[rgba(0,0,0,0.2)] border-white/5"
+                        : "bg-[rgba(255,255,255,0.4)] border-black/5"
+                    }`}
+                  >
                     <div className="flex justify-between mb-3">
                       <span className="font-medium">
                         {depositInterestType === "monthly"
@@ -520,7 +574,7 @@ const Calculator = () => {
                     </div>
                   </div>
 
-                  <button className="btn bg-lime-500 w-full group relative overflow-hidden">
+                  <button className="btn bg-lime-500 w-full group relative overflow-hidden text-white">
                     <span className="relative z-10">Depoziti hesabla</span>
                     <span className="absolute inset-0 bg-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
                   </button>

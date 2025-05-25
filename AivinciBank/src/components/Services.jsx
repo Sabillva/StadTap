@@ -1,8 +1,11 @@
 "use client";
+import { useTheme } from "./ThemeContext";
 
 import { useRef, useEffect } from "react";
 
 const Services = () => {
+  const { darkMode } = useTheme();
+
   const sectionRef = useRef(null);
 
   useEffect(() => {
@@ -111,13 +114,35 @@ const Services = () => {
   return (
     <section ref={sectionRef} className="py-20 relative overflow-hidden">
       {/* Background elements */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-secondary/5 to-transparent"></div>
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: darkMode
+            ? "linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.05), transparent)"
+            : "linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.05), transparent)",
+        }}
+      ></div>
 
       {/* Decorative elements */}
-      <div className="absolute top-20 right-0 w-96 h-96 bg-primary/10 rounded-full filter blur-3xl opacity-30"></div>
-      <div className="absolute bottom-20 left-0 w-96 h-96 bg-secondary/10 rounded-full filter blur-3xl opacity-30"></div>
+      <div
+        className="absolute top-20 right-0 w-96 h-96 rounded-full filter blur-3xl opacity-30"
+        style={{
+          backgroundColor: darkMode
+            ? "rgba(255, 255, 255, 0.1)"
+            : "rgba(0, 0, 0, 0.05)",
+        }}
+      ></div>
 
-      <div className="container mx-auto px-4 relative z-10">
+      <div
+        className="absolute bottom-20 left-0 w-96 h-96 rounded-full filter blur-3xl opacity-30"
+        style={{
+          backgroundColor: darkMode
+            ? "rgba(255, 255, 255, 0.1)"
+            : "rgba(0, 0, 0, 0.05)",
+        }}
+      ></div>
+
+      <div className="container mx-auto px-16 relative z-10">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 display-font service-animate opacity-0 transform translate-y-8">
           Xidmətlər
         </h2>
@@ -156,10 +181,7 @@ const Services = () => {
               </div>
 
               <div className="mt-auto">
-                <a
-                  href="#"
-                  className="flex items-center text-teal-500 group"
-                >
+                <a href="#" className="flex items-center text-teal-500 group">
                   <span className="relative">
                     Bütün məzənnələr
                     <span className="absolute bottom-0 left-0 w-full h-0.5 bg-teal-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"></span>
@@ -200,11 +222,11 @@ const Services = () => {
 
               <div className="grid grid-cols-2 gap-4 mt-auto">
                 <button className="btn bg-teal-500 group relative overflow-hidden">
-                  <span className="relative z-10">Filiallar</span>
+                  <span className="relative z-10 text-white">Filiallar</span>
                   <span className="absolute inset-0 bg-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
                 </button>
                 <button className="btn bg-teal-500 group relative overflow-hidden">
-                  <span className="relative z-10">Bankomatlar</span>
+                  <span className="relative z-10 text-white">Bankomatlar</span>
                   <span className="absolute inset-0 bg-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
                 </button>
               </div>

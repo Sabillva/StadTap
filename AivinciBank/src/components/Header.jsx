@@ -537,7 +537,7 @@ const Header = ({ customerType, setCustomerType }) => {
           isScrolled ? "border-border/20" : "border-border/10"
         }`}
       >
-        <div className="container mx-auto px-4 py-3">
+        <div className="container mx-auto px-16 py-3">
           <div className="flex justify-between items-center">
             <div className="flex space-x-4">
               <button
@@ -650,7 +650,7 @@ const Header = ({ customerType, setCustomerType }) => {
       </div>
 
       {/* Main navigation */}
-      <div className="container mx-auto px-4 py-5">
+      <div className="container mx-auto px-16 py-5">
         <div className="flex justify-between items-center">
           <div className="flex items-center">
             <Link to="/" className="mr-8 flex items-center">

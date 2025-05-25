@@ -1,8 +1,12 @@
 "use client";
 
+import { useTheme } from "./ThemeContext";
+
 import { useState, useRef, useEffect } from "react";
 
 const ChatBot = () => {
+  const { darkMode } = useTheme();
+
   const [isOpen, setIsOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState([
@@ -343,18 +347,21 @@ const ChatBot = () => {
 
         <div className="p-4 border-t border-surface-hover bg-surface">
           <div className="flex space-x-2 mb-3">
-            <button className="w-8 h-8 rounded-full bg-surface-hover flex items-center justify-center hover:bg-primary/10 transition-colors text-amber-50">
-              {icons.smile}
-            </button>
-            <button className="w-8 h-8 rounded-full bg-surface-hover flex items-center justify-center hover:bg-primary/10 transition-colors text-amber-50">
-              {icons.paperclip}
-            </button>
-            <button className="w-8 h-8 rounded-full bg-surface-hover flex items-center justify-center hover:bg-primary/10 transition-colors text-amber-50">
-              {icons.image}
-            </button>
-            <button className="w-8 h-8 rounded-full bg-surface-hover flex items-center justify-center hover:bg-primary/10 transition-colors text-amber-50">
-              {icons.mic}
-            </button>
+            {[icons.smile, icons.paperclip, icons.image, icons.mic].map(
+              (icon, i) => (
+                <button
+                  key={i}
+                  className="w-8 h-8 rounded-full bg-surface-hover flex items-center justify-center hover:bg-primary/10 transition-colors"
+                  style={{
+                    color: darkMode
+                      ? "rgba(250, 250, 250, 0.9)"
+                      : "rgba(0, 0, 0, 1)",
+                  }} // Dark və Light üçün amber tonları
+                >
+                  {icon}
+                </button>
+              )
+            )}
           </div>
 
           <form onSubmit={handleSendMessage} className="relative">
@@ -363,8 +370,12 @@ const ChatBot = () => {
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Mesajınızı yazın..."
-              className="w-full py-3 px-4 pr-12 rounded-full bg-surface-hover border border-surface-hover focus:outline-none focus:border-primary transition-colors placeholder:text-amber-50"
+              className="w-full py-3 px-4 pr-12 rounded-full bg-surface-hover border border-surface-hover focus:outline-none focus:border-primary transition-colors"
+              style={{
+                color: darkMode ? "#fff" : "#000",
+              }}
             />
+
             <button
               type="submit"
               className="absolute right-1 top-1 w-10 h-10 rounded-full flex items-center justify-center transition-all bg-amber-600 hover:bg-primary/90 text-white"

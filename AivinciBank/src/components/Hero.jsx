@@ -1009,7 +1009,7 @@ const Hero = () => {
                       <div className="text-center">
                         <div
                           className={`${
-                            darkMode ? "text-white/70" : "text-"
+                            darkMode ? "text-white/70" : "text-white/70"
                           } text-sm mb-1`}
                         >
                           Maksimum kredit məbləği
@@ -1546,7 +1546,9 @@ const Hero = () => {
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: `radial-gradient(circle at 25px 25px, rgba(255, 255, 255, 0.2) 2px, transparent 0)`,
+            backgroundImage: darkMode
+              ? `radial-gradient(circle at 25px 25px, rgba(255, 255, 255, 0.2) 2px, transparent 0)`
+              : `radial-gradient(circle at 25px 25px, rgba(0, 0, 0, 0.2) 2px, transparent 0)`,
             backgroundSize: "50px 50px",
           }}
         ></div>
@@ -1571,7 +1573,7 @@ const Hero = () => {
             <div className="absolute bottom-1/3 right-1/3 w-96 h-96 rounded-full bg-secondary/10 mix-blend-overlay blur-3xl"></div>
           </div>
 
-          <div className="container mx-auto px-4 z-10 flex flex-col lg:flex-row items-center justify-center lg:justify-between min-h-screen lg:h-auto py-20 lg:py-0 gap-8 lg:gap-0">
+          <div className="container mx-auto px-16 z-10 flex flex-col lg:flex-row items-center justify-center lg:justify-between min-h-screen lg:h-auto py-20 lg:py-0 gap-8 lg:gap-0">
             <div className="lg:w-1/2 lg:pr-8 slide-content transition-transform duration-200 ease-out text-center lg:text-left w-full lg:order-1 relative z-10">
               <h1 className="text-4xl md:text-6xl font-bold mb-6 display-font">
                 {slide.title}
@@ -1659,6 +1661,7 @@ const Hero = () => {
           />
         </svg>
       </button>
+
       <button
         onClick={nextSlide}
         className={`absolute right-4 top-1/2 -translate-y-1/2 z-20 ${

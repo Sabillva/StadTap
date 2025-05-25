@@ -1,8 +1,12 @@
 "use client";
 
+import { useTheme } from "./ThemeContext";
+
 import { useRef, useEffect, useState } from "react";
 
 const CardOrder = () => {
+  const { darkMode } = useTheme();
+
   const sectionRef = useRef(null);
   const cardRef = useRef(null);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -282,13 +286,35 @@ const CardOrder = () => {
   return (
     <section ref={sectionRef} className="py-20 relative overflow-hidden">
       {/* Background elements */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-secondary/5 to-transparent"></div>
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: darkMode
+            ? "linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.05), transparent)"
+            : "linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.05), transparent)",
+        }}
+      ></div>
 
       {/* Decorative elements */}
-      <div className="absolute top-20 left-0 w-96 h-96 bg-primary/10 rounded-full filter blur-3xl opacity-30"></div>
-      <div className="absolute bottom-20 right-0 w-96 h-96 bg-accent/10 rounded-full filter blur-3xl opacity-30"></div>
+      <div
+        className="absolute top-20 left-0 w-96 h-96 rounded-full filter blur-3xl opacity-30"
+        style={{
+          backgroundColor: darkMode
+            ? "rgba(255, 255, 255, 0.1)"
+            : "rgba(0, 0, 0, 0.05)",
+        }}
+      ></div>
 
-      <div className="container mx-auto px-4 relative z-10">
+      <div
+        className="absolute bottom-20 right-0 w-96 h-96 rounded-full filter blur-3xl opacity-30"
+        style={{
+          backgroundColor: darkMode
+            ? "rgba(255, 255, 255, 0.1)"
+            : "rgba(0, 0, 0, 0.05)",
+        }}
+      ></div>
+
+      <div className="container mx-auto px-16 relative z-10">
         <div className="flex flex-col lg:flex-row items-center">
           <div className="lg:w-1/2 mb-12 lg:mb-0 lg:pr-12 card-animate opacity-0 transform translate-y-8">
             <h2 className="text-3xl md:text-4xl font-bold mb-6 display-font">
@@ -388,7 +414,13 @@ const CardOrder = () => {
                   <div className="credit-card-front">
                     {/* Card background with modern gradient and pattern */}
                     <div className="absolute inset-0 rounded-2xl overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-secondary/80 to-accent/70"></div>
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          background: `linear-gradient(to bottom right, rgba(0,0,0,0.9), rgba(0,0,0,0.8), rgba(0,0,0,0.7))`,
+                        }}
+                      ></div>
+
                       <div className="absolute inset-0 opacity-20">
                         <svg
                           width="100%"
@@ -503,7 +535,12 @@ const CardOrder = () => {
                   <div className="credit-card-back">
                     {/* Card background with modern gradient */}
                     <div className="absolute inset-0 rounded-2xl overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-secondary/80 to-accent/70"></div>
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          background: `linear-gradient(to bottom right, rgba(0,0,0,0.9), rgba(0,0,0,0.8), rgba(0,0,0,0.7))`,
+                        }}
+                      ></div>
                       <div className="absolute inset-0 opacity-10">
                         <svg
                           width="100%"

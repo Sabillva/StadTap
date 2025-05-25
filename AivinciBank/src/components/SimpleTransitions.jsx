@@ -1,8 +1,10 @@
 "use client";
 
+import { useTheme } from "./ThemeContext";
 import { useRef, useEffect } from "react";
 
 const SimpleTransitions = () => {
+  const { darkMode } = useTheme();
   const sectionRef = useRef(null);
 
   useEffect(() => {
@@ -37,16 +39,21 @@ const SimpleTransitions = () => {
         <div
           className="h-full w-full"
           style={{
-            backgroundImage: `
-            linear-gradient(to right, hsla(var(--primary), 0.2) 1px, transparent 1px),
-            linear-gradient(to bottom, hsla(var(--primary), 0.2) 1px, transparent 1px)
-          `,
+            backgroundImage: darkMode
+              ? `
+          linear-gradient(to right, rgba(255,255,255,0.2) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255,255,255,0.2) 1px, transparent 1px)
+        `
+              : `
+          linear-gradient(to right, rgba(0,0,0,0.2) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(0,0,0,0.2) 1px, transparent 1px)
+        `,
             backgroundSize: "4rem 4rem",
           }}
         ></div>
       </div>
 
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="container mx-auto px-16 relative z-10">
         <h2
           className="text-3xl md:text-4xl font-bold text-center mb-16 display-font transition-item opacity-0 transform translate-y-8"
           style={{ transitionDelay: "0ms" }}
@@ -245,10 +252,6 @@ const SimpleTransitions = () => {
                       <span className="w-2 h-2 bg-amber-500 rounded-full mr-2"></span>
                       <span>Müddətsiz əmanətlər - 3% illik faiz</span>
                     </li>
-                    {/* <li className="flex items-center">
-                      <span className="w-2 h-2 bg-amber-500 rounded-full mr-2"></span>
-                      <span>Uşaq əmanəti - 7% illik faiz</span>
-                    </li> */}
                     <li className="flex items-center">
                       <span className="w-2 h-2 bg-amber-500 rounded-full mr-2"></span>
                       <span>Valyuta əmanətləri - USD, EUR, GBP</span>
