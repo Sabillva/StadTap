@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useTheme } from "./ThemeContext";
 
 const Hero = () => {
+  const { darkMode } = useTheme();
+
   const slides = [
     {
       id: 1,
@@ -281,35 +284,445 @@ const Hero = () => {
   }, [currentSlide, isAnimating, isHovering]);
 
   // Parallax effect for slide content
-  // useEffect(() => {
-  //   const handleMouseMove = (e) => {
-  //     if (!slideRef.current) return;
-  //     const { clientX, clientY } = e;
-  //     const { width, height, left, top } =
-  //       slideRef.current.getBoundingClientRect();
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!slideRef.current) return;
+      const { clientX, clientY } = e;
+      const { width, height, left, top } =
+        slideRef.current.getBoundingClientRect();
 
-  //     const x = (clientX - left) / width - 0.5;
-  //     const y = (clientY - top) / height - 0.5;
+      const x = (clientX - left) / width - 0.5;
+      const y = (clientY - top) / height - 0.5;
 
-  //     const contentEl = slideRef.current.querySelector(".slide-content");
-  //     const imageEl = slideRef.current.querySelector(".slide-image");
+      const contentEl = slideRef.current.querySelector(".slide-content");
+      const imageEl = slideRef.current.querySelector(".slide-image");
 
-  //     if (contentEl) {
-  //       contentEl.style.transform = `translate(${x * -20}px, ${y * -20}px)`;
-  //     }
+      if (contentEl) {
+        contentEl.style.transform = `translate(${x * -20}px, ${y * -20}px)`;
+      }
 
-  //     if (imageEl) {
-  //       imageEl.style.transform = `translate(${x * 30}px, ${y * 30}px)`;
-  //     }
-  //   };
+      if (imageEl) {
+        imageEl.style.transform = `translate(${x * 30}px, ${y * 30}px)`;
+      }
+    };
 
-  //   window.addEventListener("mousemove", handleMouseMove);
-  //   return () => window.removeEventListener("mousemove", handleMouseMove);
-  // }, []);
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
 
+  // Mobile decorative elements for each slide
+  const renderMobileDecorations = (slideId) => {
+    switch (slideId) {
+      case 1: // Credit Card decorations
+        return (
+          <>
+            {/* Top left - Contactless payment icon */}
+            <div className="absolute -top-8 -left-8 w-12 h-12 bg-teal-500/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20 animate-float">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M8.5 14.5C10 16 13 16.5 14.5 14.5"
+                  stroke={darkMode ? "white" : "#111827"}
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M6.5 12.5C9 15 15 15.5 17.5 12.5"
+                  stroke={darkMode ? "white" : "#111827"}
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M4.5 10.5C8 14 16 14.5 19.5 10.5"
+                  stroke={darkMode ? "white" : "#111827"}
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
 
+            {/* Top right - Cashback percentage */}
+            <div className="absolute -top-4 -right-4 bg-gradient-to-r from-teal-400 to-emerald-500 text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg animate-pulse">
+              5% Cashback
+            </div>
 
+            {/* Bottom left - Card chip */}
+            <div className="absolute bottom-16 -left-4 w-10 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-sm shadow-lg">
+              <div className="w-full h-full bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-sm p-1">
+                <div className="w-full h-full bg-yellow-400 rounded-sm opacity-80"></div>
+              </div>
+            </div>
 
+            {/* Bottom right - Security shield */}
+            <div
+              className={`absolute bottom-12 -right-6 w-10 h-10 ${
+                darkMode ? "bg-white/10" : "bg-[rgba(5,5,5,0.1)]"
+              } rounded-full flex items-center justify-center backdrop-blur-sm border ${
+                darkMode ? "border-white/20" : "border-[rgba(5,5,5,0.2)]"
+              }`}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z"
+                  stroke={darkMode ? "white" : "	#111827"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M9 12L11 14L15 10"
+                  stroke={darkMode ? "white" : "	#111827"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+
+            {/* Floating card numbers */}
+            <div
+              className={`absolute top-8 right-4 ${
+                darkMode ? "text-white/30" : "text-[rgba(5,5,5,0.3)]"
+              } font-mono text-sm animate-float`}
+              style={{ animationDelay: "1s" }}
+            >
+              ••••
+            </div>
+            <div
+              className={`absolute bottom-8 left-12 ${
+                darkMode ? "text-white/30" : "text-[rgba(5,5,5,0.3)]"
+              } font-mono text-sm animate-float`}
+              style={{ animationDelay: "2s" }}
+            >
+              ••••
+            </div>
+          </>
+        );
+      case 2: // Loan decorations
+        return (
+          <>
+            {/* Top left - Money symbol */}
+            <div className="absolute -top-8 -left-8 w-14 h-14 bg-lime-500/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20 animate-bounce">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 2V22M17 5H9.5C7.01472 5 5 7.01472 5 9.5C5 11.9853 7.01472 14 9.5 14H14.5C16.9853 14 19 16.0147 19 18.5C19 20.9853 16.9853 23 14.5 23H7"
+                  stroke={darkMode ? "white" : "	#111827"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+
+            {/* Top right - Interest rate */}
+            <div className="absolute -top-4 -right-4 bg-gradient-to-r from-lime-400 to-green-500 text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg">
+              10.5% APR
+            </div>
+
+            {/* Middle left - Clock for fast approval */}
+            <div
+              className={`absolute top-12 -left-6 w-10 h-10 ${
+                darkMode ? "bg-white/10" : "bg-[rgba(5,5,5,0.1)]"
+              } rounded-full flex items-center justify-center backdrop-blur-sm border ${
+                darkMode ? "border-white/20" : "border-[rgba(5,5,5,0.2)]"
+              } animate-pulse`}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke={darkMode ? "white" : "	#111827"}
+                  strokeWidth="2"
+                />
+                <path
+                  d="M12 6V12L16 14"
+                  stroke={darkMode ? "white" : "	#111827"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+
+            {/* Bottom right - Calculator */}
+            <div
+              className={`absolute bottom-16 -right-4 w-12 h-12 ${
+                darkMode ? "bg-white/10" : "bg-[rgba(5,5,5,0.1)]"
+              } rounded-lg flex items-center justify-center backdrop-blur-sm border ${
+                darkMode ? "border-white/20" : "border-[rgba(5,5,5,0.2)]"
+              }`}
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect
+                  x="4"
+                  y="2"
+                  width="16"
+                  height="20"
+                  rx="2"
+                  stroke={darkMode ? "white" : "	#111827"}
+                  strokeWidth="2"
+                />
+                <path
+                  d="M8 6H16"
+                  stroke={darkMode ? "white" : "	#111827"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M8 10H8.01"
+                  stroke={darkMode ? "white" : "	#111827"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M12 10H12.01"
+                  stroke={darkMode ? "white" : "	#111827"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M16 10H16.01"
+                  stroke={darkMode ? "white" : "#111827"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M8 14H8.01"
+                  stroke={darkMode ? "white" : "#111827"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M12 14H12.01"
+                  stroke={darkMode ? "white" : "#111827"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M16 14H16.01"
+                  stroke={darkMode ? "white" : "#111827"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M8 18H8.01"
+                  stroke={darkMode ? "white" : "#111827"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M12 18H12.01"
+                  stroke={darkMode ? "white" : "#111827"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M16 18H16.01"
+                  stroke={darkMode ? "white" : "#111827"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+
+            {/* Floating amount */}
+            <div
+              className={`absolute top-8 right-0 ${
+                darkMode ? "text-white/40" : "text-[rgba(5,5,5,0.4)]"
+              } font-bold text-lg animate-float`}
+              style={{ animationDelay: "0.5s" }}
+            >
+              ₼50K
+            </div>
+
+            {/* Progress indicator */}
+            <div
+              className={`absolute bottom-12 left-8 w-16 h-2 ${
+                darkMode ? "bg-white/20" : "bg-[rgba(5,5,5,0.2)]"
+              } rounded-full overflow-hidden`}
+            >
+              <div className="h-full bg-gradient-to-r from-lime-400 to-lime-500 w-3/4 rounded-full animate-pulse"></div>
+            </div>
+          </>
+        );
+      case 3: // Deposit decorations
+        return (
+          <>
+            {/* Top left - Growth chart */}
+            <div className="absolute -top-8 -left-8 w-14 h-14 bg-amber-500/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M21 21H3V3M21 9L15 15L9 9L3 15"
+                  stroke={darkMode ? "white" : "#111827"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+
+            {/* Top right - Interest percentage */}
+            <div className="absolute -top-4 -right-4 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg animate-pulse">
+              +12% APY
+            </div>
+
+            {/* Middle left - Piggy bank */}
+            <div
+              className={`absolute top-12 -left-6 w-12 h-12 ${
+                darkMode ? "bg-white/10" : "bg-[rgba(5,5,5,0.1)]"
+              } rounded-full flex items-center justify-center backdrop-blur-sm border ${
+                darkMode ? "border-white/20" : "border-[rgba(5,5,5,0.2)]"
+              } animate-bounce`}
+              style={{ animationDelay: "1s" }}
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M19 5C19 5 17 3 12 3S5 5 5 5V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V5Z"
+                  stroke={darkMode ? "white" : "#111827"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M12 8V16"
+                  stroke={darkMode ? "white" : "#111827"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M8 12H16"
+                  stroke={darkMode ? "white" : "#111827"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+
+            {/* Bottom right - Calendar */}
+            <div
+              className={`absolute bottom-16 -right-4 w-10 h-10 ${
+                darkMode ? "bg-white/10" : "bg-[rgba(5,5,5,0.1)]"
+              } rounded-lg flex items-center justify-center backdrop-blur-sm border ${
+                darkMode ? "border-white/20" : "border-[rgba(5,5,5,0.2)]"
+              }`}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect
+                  x="3"
+                  y="4"
+                  width="18"
+                  height="18"
+                  rx="2"
+                  ry="2"
+                  stroke={darkMode ? "white" : "#111827"}
+                  strokeWidth="2"
+                />
+                <path
+                  d="M16 2V6"
+                  stroke={darkMode ? "white" : "#111827"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M8 2V6"
+                  stroke={darkMode ? "white" : "#111827"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M3 10H21"
+                  stroke={darkMode ? "white" : "#111827"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+
+            {/* Floating coins */}
+            <div className="absolute top-8 right-3 w-6 h-6 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full animate-float shadow-lg"></div>
+            <div
+              className="absolute bottom-8 left-16 w-4 h-4 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-full animate-float shadow-lg"
+              style={{ animationDelay: "1.5s" }}
+            ></div>
+
+            {/* Mini chart line */}
+            <div className="absolute bottom-12 right-8 w-12 h-8">
+              <svg
+                width="100%"
+                height="100%"
+                viewBox="0 0 48 32"
+                preserveAspectRatio="none"
+              >
+                <path
+                  d="M0,24 C8,20 16,28 24,16 C32,4 40,12 48,8"
+                  fill="none"
+                  stroke={
+                    darkMode ? "rgba(255,255,255,0.4)" : "rgba(31,41,55,0.4)"
+                  }
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
 
   // Ultra-modern banking illustrations for each slide
   const renderModernBankingIllustration = (slideId) => {
@@ -321,7 +734,7 @@ const Hero = () => {
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
           >
-            <div className="relative w-[420px] h-[320px] flex items-center justify-center">
+            <div className="relative w-[300px] sm:w-[380px] lg:w-[420px] h-[240px] sm:h-[280px] lg:h-[320px] flex items-center justify-center">
               {/* Background elements */}
               <div className="absolute w-[300px] h-[300px] rounded-full bg-gradient-to-br from-teal-300/20 to-teal-600/30 blur-2xl"></div>
               <div className="absolute w-[200px] h-[200px] -right-20 -bottom-10 rounded-full bg-gradient-to-br from-emerald-400/20 to-emerald-600/20 blur-2xl"></div>
@@ -414,32 +827,62 @@ const Hero = () => {
                   {/* Top section with logo and chip */}
                   <div className="flex justify-between items-start">
                     <div className="flex items-center space-x-1">
-                      <div className="text-white font-bold text-xl tracking-tight">
+                      <div
+                        className={`${
+                          darkMode ? "text-white" : "text-white"
+                        } font-bold text-xl tracking-tight`}
+                      >
                         Aivinci
                       </div>
-                      <div className="ml-1 text-white/80 font-normal">Bank</div>
+                      <div
+                        className={`ml-1 ${
+                          darkMode ? "text-white/80" : "text-white/80"
+                        } font-normal`}
+                      >
+                        Bank
+                      </div>
                     </div>
 
                     {/* Contactless icon */}
                     <div className="flex items-center space-x-2">
-                      <span className="text-white/90">{icons.contactless}</span>
+                      <span
+                        className={`${
+                          darkMode ? "text-white/90" : "text-white/90"
+                        }`}
+                      >
+                        {icons.contactless}
+                      </span>
                     </div>
                   </div>
 
                   {/* Chip */}
                   <div className="flex items-center mb-6">
                     <div className="mr-3">{icons.chip}</div>
-                    <div className="text-xs text-white/80 uppercase tracking-wider font-medium bg-white/10 px-2 py-1 rounded-sm">
+                    <div
+                      className={`text-xs ${
+                        darkMode ? "text-white/80" : "text-white/80"
+                      } uppercase tracking-wider font-medium ${
+                        darkMode ? "bg-white/10" : "bg-white/10"
+                      } px-2 py-1 rounded-sm`}
+                    >
                       Premium
                     </div>
                   </div>
 
                   {/* Card number with modern spacing */}
                   <div className="mb-auto">
-                    <div className="text-white/70 text-xs mb-1 uppercase tracking-wider">
+                    <div
+                      className={`${
+                        darkMode ? "text-white/70" : "text-white/70"
+                      } text-xs mb-1 uppercase tracking-wider`}
+                    >
                       Card Number
                     </div>
-                    <div className="text-white font-mono tracking-widest text-lg flex space-x-4">
+                    <div
+                      className={`${
+                        darkMode ? "text-white" : "text-white"
+                      } font-mono tracking-widest text-lg flex space-x-4`}
+                    >
                       <span>4582</span>
                       <span>••••</span>
                       <span>••••</span>
@@ -450,18 +893,36 @@ const Hero = () => {
                   {/* Bottom section */}
                   <div className="flex justify-between items-end mt-2">
                     <div className="w-3/5">
-                      <div className="text-white/70 text-xs uppercase tracking-wider">
+                      <div
+                        className={`${
+                          darkMode ? "text-white/70" : "text-white/70"
+                        } text-xs uppercase tracking-wider`}
+                      >
                         Card Holder
                       </div>
-                      <div className="text-white font-medium text-sm truncate">
+                      <div
+                        className={`${
+                          darkMode ? "text-white" : "text-white"
+                        } font-medium text-sm truncate`}
+                      >
                         Sabina Allahverdiyeva
                       </div>
                     </div>
                     <div>
-                      <div className="text-white/70 text-xs uppercase tracking-wider">
+                      <div
+                        className={`${
+                          darkMode ? "text-white/70" : "text-white/70"
+                        } text-xs uppercase tracking-wider`}
+                      >
                         Expires
                       </div>
-                      <div className="text-white font-medium">05/28</div>
+                      <div
+                        className={`${
+                          darkMode ? "text-white" : "text-white"
+                        } font-medium`}
+                      >
+                        05/28
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -490,11 +951,27 @@ const Hero = () => {
 
               {/* Floating elements */}
               <div className="absolute -top-10 -left-10 w-20 h-20 rounded-full bg-gradient-to-br from-teal-400/30 to-teal-600/30 backdrop-blur-sm flex items-center justify-center shadow-xl border border-white/10 animate-float">
-                <div className="text-white text-xl font-bold">0%</div>
+                <div
+                  className={`${
+                    darkMode ? "text-white" : "text-[rgba(5,5,5)]"
+                  } text-xl font-bold`}
+                >
+                  0%
+                </div>
               </div>
 
-              <div className="absolute -bottom-5 right-0 w-32 h-12 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-lg">
-                <div className="text-white text-sm font-medium">
+              <div
+                className={`absolute -bottom-5 right-0 w-32 h-12 rounded-xl ${
+                  darkMode ? "bg-white/10" : "bg-[rgba(5,5,5,0.1)]"
+                } backdrop-blur-md border ${
+                  darkMode ? "border-white/20" : "border-[rgba(5,5,5,0.2)]"
+                } flex items-center justify-center shadow-lg`}
+              >
+                <div
+                  className={`${
+                    darkMode ? "text-white" : "text-[rgba(5,5,5)]"
+                  } text-sm font-medium`}
+                >
                   Cashback 5%
                 </div>
               </div>
@@ -508,7 +985,7 @@ const Hero = () => {
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
           >
-            <div className="relative w-[420px] h-[320px] flex items-center justify-center">
+            <div className="relative w-[300px] sm:w-[380px] lg:w-[420px] h-[240px] sm:h-[280px] lg:h-[320px] flex items-center justify-center">
               {/* Background elements */}
               <div className="absolute w-[300px] h-[300px] rounded-full bg-gradient-to-br from-lime-300/20 to-lime-600/30 blur-2xl"></div>
               <div className="absolute w-[200px] h-[200px] -left-20 -bottom-10 rounded-full bg-gradient-to-br from-green-400/20 to-green-600/20 blur-2xl"></div>
@@ -518,13 +995,39 @@ const Hero = () => {
                 {/* Main loan amount display */}
                 <div className="relative z-20 mb-6">
                   <div className="bg-gradient-to-r from-lime-500 to-lime-600 rounded-2xl p-1 shadow-[0_10px_40px_-15px_rgba(132,204,22,0.8)]">
-                    <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-5 border border-white/20">
+                    <div
+                      className={`bg-gradient-to-br ${
+                        darkMode
+                          ? "from-white/10 to-white/5"
+                          : "from-[rgba(5,5,5,0.1)] to-gray-800/5"
+                      } backdrop-blur-sm rounded-xl p-5 border ${
+                        darkMode
+                          ? "border-white/20"
+                          : "border-[rgba(5,5,5,0.2)]"
+                      }`}
+                    >
                       <div className="text-center">
-                        <div className="text-white/70 text-sm mb-1">
+                        <div
+                          className={`${
+                            darkMode ? "text-white/70" : "text-"
+                          } text-sm mb-1`}
+                        >
                           Maksimum kredit məbləği
                         </div>
-                        <div className="text-white text-4xl font-bold flex items-center justify-center">
-                          <span className="text-white/80 mr-1 text-3xl">₼</span>
+                        <div
+                          className={`${
+                            darkMode ? "text-white" : "text-[#f6f6f6]"
+                          } text-4xl font-bold flex items-center justify-center`}
+                        >
+                          <span
+                            className={`${
+                              darkMode
+                                ? "text-white/80"
+                                : "text-[rgba(232,232,232,0.9)]"
+                            } mr-1 text-3xl`}
+                          >
+                            ₼
+                          </span>
                           <span>50 000</span>
                         </div>
                       </div>
@@ -533,11 +1036,25 @@ const Hero = () => {
                 </div>
 
                 {/* Loan details card */}
-                <div className="relative z-10 bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden">
+                <div
+                  className={`relative z-10 ${
+                    darkMode ? "bg-white/10" : "bg-[rgba(5,5,5,0.1)]"
+                  } backdrop-blur-md rounded-3xl border ${
+                    darkMode ? "border-white/20" : "border-[rgba(5,5,5,0.2)]"
+                  } shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden`}
+                >
                   {/* Header */}
-                  <div className="bg-gradient-to-r from-lime-600/20 to-lime-700/20 p-5 border-b border-white/10">
+                  <div
+                    className={`bg-gradient-to-r from-lime-600/20 to-lime-700/20 p-5 border-b ${
+                      darkMode ? "border-white/10" : "border-[rgba(5,5,5,0.1)]"
+                    }`}
+                  >
                     <div className="flex justify-between items-center">
-                      <div className="text-white font-medium text-lg">
+                      <div
+                        className={`${
+                          darkMode ? "text-white" : "text-[rgba(5,5,5)]"
+                        } font-medium text-lg`}
+                      >
                         Kredit Şərtləri
                       </div>
                       <div className="bg-lime-500 text-white text-xs px-3 py-1 rounded-full">
@@ -550,32 +1067,108 @@ const Hero = () => {
                   <div className="p-5">
                     {/* Loan parameters */}
                     <div className="grid grid-cols-3 gap-4 mb-6">
-                      <div className="bg-white/5 rounded-xl p-3 text-center border border-white/10">
-                        <div className="text-white/60 text-xs mb-1">Müddət</div>
-                        <div className="text-white font-medium">36 ay</div>
+                      <div
+                        className={`${
+                          darkMode ? "bg-white/5" : "bg-gray-800/5"
+                        } rounded-xl p-3 text-center border ${
+                          darkMode
+                            ? "border-white/10"
+                            : "border-[rgba(5,5,5,0.1)]"
+                        }`}
+                      >
+                        <div
+                          className={`${
+                            darkMode
+                              ? "text-white/60"
+                              : "text-[rgba(5,5,5,0.5)]"
+                          } text-xs mb-1`}
+                        >
+                          Müddət
+                        </div>
+                        <div
+                          className={`${
+                            darkMode ? "text-white" : "text-[rgba(5,5,5)]"
+                          } font-medium`}
+                        >
+                          36 ay
+                        </div>
                       </div>
-                      <div className="bg-white/5 rounded-xl p-3 text-center border border-white/10">
-                        <div className="text-white/60 text-xs mb-1">Faiz</div>
-                        <div className="text-white font-medium">10.5%</div>
+                      <div
+                        className={`${
+                          darkMode ? "bg-white/5" : "bg-gray-800/5"
+                        } rounded-xl p-3 text-center border ${
+                          darkMode
+                            ? "border-white/10"
+                            : "border-[rgba(5,5,5,0.1)]"
+                        }`}
+                      >
+                        <div
+                          className={`${
+                            darkMode
+                              ? "text-white/60"
+                              : "text-[rgba(5,5,5,0.5)]"
+                          } text-xs mb-1`}
+                        >
+                          Faiz
+                        </div>
+                        <div
+                          className={`${
+                            darkMode ? "text-white" : "text-[rgba(5,5,5)"
+                          } font-medium`}
+                        >
+                          10.5%
+                        </div>
                       </div>
-                      <div className="bg-white/5 rounded-xl p-3 text-center border border-white/10">
-                        <div className="text-white/60 text-xs mb-1">
+                      <div
+                        className={`${
+                          darkMode ? "bg-white/5" : "bg-gray-800/5"
+                        } rounded-xl p-3 text-center border ${
+                          darkMode
+                            ? "border-white/10"
+                            : "border-[rgba(5,5,5,0.1)]"
+                        }`}
+                      >
+                        <div
+                          className={`${
+                            darkMode
+                              ? "text-white/60"
+                              : "text-[rgba(5,5,5,0.5)]"
+                          } text-xs mb-1`}
+                        >
                           Aylıq ödəniş
                         </div>
-                        <div className="text-white font-medium">₼ 1,620</div>
+                        <div
+                          className={`${
+                            darkMode ? "text-white" : "text-[rgba(5,5,5)]"
+                          } font-medium`}
+                        >
+                          ₼ 1,620
+                        </div>
                       </div>
                     </div>
 
                     {/* Progress bar */}
                     <div className="mb-6">
-                      <div className="flex justify-between text-xs text-white/60 mb-1">
+                      <div
+                        className={`flex justify-between text-xs ${
+                          darkMode ? "text-white/60" : "text-[rgba(5,5,5,0.5)]"
+                        } mb-1`}
+                      >
                         <div>Minimum</div>
                         <div>Maksimum</div>
                       </div>
-                      <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                      <div
+                        className={`h-2 ${
+                          darkMode ? "bg-white/10" : "bg-[rgba(5,5,5,0.1)]"
+                        } rounded-full overflow-hidden`}
+                      >
                         <div className="h-full bg-gradient-to-r from-lime-400 to-lime-500 w-3/4 rounded-full"></div>
                       </div>
-                      <div className="flex justify-between text-xs text-white/60 mt-1">
+                      <div
+                        className={`flex justify-between text-xs ${
+                          darkMode ? "text-white/60" : "text-[rgba(5,5,5,0.5)]"
+                        } mt-1`}
+                      >
                         <div>₼ 500</div>
                         <div>₼ 50,000</div>
                       </div>
@@ -583,7 +1176,11 @@ const Hero = () => {
 
                     {/* Features */}
                     <div className="space-y-2">
-                      <div className="flex items-center text-white/80 text-sm">
+                      <div
+                        className={`flex items-center ${
+                          darkMode ? "text-white/80" : "text-[rgba(5,5,5,0.8)]"
+                        } text-sm`}
+                      >
                         <svg
                           className="w-4 h-4 mr-2 text-lime-400"
                           viewBox="0 0 24 24"
@@ -600,7 +1197,11 @@ const Hero = () => {
                         </svg>
                         <span>Sürətli təsdiq prosesi</span>
                       </div>
-                      <div className="flex items-center text-white/80 text-sm">
+                      <div
+                        className={`flex items-center ${
+                          darkMode ? "text-white/80" : "text-[rgba(5,5,5,0.8)]"
+                        } text-sm`}
+                      >
                         <svg
                           className="w-4 h-4 mr-2 text-lime-400"
                           viewBox="0 0 24 24"
@@ -617,7 +1218,11 @@ const Hero = () => {
                         </svg>
                         <span>Aşağı faiz dərəcəsi</span>
                       </div>
-                      <div className="flex items-center text-white/80 text-sm">
+                      <div
+                        className={`flex items-center ${
+                          darkMode ? "text-white/80" : "text-[rgba(5,5,5,0.8)]"
+                        } text-sm`}
+                      >
                         <svg
                           className="w-4 h-4 mr-2 text-lime-400"
                           viewBox="0 0 24 24"
@@ -639,7 +1244,13 @@ const Hero = () => {
                 </div>
 
                 {/* Floating elements */}
-                <div className="absolute -bottom-5 -left-5 w-16 h-16 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-lg">
+                <div
+                  className={`absolute -bottom-5 -left-5 w-16 h-16 rounded-full ${
+                    darkMode ? "bg-white/10" : "bg-[rgba(5,5,5,0.1)]"
+                  } backdrop-blur-md border ${
+                    darkMode ? "border-white/20" : "border-[rgba(5,5,5,0.2)]"
+                  } flex items-center justify-center shadow-lg`}
+                >
                   <svg
                     width="24"
                     height="24"
@@ -649,7 +1260,7 @@ const Hero = () => {
                   >
                     <path
                       d="M12 8V16M8 12H16"
-                      stroke="white"
+                      stroke={darkMode ? "white" : "#111827"}
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -658,7 +1269,7 @@ const Hero = () => {
                       cx="12"
                       cy="12"
                       r="10"
-                      stroke="white"
+                      stroke={darkMode ? "white" : "#111827"}
                       strokeWidth="2"
                     />
                   </svg>
@@ -674,17 +1285,31 @@ const Hero = () => {
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
           >
-            <div className="relative w-[420px] h-[320px] flex items-center justify-center">
+            <div className="relative w-[300px] sm:w-[380px] lg:w-[420px] h-[240px] sm:h-[280px] lg:h-[320px] flex items-center justify-center">
               {/* Background elements */}
               <div className="absolute w-[300px] h-[300px] rounded-full bg-gradient-to-br from-amber-300/20 to-amber-600/30 blur-2xl"></div>
               <div className="absolute w-[200px] h-[200px] -right-20 -top-10 rounded-full bg-gradient-to-br from-orange-400/20 to-orange-600/20 blur-2xl"></div>
 
               {/* Modern Deposit Dashboard */}
-              <div className="relative w-[380px] bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden">
+              <div
+                className={`relative w-[380px] ${
+                  darkMode ? "bg-white/10" : "bg-[rgba(5,5,5,0.1)]"
+                } backdrop-blur-md rounded-3xl border ${
+                  darkMode ? "border-white/20" : "border-[rgba(5,5,5,0.2)]"
+                } shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden`}
+              >
                 {/* Header */}
-                <div className="bg-gradient-to-r from-amber-600/20 to-amber-700/20 p-5 border-b border-white/10">
+                <div
+                  className={`bg-gradient-to-r from-amber-600/20 to-amber-700/20 p-5 border-b ${
+                    darkMode ? "border-white/10" : "border-[rgba(5,5,5,0.1)]"
+                  }`}
+                >
                   <div className="flex justify-between items-center">
-                    <div className="text-white font-medium text-lg">
+                    <div
+                      className={`${
+                        darkMode ? "text-white" : "text-[rgba(5,5,5)]"
+                      } font-medium text-lg`}
+                    >
                       Depozit Gəliri
                     </div>
                     <div className="bg-amber-500 text-white text-xs px-3 py-1 rounded-full flex items-center">
@@ -696,19 +1321,45 @@ const Hero = () => {
                 {/* Interest rate display */}
                 <div className="p-5">
                   <div className="flex justify-between items-center mb-6">
-                    <div className="text-white/70">İllik faiz dərəcəsi</div>
-                    <div className="text-3xl font-bold text-white flex items-center">
+                    <div
+                      className={`${
+                        darkMode ? "text-white/70" : "text-[rgba(5,5,5,0.5)]"
+                      }`}
+                    >
+                      İllik faiz dərəcəsi
+                    </div>
+                    <div
+                      className={`text-3xl font-bold ${
+                        darkMode ? "text-white" : "text-[rgba(5,5,5)]"
+                      } flex items-center`}
+                    >
                       <span className="text-amber-300 mr-1">+</span>12%
                     </div>
                   </div>
 
                   {/* Modern chart */}
-                  <div className="bg-white/5 rounded-2xl p-4 mb-6 border border-white/10">
+                  <div
+                    className={`${
+                      darkMode ? "bg-white/5" : "bg-gray-800/5"
+                    } rounded-2xl p-4 mb-6 border ${
+                      darkMode ? "border-white/10" : "border-[rgba(5,5,5,0.1)]"
+                    }`}
+                  >
                     <div className="flex justify-between items-center mb-4">
-                      <div className="text-white/70 text-sm">
+                      <div
+                        className={`${
+                          darkMode ? "text-white/70" : "text-[rgba(5,5,5,0.5)]"
+                        } text-sm`}
+                      >
                         Depozit artımı
                       </div>
-                      <div className="text-white/70 text-xs">12 ay</div>
+                      <div
+                        className={`${
+                          darkMode ? "text-white/70" : "text-[rgba(5,5,5,0.5)]"
+                        } text-xs`}
+                      >
+                        12 ay
+                      </div>
                     </div>
 
                     {/* Minimalist chart */}
@@ -718,7 +1369,9 @@ const Hero = () => {
                         {[...Array(16)].map((_, i) => (
                           <div
                             key={i}
-                            className="border-t border-l border-white/5"
+                            className={`border-t border-l ${
+                              darkMode ? "border-white/5" : "border-gray-800/5"
+                            }`}
                           ></div>
                         ))}
                       </div>
@@ -763,7 +1416,6 @@ const Hero = () => {
                           d="M0,100 L0,80 C20,75 40,85 60,70 C80,55 100,40 120,45 C140,50 160,30 180,25 C200,20 220,15 240,10 C260,5 280,15 300,5 L300,100 Z"
                           fill="url(#chartGradient)"
                         />
-
                         {/* Line */}
                         <path
                           d="M0,80 C20,75 40,85 60,70 C80,55 100,40 120,45 C140,50 160,30 180,25 C200,20 220,15 240,10 C260,5 280,15 300,5"
@@ -790,7 +1442,11 @@ const Hero = () => {
                     </div>
 
                     {/* Chart labels */}
-                    <div className="flex justify-between text-xs text-white/60 mt-2">
+                    <div
+                      className={`flex justify-between text-xs ${
+                        darkMode ? "text-white/60" : "text-[rgba(5,5,5,0.5)]"
+                      } mt-2`}
+                    >
                       <div>0 ay</div>
                       <div>6 ay</div>
                       <div>12 ay</div>
@@ -799,19 +1455,71 @@ const Hero = () => {
 
                   {/* Stats grid */}
                   <div className="grid grid-cols-3 gap-3">
-                    <div className="bg-white/5 rounded-xl p-3 text-center border border-white/10">
-                      <div className="text-white/60 text-xs mb-1">
+                    <div
+                      className={`${
+                        darkMode ? "bg-white/5" : "bg-gray-800/5"
+                      } rounded-xl p-3 text-center border ${
+                        darkMode
+                          ? "border-white/10"
+                          : "border-[rgba(5,5,5,0.1)]"
+                      }`}
+                    >
+                      <div
+                        className={`${
+                          darkMode ? "text-white/60" : "text-[rgba(5,5,5,0.5)]"
+                        } text-xs mb-1`}
+                      >
                         Başlanğıc
                       </div>
-                      <div className="text-white font-medium">₼ 10,000</div>
+                      <div
+                        className={`${
+                          darkMode ? "text-white" : "text-[rgba(5,5,5)]"
+                        } font-medium`}
+                      >
+                        ₼ 10,000
+                      </div>
                     </div>
-                    <div className="bg-white/5 rounded-xl p-3 text-center border border-white/10">
-                      <div className="text-white/60 text-xs mb-1">Qazanc</div>
+                    <div
+                      className={`${
+                        darkMode ? "bg-white/5" : "bg-gray-800/5"
+                      } rounded-xl p-3 text-center border ${
+                        darkMode
+                          ? "border-white/10"
+                          : "border-[rgba(5,5,5,0.1)]"
+                      }`}
+                    >
+                      <div
+                        className={`${
+                          darkMode ? "text-white/60" : "text-[rgba(5,5,5,0.5)]"
+                        } text-xs mb-1`}
+                      >
+                        Qazanc
+                      </div>
                       <div className="text-amber-300 font-medium">+₼ 1,200</div>
                     </div>
-                    <div className="bg-white/5 rounded-xl p-3 text-center border border-white/10">
-                      <div className="text-white/60 text-xs mb-1">Yekun</div>
-                      <div className="text-white font-medium">₼ 11,200</div>
+                    <div
+                      className={`${
+                        darkMode ? "bg-white/5" : "bg-gray-800/5"
+                      } rounded-xl p-3 text-center border ${
+                        darkMode
+                          ? "border-white/10"
+                          : "border-[rgba(5,5,5,0.1)]"
+                      }`}
+                    >
+                      <div
+                        className={`${
+                          darkMode ? "text-white/60" : "text-[rgba(5,5,5,0.5)]"
+                        } text-xs mb-1`}
+                      >
+                        Yekun
+                      </div>
+                      <div
+                        className={`${
+                          darkMode ? "text-white" : "text-[rgba(5,5,5)]"
+                        } font-medium`}
+                      >
+                        ₼ 11,200
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -828,7 +1536,7 @@ const Hero = () => {
 
   return (
     <div
-      className="relative h-screen overflow-hidden"
+      className="relative min-h-screen lg:h-screen overflow-hidden"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -863,12 +1571,12 @@ const Hero = () => {
             <div className="absolute bottom-1/3 right-1/3 w-96 h-96 rounded-full bg-secondary/10 mix-blend-overlay blur-3xl"></div>
           </div>
 
-          <div className="mt-80 md:mt-0 container mx-auto px-4 z-10 flex flex-col md:flex-row items-center">
-            <div className="md:w-1/2 mb-8 md:mb-0 md:pr-8 slide-content transition-transform duration-200 ease-out">
+          <div className="container mx-auto px-4 z-10 flex flex-col lg:flex-row items-center justify-center lg:justify-between min-h-screen lg:h-auto py-20 lg:py-0 gap-8 lg:gap-0">
+            <div className="lg:w-1/2 lg:pr-8 slide-content transition-transform duration-200 ease-out text-center lg:text-left w-full lg:order-1 relative z-10">
               <h1 className="text-4xl md:text-6xl font-bold mb-6 display-font">
                 {slide.title}
               </h1>
-              <p className="text-lg md:text-xl mb-8 max-w-xl">
+              <p className="text-lg md:text-xl mb-8 max-w-xl mx-auto lg:mx-0">
                 {slide.description}
               </p>
               <button
@@ -891,8 +1599,13 @@ const Hero = () => {
                   />
                 </svg>
               </button>
+
+              {/* Mobile decorative elements - positioned relative to text content */}
+              <div className="lg:hidden absolute inset-0 pointer-events-none">
+                {renderMobileDecorations(slide.id)}
+              </div>
             </div>
-            <div className="md:w-1/2 flex justify-center slide-image transition-transform duration-200 ease-out">
+            <div className="hidden lg:flex lg:w-1/2 justify-center slide-image transition-transform duration-200 ease-out lg:order-2 flex-shrink-0">
               {/* Render ultra-modern banking illustrations */}
               {renderModernBankingIllustration(slide.id)}
             </div>
@@ -908,8 +1621,12 @@ const Hero = () => {
             onClick={() => goToSlide(index)}
             className={`transition-all duration-300 ${
               currentSlide === index
-                ? "w-16 h-2 bg-white"
-                : "w-8 h-2 bg-white/50 hover:bg-white/80"
+                ? `w-16 h-2 ${darkMode ? "bg-white" : "bg-[#050505]"}`
+                : `w-8 h-2 ${
+                    darkMode
+                      ? "bg-white/50 hover:bg-white/80"
+                      : "bg-[rgba(5,5,5,0.5)] hover:bg-[rgba(5,5,5,0.8)]"
+                  }`
             } rounded-full`}
             aria-label={`Go to slide ${index + 1}`}
           />
@@ -919,7 +1636,11 @@ const Hero = () => {
       {/* Navigation arrows */}
       <button
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/10 hover:bg-white/20 rounded-full p-3 backdrop-blur-sm transition-all duration-300"
+        className={`absolute left-4 top-1/2 -translate-y-1/2 z-20 ${
+          darkMode
+            ? "bg-white/10 hover:bg-white/20"
+            : "bg-[rgba(5,5,5,0.1)] hover:bg-[rgba(5,5,5,0.2)]"
+        } rounded-full p-3 backdrop-blur-sm transition-all duration-300`}
         aria-label="Previous slide"
       >
         <svg
@@ -931,7 +1652,7 @@ const Hero = () => {
         >
           <path
             d="M15 18L9 12L15 6"
-            stroke="white"
+            stroke={darkMode ? "white" : "#111827"}
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -940,7 +1661,11 @@ const Hero = () => {
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/10 hover:bg-white/20 rounded-full p-3 backdrop-blur-sm transition-all duration-300"
+        className={`absolute right-4 top-1/2 -translate-y-1/2 z-20 ${
+          darkMode
+            ? "bg-white/10 hover:bg-white/20"
+            : "bg-[rgba(5,5,5,0.1)] hover:bg-[rgba(5,5,5,0.2)]"
+        } rounded-full p-3 backdrop-blur-sm transition-all duration-300`}
         aria-label="Next slide"
       >
         <svg
@@ -952,13 +1677,28 @@ const Hero = () => {
         >
           <path
             d="M9 18L15 12L9 6"
-            stroke="white"
+            stroke={darkMode ? "white" : "#111827"}
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
         </svg>
       </button>
+
+      <style jsx>{`
+        @keyframes float {
+          0%,
+          100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
+        }
+        .animate-float {
+          animation: float 3s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 };

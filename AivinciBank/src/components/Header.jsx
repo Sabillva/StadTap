@@ -541,20 +541,20 @@ const Header = ({ customerType, setCustomerType }) => {
           <div className="flex justify-between items-center">
             <div className="flex space-x-4">
               <button
-                className={`px-6 py-2 rounded-3xl transition-all ${
+                className={`px-6 py-2 rounded-3xl transition-all font-medium ${
                   customerType === "fiziki"
-                    ? " text-white"
-                    : "bg-white/10 backdrop-blur-sm hover:bg-white/20 dark:bg-black/10 dark:hover:bg-black/20"
+                    ? "bg-gray-200 text-gray-800 dark:bg-[#282828] dark:text-gray-200"
+                    : "bg-surface hover:bg-surface-hover text-foreground"
                 }`}
                 onClick={() => setCustomerType("fiziki")}
               >
                 Fiziki
               </button>
               <button
-                className={`px-6 py-2 rounded-full transition-all ${
+                className={`px-6 py-2 rounded-full transition-all font-medium ${
                   customerType === "biznes"
-                    ? " text-white"
-                    : "bg-white/10 backdrop-blur-sm hover:bg-white/20 dark:bg-black/10 dark:hover:bg-black/20"
+                    ? "bg-gray-200 text-gray-800 dark:bg-[#282828] dark:text-gray-200"
+                    : "bg-surface hover:bg-surface-hover text-foreground"
                 }`}
                 onClick={() => setCustomerType("biznes")}
               >
@@ -565,32 +565,23 @@ const Header = ({ customerType, setCustomerType }) => {
             <div className="flex items-center space-x-4">
               <button
                 onClick={toggleDarkMode}
-                className="p-3 rounded-3xl hover:bg-white/10 dark:hover:bg-black/20 transition-all"
+                className="p-3 rounded-3xl bg-surface hover:bg-surface-hover transition-all"
                 aria-label="Toggle dark mode"
               >
                 {darkMode ? (
-                  <span className="opacity-90">{icons.sun}</span>
+                  <span className="text-foreground">{icons.sun}</span>
                 ) : (
-                  <span className="opacity-80">{icons.moon}</span>
+                  <span className="text-foreground">{icons.moon}</span>
                 )}
               </button>
 
               <div className="relative">
                 <button
                   ref={accountButtonRef}
-                  className="flex items-center space-x-1 p-2 rounded-full hover:bg-white/10 dark:hover:bg-black/20 transition-all"
+                  className="flex items-center space-x-1 p-2 rounded-full bg-surface hover:bg-surface-hover transition-all text-foreground"
                   onClick={toggleAccountMenu}
                 >
-                  <span className="hidden sm:inline ml-2">
-                    {username ? username : "Account"}
-                  </span>
-                  <span
-                    className={`transition-transform duration-300 ${
-                      showAccountMenu ? "rotate-180" : ""
-                    }`}
-                  >
-                    {icons.chevronDown}
-                  </span>
+                  <span className="text-foreground">{icons.user}</span>
                 </button>
 
                 {showAccountMenu && (
@@ -600,7 +591,7 @@ const Header = ({ customerType, setCustomerType }) => {
                   >
                     <div className="px-4 py-3 border-b border-border/10">
                       <p className="text-sm text-muted">Xoş gəlmisiniz</p>
-                      <p className="font-medium">
+                      <p className="font-medium text-foreground">
                         {username ? username : "Aivinci Bank"}
                       </p>
                     </div>
@@ -610,9 +601,10 @@ const Header = ({ customerType, setCustomerType }) => {
                           to="/login"
                           className="flex items-center px-4 py-3 hover:bg-primary/5 transition-colors rounded-md m-1"
                         >
-                          <span className="mr-3 text-primary"></span>
                           <div>
-                            <p className="font-medium">Daxil ol</p>
+                            <p className="font-medium text-foreground">
+                              Daxil ol
+                            </p>
                             <p className="text-xs text-muted">
                               Hesabınıza giriş edin
                             </p>
@@ -622,9 +614,10 @@ const Header = ({ customerType, setCustomerType }) => {
                           to="/register"
                           className="flex items-center px-4 py-3 hover:bg-secondary/5 transition-colors rounded-md m-1"
                         >
-                          <span className="mr-3 text-secondary"></span>
                           <div>
-                            <p className="font-medium">Qeydiyyat</p>
+                            <p className="font-medium text-foreground">
+                              Qeydiyyat
+                            </p>
                             <p className="text-xs text-muted">
                               Yeni hesab yaradın
                             </p>
@@ -640,9 +633,8 @@ const Header = ({ customerType, setCustomerType }) => {
                           setShowAccountMenu(false);
                         }}
                       >
-                        <span className="mr-3 text-accent rotate-180"></span>
                         <div>
-                          <p className="font-medium">Çıxış</p>
+                          <p className="font-medium text-foreground">Çıxış</p>
                           <p className="text-xs text-muted">
                             Hesabdan çıxış edin
                           </p>
@@ -662,7 +654,7 @@ const Header = ({ customerType, setCustomerType }) => {
         <div className="flex justify-between items-center">
           <div className="flex items-center">
             <Link to="/" className="mr-8 flex items-center">
-              <div className="text-2xl font-bold display-font">
+              <div className="text-2xl font-bold display-font text-foreground">
                 Aivinci Bank
               </div>
             </Link>
@@ -674,7 +666,7 @@ const Header = ({ customerType, setCustomerType }) => {
               <div key={link.name} className="relative group">
                 {link.hasDropdown ? (
                   <button
-                    className="flex items-center hover:text-primary transition-colors"
+                    className="flex items-center text-foreground hover:text-primary transition-colors"
                     onClick={() => toggleDropdown(index)}
                   >
                     {link.name}
@@ -689,7 +681,7 @@ const Header = ({ customerType, setCustomerType }) => {
                 ) : (
                   <a
                     href={link.href}
-                    className="link-hover hover:text-primary transition-colors"
+                    className="link-hover text-foreground hover:text-primary transition-colors"
                   >
                     {link.name}
                   </a>
@@ -717,7 +709,7 @@ const Header = ({ customerType, setCustomerType }) => {
                         <a
                           key={item.name}
                           href={item.href}
-                          className="flex items-center p-3 hover:bg-primary/5 transition-colors rounded-md"
+                          className="flex items-center p-3 hover:bg-primary/5 transition-colors rounded-md text-foreground"
                         >
                           <span className="text-sm">{item.name}</span>
                         </a>
@@ -731,14 +723,14 @@ const Header = ({ customerType, setCustomerType }) => {
 
           {/* Mobile menu button */}
           <button
-            className="lg:hidden p-3 rounded-full hover:bg-white/10 dark:hover:bg-black/20 transition-all"
+            className="lg:hidden p-3 rounded-full bg-surface hover:bg-surface-hover transition-all"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
             {isMenuOpen ? (
-              <span>{icons.close}</span>
+              <span className="text-foreground">{icons.close}</span>
             ) : (
-              <span>{icons.menu}</span>
+              <span className="text-foreground">{icons.menu}</span>
             )}
           </button>
         </div>
@@ -751,22 +743,26 @@ const Header = ({ customerType, setCustomerType }) => {
           onClick={() => setIsMenuOpen(false)}
         >
           <div
-            className="bg-black/86 backdrop-blur-md absolute top-0 left-0 right-0 bg-dark dark:bg-surface border-b border-border/10 shadow-lg overflow-y-auto max-h-[80vh] transform transition-transform duration-300 origin-top"
-            style={{ animation: "slideDown 0.3s ease-out forwards" }}
+            className="bg-background/95 backdrop-blur-xl absolute top-0 left-0 right-0 border-b border-border/10 shadow-lg overflow-y-auto max-h-[80vh] transform transition-transform duration-300 origin-top"
+            style={{
+              animation: "slideDown 0.3s ease-out forwards",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4 flex justify-between items-center">
               <div className="flex items-center">
-                <div className="text-xl font-bold display-font">
+                <div className="text-xl font-bold display-font text-foreground">
                   Aivinci Bank
                 </div>
               </div>
               <button
                 onClick={() => setIsMenuOpen(false)}
-                className="w-8 h-8 rounded-full bg-white/10 dark:bg-black/10 flex items-center justify-center"
+                className="w-8 h-8 rounded-full bg-surface flex items-center justify-center"
                 aria-label="Close menu"
               >
-                <span>{icons.close}</span>
+                <span className="text-foreground">{icons.close}</span>
               </button>
             </div>
 
@@ -780,7 +776,7 @@ const Header = ({ customerType, setCustomerType }) => {
                     {link.hasDropdown ? (
                       <div>
                         <button
-                          className="flex items-center justify-between w-full py-2 hover:text-primary transition-colors"
+                          className="flex items-center justify-between w-full py-2 text-foreground hover:text-primary transition-colors"
                           onClick={() => toggleDropdown(index)}
                         >
                           <span className="font-medium">{link.name}</span>
@@ -799,7 +795,7 @@ const Header = ({ customerType, setCustomerType }) => {
                               <a
                                 key={item.name}
                                 href={item.href}
-                                className="flex items-center py-2 px-3 rounded-md hover:bg-primary/5 transition-colors"
+                                className="flex items-center py-2 px-3 rounded-md hover:bg-primary/5 transition-colors text-foreground"
                                 onClick={() => setIsMenuOpen(false)}
                               >
                                 <span className="text-sm">{item.name}</span>
@@ -811,7 +807,7 @@ const Header = ({ customerType, setCustomerType }) => {
                     ) : (
                       <a
                         href={link.href}
-                        className="block py-2 font-medium hover:text-primary transition-colors"
+                        className="block py-2 font-medium text-foreground hover:text-primary transition-colors"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         {link.name}
@@ -824,20 +820,20 @@ const Header = ({ customerType, setCustomerType }) => {
               <div className="mt-8 pt-4 border-border/10">
                 <div className="flex space-x-4 mb-4">
                   <button
-                    className={`flex-1 px-4 py-2 rounded-full transition-all ${
+                    className={`flex-1 px-4 py-2 rounded-full transition-all font-medium ${
                       customerType === "fiziki"
-                        ? "bg-[#0c0c0c] text-white"
-                        : "bg-white/10 dark:bg-black/10"
+                        ? "bg-foreground text-background"
+                        : "bg-surface text-foreground"
                     }`}
                     onClick={() => setCustomerType("fiziki")}
                   >
                     Fiziki
                   </button>
                   <button
-                    className={`flex-1 px-4 py-2 rounded-full transition-all ${
+                    className={`flex-1 px-4 py-2 rounded-full transition-all font-medium ${
                       customerType === "biznes"
-                        ? "bg-[#0c0c0c] text-white"
-                        : "bg-white/10 dark:bg-black/10"
+                        ? "bg-foreground text-background"
+                        : "bg-surface text-foreground"
                     }`}
                     onClick={() => setCustomerType("biznes")}
                   >
@@ -854,7 +850,9 @@ const Header = ({ customerType, setCustomerType }) => {
                         onClick={() => setIsMenuOpen(false)}
                       >
                         <div>
-                          <p className="font-medium">Daxil ol</p>
+                          <p className="font-medium text-foreground">
+                            Daxil ol
+                          </p>
                           <p className="text-xs text-muted">
                             Hesabınıza giriş edin
                           </p>
@@ -867,7 +865,9 @@ const Header = ({ customerType, setCustomerType }) => {
                         onClick={() => setIsMenuOpen(false)}
                       >
                         <div>
-                          <p className="font-medium">Qeydiyyat</p>
+                          <p className="font-medium text-foreground">
+                            Qeydiyyat
+                          </p>
                           <p className="text-xs text-muted">
                             Yeni hesab yaradın
                           </p>
@@ -884,7 +884,7 @@ const Header = ({ customerType, setCustomerType }) => {
                       }}
                     >
                       <div>
-                        <p className="font-medium">Çıxış</p>
+                        <p className="font-medium text-foreground">Çıxış</p>
                         <p className="text-xs text-muted">
                           Hesabdan çıxış edin
                         </p>
