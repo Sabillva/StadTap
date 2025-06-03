@@ -141,7 +141,7 @@ const News = () => {
                 <p className={`mb-6 ${darkMode ? "text-white/70" : "text-gray-700"}`}>{item.excerpt}</p>
                 <a
                   href="#"
-                  className={`font-medium flex items-center transition-colors duration-300 group-hover:text-accent ${
+                  className={`font-medium flex items-center transition-colors duration-300 ${
                     darkMode ? "text-amber-50" : "text-black"
                   }`}
                 >

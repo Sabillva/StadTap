@@ -107,7 +107,7 @@ const SimpleTransitions = () => {
                   geri qaytardıqda əlavə heç nə ödəmə.
                 </p>
                 <div className="mt-auto">
-                  <button className="text-teal-500 font-medium group-hover:text-accent transition-colors duration-300 flex items-center overflow-hidden">
+                  <button className="text-teal-500 font-medium group-hover:text-teal-500 transition-colors duration-300 flex items-center overflow-hidden">
                     <span className="relative inline-block">
                       Ətraflı
                       <span className="absolute bottom-0 left-0 w-full h-0.5 bg-current transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"></span>
@@ -171,7 +171,7 @@ const SimpleTransitions = () => {
                   qısa zamanda əldə et.
                 </p>
                 <div className="mt-auto">
-                  <button className="text-lime-500 font-medium group-hover:text-accent transition-colors duration-300 flex items-center overflow-hidden">
+                  <button className="text-lime-500 font-medium group-hover:text-lime-500 transition-colors duration-300 flex items-center overflow-hidden">
                     <span className="relative inline-block">
                       Ətraflı
                       <span className="absolute bottom-0 left-0 w-full h-0.5 bg-current transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"></span>
@@ -232,7 +232,7 @@ const SimpleTransitions = () => {
                     />
                   </svg> */}
                 </div>
-                <h3 className="text-xl font-semibold mb-4 group-hover:text-accent transition-colors duration-300">
+                <h3 className="text-xl font-semibold mb-4 transition-colors duration-300">
                   Depozit yerləşdir
                 </h3>
                 <p className="mb-6 text-foreground/70">
@@ -265,7 +265,7 @@ const SimpleTransitions = () => {
                 </p>
 
                 <div className="mt-auto">
-                  <button className="text-amber-500 font-medium group-hover:text-primary transition-colors duration-300 flex items-center overflow-hidden">
+                  <button className="text-amber-500 font-medium group-hover:text-amber-500 transition-colors duration-300 flex items-center overflow-hidden">
                     <span className="relative inline-block">
                       Ətraflı
                       <span className="absolute bottom-0 left-0 w-full h-0.5 bg-current transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"></span>

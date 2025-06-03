@@ -362,7 +362,7 @@ const CardOrder = () => {
                 style={{ transitionDelay: "300ms" }}
               >
                 <div>
-                  <h3 className="font-semibold mb-2 group-hover:text-accent transition-colors duration-300">
+                  <h3 className="font-semibold mb-2 transition-colors duration-300">
                     Aivinci Taksit
                   </h3>
                   <p className="text-foreground/70">
@@ -477,11 +477,17 @@ const CardOrder = () => {
 
                       {/* Chip and card type */}
                       <div className="flex items-center mb-6">
-                        <div className="mr-3">{icons.chip}</div>
-                        <div className="text-xs text-white/80 uppercase tracking-wider font-medium bg-white/10 px-2 py-1 rounded-sm">
-                          Premium
-                        </div>
-                      </div>
+                    <div className="mr-3">{icons.chip}</div>
+                    <div
+                      className={`text-xs ${
+                        darkMode ? "text-white/80" : "text-white/80"
+                      } uppercase tracking-wider font-medium ${
+                        darkMode ? "bg-white/10" : "bg-white/10"
+                      } px-2 py-1 rounded-sm`}
+                    >
+                      Premium
+                    </div>
+                  </div>
 
                       {/* Card number */}
                       <div className="mb-auto">
@@ -516,7 +522,7 @@ const CardOrder = () => {
                     </div>
 
                     {/* Card network logo */}
-                    <div className="absolute bottom-13 right-5 w-16 h-16 flex items-center justify-center">
+                    <div className="absolute bottom-12 right-5 w-16 h-16 flex items-center justify-center">
                       <div className="relative w-14 h-14">
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="w-8 h-8 bg-[#FF5F00] rounded-full opacity-90"></div>

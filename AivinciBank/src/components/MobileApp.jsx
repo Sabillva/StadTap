@@ -148,17 +148,17 @@ const MobileApp = () => {
             </div>
 
             <div
-              className="flex flex-wrap gap-4 app-animate opacity-0 transform translate-y-8"
+              className="flex gap-1 app-animate opacity-0 transform translate-y-8"
               style={{ transitionDelay: "600ms" }}
             >
               <a
                 href="#"
-                className="flex items-center transition-all duration-500 ease-in-out py-3 px-4 rounded-3xl"
+                className="flex items-center transition-all duration-500 ease-in-out py-3 px-2 rounded-3xl"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="37"
-                  height="37"
+                  width="32"
+                  height="32"
                   viewBox="0 0 512 512"
                   className="mr-3"
                   fill="currentColor"
@@ -183,8 +183,8 @@ const MobileApp = () => {
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="40"
-                  height="40"
+                  width="37"
+                  height="37"
                   viewBox="0 0 384 512"
                   className="mr-3"
                   fill="currentColor"
@@ -204,6 +204,7 @@ const MobileApp = () => {
                 </div>
               </a>
             </div>
+            
           </motion.div>
 
           <motion.div
@@ -213,7 +214,7 @@ const MobileApp = () => {
             className="lg:w-1/2 flex justify-center app-animate opacity-0 transform translate-x-2 mt-20"
             style={{ transitionDelay: "300ms" }}
           >
-            <div className="relative border-10 rounded-[52px] border-black shadow-2xl shadow-amber-50">
+            <div className="relative border-8 rounded-[52px] border-black shadow-2xl shadow-amber-50">
               {/* Modern iPhone Mockup */}
               <div className="w-[280px] h-[580px] bg-[#111611] rounded-[40px] py-1 shadow-2xl relative overflow-hidden">
                 {/* Notch */}
@@ -355,7 +356,7 @@ const MobileApp = () => {
                   isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
                 }
                 transition={{ duration: 0.5, delay: 1 }}
-                className={`absolute -bottom-6 left-1/2 transform -translate-x-1/2 px-4 py-3 rounded-full
+                className={`absolute -bottom-6 left-16 transform -translate-x-1/2 px-4 py-3 rounded-full
                   bg-amber-600 hover:bg-amber-700 text-white shadow-lg flex items-center gap-2 transition-all`}
               >
                 <Download size={16} />

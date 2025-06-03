@@ -29,7 +29,7 @@ const Hero = () => {
       description:
         "Yüksək faiz dərəcələri ilə pulunuzu artırın və gələcəyinizi təmin edin.",
       color: "from-accent/40 to-accent/5",
-      buttonColor: "bg-amber-500 hover:bg-accent/90",
+      buttonColor: "bg-amber-500 hover:bg-[rgba(245,158,11,0.9)]",
     },
   ];
 
@@ -928,7 +928,7 @@ const Hero = () => {
                 </div>
 
                 {/* Card network logo */}
-                <div className="absolute bottom-13 right-5 w-16 h-16 flex items-center justify-center">
+                <div className="absolute bottom-12 right-5 w-16 h-16 flex items-center justify-center">
                   <div className="relative w-14 h-14">
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-8 h-8 bg-[#FF5F00] rounded-full opacity-90"></div>
